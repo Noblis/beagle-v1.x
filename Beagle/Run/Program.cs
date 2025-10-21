@@ -1,13 +1,48 @@
 ﻿using BeagleLib.Engine;
 using BeagleLib.Engine.FitFunc;
+using BeagleLib.Util;
 using Run.MLSetups;
 
 namespace Run;
 
 public class Program
 {
-    static void Main()
+    static void Main(string[] args)
     {
+        #region Read Command-line parameters
+        var stopAfterMin = -1;
+        var noEscMenu = false;
+        foreach (var arg in args)
+        {
+            try
+            {
+                if (arg.ToLower() == "noescmenu")
+                {
+                    noEscMenu = true;
+                }
+                else if (arg.ToLower().StartsWith("stopaftermin"))
+                {
+                    var argParts = arg.Split('=');
+                    if (argParts.Length != 2 && argParts[0] != "stopaftermin") throw new ArgumentException();
+                    stopAfterMin = int.Parse(argParts[1]);
+                    if (stopAfterMin <= 0) throw new ArgumentException();
+                }
+                else
+                {
+                    throw new ArgumentException();
+                }
+            }
+            catch (Exception)
+            {
+                Output.WriteLine($"ERROR: Invalid command line parameter: {arg}");
+                Output.WriteLine("Available Command Line Parameters (not case sensitive):");
+                Output.WriteLine("NoEscMenu - directs Beagle to not watch keyboard. Useful for batch runs");
+                Output.WriteLine("StopAfterMin={minutes} - directs Beagle to stop after number of minutes specified");
+                return;
+            }
+        }
+        #endregion
+
         #region Custom settings per machine (not used)
         //LG Gram
         if (Environment.MachineName == "LG-GRAM")
@@ -66,8 +101,8 @@ public class Program
         //using var mlEngine = new MLEngine<DemoForMSU, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<DemoForMSU2, StdHyperFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<DemoForMSU3, StdFitFunc>(forceCPUAccelerator: false);
-        using var mlEngine = new MLEngine<DemoForMSU4, StdHyperFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<AreaOfCircle, StdFitFunc>(forceCPUAccelerator: false);
+        //using var mlEngine = new MLEngine<DemoForMSU4, StdHyperFitFunc>(forceCPUAccelerator: false);
+        using var mlEngine = new MLEngine<AreaOfCircle, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<XPowY, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<AvgOf2, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<QuadraticEqNormalized, StdFitFunc>(forceCPUAccelerator: false);
@@ -78,6 +113,6 @@ public class Program
         //using var mlEngine = new MLEngine<RydbergFormula, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<ThrustData, StdFitFunc>(forceCPUAccelerator: false);
 
-        mlEngine.Train();
+        mlEngine.Train(stopAfterMin, noEscMenu);
     }
 }

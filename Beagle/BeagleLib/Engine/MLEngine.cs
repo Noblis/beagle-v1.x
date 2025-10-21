@@ -15,7 +15,7 @@ namespace BeagleLib.Engine;
 
 public abstract class MLEngineCore : IDisposable
 {
-    public abstract void Train(bool benchmarkRun = false);
+    public abstract void Train(int stopAfterMin = -1, bool noEscMenu = false, bool benchmarkRun = false);
     public abstract void Dispose();
 }
 
@@ -180,7 +180,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     #endregion
 
     #region Methods
-    public override void Train(bool benchmarkRun = false)
+    public override void Train(int stopAfterMin = -1, bool noEscMenu = false, bool benchmarkRun = false)
     {
         try
         {
@@ -203,48 +203,56 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _currentGeneration++;
                 var done = TrainingLoopBody();
 
-                while (Console.KeyAvailable)
+                if (!noEscMenu)
                 {
-                    if (Console.ReadKey(true).Key == ConsoleKey.Escape)
+                    while (Console.KeyAvailable)
                     {
-                        _totalTimeWatch.Stop();
-
-                        //We only handle the first Escape, ignore all the others
-                        while (Console.KeyAvailable) Console.ReadKey(true);
-
-                        Console.ForegroundColor = ConsoleColor.Yellow;
-                        Output.WriteLine("Evolution paused...\n");
-                        while (true)
+                        if (Console.ReadKey(true).Key == ConsoleKey.Escape)
                         {
-                            Output.WriteLine("[Q]uit");
-                            Output.WriteLine("Resu[M]e");
-                            Output.WriteLine("[S]ave colony");
-                            Output.WriteLine("Load & [R]eplace colony");
-                            Output.WriteLine("Load & [C]ombine colonies");
-                            Output.WriteLine("[I]nject organism[s] as string");
-                            Output.WriteLine("[D]isplay best organism as LaTeX formula");
-                            Output.Write("Please choose: ");
+                            _totalTimeWatch.Stop();
 
-                            var input = Output.ReadLine();
-                            Output.WriteLine();
+                            //We only handle the first Escape, ignore all the others
+                            while (Console.KeyAvailable) Console.ReadKey(true);
 
-                            input = input.Trim().ToLower();
-                            if (input == "q") { done = true; break; }
-                            else if (input == "m") { Output.WriteLine("Resuming evolution...\n"); break; }
-                            else if (input == "s") SaveColony();
-                            else if (input == "r") LoadColony();
-                            else if (input == "c") LoadColony(combine: true);
-                            else if (input == "i") InjectOrganisms();
-                            else if (input == "d") DisplayAsLatex();
-                            else Output.WriteLine("Invalid input. Please choose again.\n");
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Output.WriteLine("Evolution paused...\n");
+                            while (true)
+                            {
+                                Output.WriteLine("[Q]uit");
+                                Output.WriteLine("Resu[M]e");
+                                Output.WriteLine("[S]ave colony");
+                                Output.WriteLine("Load & [R]eplace colony");
+                                Output.WriteLine("Load & [C]ombine colonies");
+                                Output.WriteLine("[I]nject organism[s] as string");
+                                Output.WriteLine("[D]isplay best organism as LaTeX formula");
+                                Output.Write("Please choose: ");
+
+                                var input = Output.ReadLine();
+                                Output.WriteLine();
+
+                                input = input.Trim().ToLower();
+                                if (input == "q") { done = true; break; }
+                                else if (input == "m") { Output.WriteLine("Resuming evolution...\n"); break; }
+                                else if (input == "s") SaveColony();
+                                else if (input == "r") LoadColony();
+                                else if (input == "c") LoadColony(combine: true);
+                                else if (input == "i") InjectOrganisms();
+                                else if (input == "d") DisplayAsLatex();
+                                else Output.WriteLine("Invalid input. Please choose again.\n");
+                            }
+                            Console.ResetColor();
+
+                            _totalTimeWatch.Start();
                         }
-                        Console.ResetColor();
-
-                        _totalTimeWatch.Start();
                     }
                 }
 
                 if (done || benchmarkRun) break;
+                if (stopAfterMin > 0 && _totalTimeWatch.Elapsed.TotalMinutes > stopAfterMin)
+                {
+                    Output.WriteLine("Allotted time exceeded");
+                    break;
+                }
             }
             Console.WriteLine("Training Stopped...");
         }
