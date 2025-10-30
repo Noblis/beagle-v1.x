@@ -59,10 +59,10 @@ public class DemoForMSU3 : MLSetup
     public override bool KeepOptimizingAfterSolutionFound => true;
 
     public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Sin &&
-        x != OpEnum.Sqrt &&
-        x != OpEnum.Cbrt &&
-        x != OpEnum.Cube &&
-        x != OpEnum.Ln).ToArray();
+                                                                                                x != OpEnum.Sqrt &&
+                                                                                                x != OpEnum.Cbrt &&
+                                                                                                x != OpEnum.Cube &&
+                                                                                                x != OpEnum.Ln).ToArray();
     #endregion
 
 }

@@ -1,8 +1,7 @@
 {
   "profiles": {
     "Run": {
-      "commandName": "Project",
-      "commandLineArgs": "NoEscMenu StopAfterMin=3"
+      "commandName": "Project"
     }
   }
 }
