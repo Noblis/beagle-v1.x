@@ -91,18 +91,19 @@ public class Program
         #endregion
 
         #region Benchmarking
-        //using var mlBenchmarkEngine = new MLEngine<Benchmark, StdFitFunc>(forceCPUAccelerator: false);
-        //mlBenchmarkEngine.Train(benchmarkRun: true);
-        //return;
+        stopAfterMin = 20;
+        using var mlBenchmarkEngine = new MLEngine<Benchmark, StdFitFunc>(forceCPUAccelerator: false);
+        mlBenchmarkEngine.Train(stopAfterMin, noEscMenu, benchmarkRun: true);
+        return;
         #endregion
 
         //new CsvGen<RydbergFormula>().CreateAndSaveCsvFile(5000); return;
 
         //using var mlEngine = new MLEngine<DemoForMSU, StdFitFunc>(forceCPUAccelerator: false);
-        using var mlEngine = new MLEngine<DemoForMSU2, StdHyperFitFunc>(forceCPUAccelerator: false);
+        //using var mlEngine = new MLEngine<DemoForMSU2, StdHyperFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<DemoForMSU3, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<DemoForMSU4, StdHyperFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<AreaOfCircle, StdFitFunc>(forceCPUAccelerator: false);
+        using var mlEngine = new MLEngine<AreaOfCircle, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<XPowY, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<AvgOf2, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<QuadraticEqNormalized, StdFitFunc>(forceCPUAccelerator: false);
