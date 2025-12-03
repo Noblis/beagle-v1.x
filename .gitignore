@@ -22,3 +22,4 @@ copilot-chat/
 /Voyage/Server/Voyage.SQLite.db
 /Voyage/Server/WebWM/wwwroot/assets/*
 /.vs/Beagle/v18/DocumentLayout.json
+/.vs/Beagle/v18/DocumentLayout.backup.json
