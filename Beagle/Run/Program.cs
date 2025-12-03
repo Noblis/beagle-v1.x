@@ -10,6 +10,7 @@ public class Program
     static void Main(string[] args)
     {
         #region Read Command-line parameters
+        // ReSharper disable once RedundantAssignment
         var stopAfterMin = -1;
         var noEscMenu = false;
         foreach (var arg in args)
@@ -91,10 +92,10 @@ public class Program
         #endregion
 
         #region Benchmarking
-        stopAfterMin = 20;
-        using var mlBenchmarkEngine = new MLEngine<SinApproximation, StdCubeFitFunc>(forceCPUAccelerator: false);
-        mlBenchmarkEngine.Train(stopAfterMin, noEscMenu);
-        return;
+        //stopAfterMin = 20;
+        //using var mlBenchmarkEngine = new MLEngine<SinApproximation, StdCubeFitFunc>(forceCPUAccelerator: false);
+        //mlBenchmarkEngine.Train(stopAfterMin, noEscMenu);
+        //return;
 
         //using var mlBenchmarkEngine = new MLEngine<Benchmark, StdFitFunc>(forceCPUAccelerator: false);
         //mlBenchmarkEngine.Train(stopAfterMin, noEscMenu, benchmarkRun: true);

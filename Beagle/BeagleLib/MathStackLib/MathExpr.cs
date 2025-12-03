@@ -172,16 +172,16 @@ public abstract record MathExpr
                 break;
                 #endregion binary
 
-                case ByteCode.Load(string name):
+                case ByteCode.Load({ } name):
                     stack.Add(new Variable(name));
                     break;
-                case ByteCode.Const(float value):
+                case ByteCode.Const(var value):
                     stack.Add(new Constant(value));
                     break;
-                case ByteCode.Copy(int idx):
+                case ByteCode.Copy(var idx):
                     registries[idx] = stack.Last();
                     break;
-                case ByteCode.Paste(int idx):
+                case ByteCode.Paste(var idx):
                     stack.Add(registries[idx]);
                     break;
                 case ByteCode.Dup:
@@ -210,34 +210,33 @@ public abstract record MathExpr
     {
         switch (this)
         {
-
-            case Sign(MathExpr mathExpr):
+            case Sign({ } mathExpr):
                 return $"(-1 * ({mathExpr.AsTraditionalString()}))";
-            case Sqrt(MathExpr mathExpr):
+            case Sqrt({ } mathExpr):
                 return $"({mathExpr.AsTraditionalString()})^(1/2)";
-            case Cbrt(MathExpr mathExpr):
+            case Cbrt({ } mathExpr):
                 return $"({mathExpr.AsTraditionalString()})^(1/3)";
-            case Square(MathExpr mathExpr):
+            case Square({ } mathExpr):
                 return $"(({mathExpr.AsTraditionalString()})^2)";
-            case Cube(MathExpr mathExpr):
+            case Cube({ } mathExpr):
                 return $"(({mathExpr.AsTraditionalString()})^3)";
-            case Ln(MathExpr mathExpr):
+            case Ln({ } mathExpr):
                 return $"ln({mathExpr.AsTraditionalString()})";
-            case Sin(MathExpr mathExpr):
+            case Sin({ } mathExpr):
                 return $"sin({mathExpr.AsTraditionalString()})";
-            case Abs(MathExpr mathExpr):
+            case Abs({ } mathExpr):
                 return $"(|{mathExpr.AsTraditionalString()}|)";
-            case Add(MathExpr lhs, MathExpr rhs):
+            case Add({ } lhs, { } rhs):
                 return $"(({lhs.AsTraditionalString()}) + ({rhs.AsTraditionalString()}))";
-            case Sub(MathExpr lhs, MathExpr rhs):
+            case Sub({ } lhs, { } rhs):
                 return $"(({lhs.AsTraditionalString()}) - ({rhs.AsTraditionalString()}))";
-            case Div(MathExpr lhs, MathExpr rhs):
+            case Div({ } lhs, { } rhs):
                 return $"(({lhs.AsTraditionalString()}) / ({rhs.AsTraditionalString()}))";
-            case Mul(MathExpr lhs, MathExpr rhs):
+            case Mul({ } lhs, { } rhs):
                 return $"(({lhs.AsTraditionalString()}) * ({rhs.AsTraditionalString()}))";
-            case Variable(string name):
+            case Variable({ } name):
                 return name;
-            case Constant(float value):
+            case Constant(var value):
                 return value.ToString(CultureInfo.InvariantCulture);
             default:
                 throw new SystemException($"An unexpected member of the MathExpr record was encountered, this switch should be exhaustive: {this}");
@@ -249,33 +248,33 @@ public abstract record MathExpr
         switch (this)
         {
 
-            case Sign(MathExpr mathExpr):
+            case Sign({ } mathExpr):
                 return $"(-1 * ({mathExpr.AsFunctionPlotString()}))";
-            case Sqrt(MathExpr mathExpr):
+            case Sqrt({ } mathExpr):
                 return $"nthRoot(({mathExpr.AsFunctionPlotString()}), 2)";
-            case Cbrt(MathExpr mathExpr):
+            case Cbrt({ } mathExpr):
                 return $"nthRoot(({mathExpr.AsFunctionPlotString()}), 3)";
-            case Square(MathExpr mathExpr):
+            case Square({ } mathExpr):
                 return $"(pow(({mathExpr.AsFunctionPlotString()}), 2))";
-            case Cube(MathExpr mathExpr):
+            case Cube({ } mathExpr):
                 return $"(pow(({mathExpr.AsFunctionPlotString()}), 3))";
-            case Ln(MathExpr mathExpr):
+            case Ln({ } mathExpr):
                 return $"log(({mathExpr.AsFunctionPlotString()}))";
-            case Sin(MathExpr mathExpr):
+            case Sin({ } mathExpr):
                 return $"sin(({mathExpr.AsFunctionPlotString()}))";
-            case Abs(MathExpr mathExpr):
+            case Abs({ } mathExpr):
                 return $"(|({mathExpr.AsFunctionPlotString()})|)";
-            case Add(MathExpr lhs, MathExpr rhs):
+            case Add({ } lhs, { } rhs):
                 return $"(({lhs.AsFunctionPlotString()}) + ({rhs.AsFunctionPlotString()}))";
-            case Sub(MathExpr lhs, MathExpr rhs):
+            case Sub({ } lhs, { } rhs):
                 return $"(({lhs.AsFunctionPlotString()}) - ({rhs.AsFunctionPlotString()}))";
-            case Div(MathExpr lhs, MathExpr rhs):
+            case Div({ } lhs, { } rhs):
                 return $"(({lhs.AsFunctionPlotString()}) / ({rhs.AsFunctionPlotString()}))";
-            case Mul(MathExpr lhs, MathExpr rhs):
+            case Mul({ } lhs, { } rhs):
                 return $"(({lhs.AsFunctionPlotString()}) * ({rhs.AsFunctionPlotString()}))";
-            case Variable(string name):
+            case Variable({ } name):
                 return name;
-            case Constant(float value):
+            case Constant(var value):
                 return value.ToString(CultureInfo.InvariantCulture);
             default:
                 throw new SystemException($"An unexpected member of the MathExpr record was encountered, this switch should be exhaustive: {this}");
@@ -287,35 +286,35 @@ public abstract record MathExpr
         switch (this)
         {
 
-            case Sign(MathExpr mathExpr):
+            case Sign({ } mathExpr):
                 return $"-{{{mathExpr.AsLatexString()}}}";
-            case Sqrt(MathExpr mathExpr):
+            case Sqrt({ } mathExpr):
                 return $"\\sqrt{{{mathExpr.AsLatexString()}}}";
-            case Cbrt(MathExpr mathExpr):
+            case Cbrt({ } mathExpr):
                 return $"\\sqrt[3]{{{mathExpr.AsLatexString()}}}";
-            case Square(MathExpr mathExpr):
+            case Square({ } mathExpr):
                 return $"{{{mathExpr.AsLatexString()}}}^2";
-            case Cube(MathExpr mathExpr):
+            case Cube({ } mathExpr):
                 return $"{{{mathExpr.AsLatexString()}}}^3";
-            case Ln(MathExpr mathExpr):
+            case Ln({ } mathExpr):
                 return $"\\ln({mathExpr.AsLatexString()})";
-            case Sin(MathExpr mathExpr):
+            case Sin({ } mathExpr):
                 return $"\\sin({mathExpr.AsLatexString()})";
-            case Abs(MathExpr mathExpr):
+            case Abs({ } mathExpr):
                 return $"|{mathExpr.AsLatexString()}|";
-            case Add(MathExpr lhs, MathExpr rhs):
+            case Add({ } lhs, { } rhs):
                 return $"({lhs.AsLatexString()} + {rhs.AsLatexString()})";
-            case Sub(MathExpr lhs, MathExpr rhs):
+            case Sub({ } lhs, { } rhs):
                 return $"({lhs.AsLatexString()} - {rhs.AsLatexString()})";
-            case Div(MathExpr lhs, MathExpr rhs):
+            case Div({ } lhs, { } rhs):
                 return $"(\\frac{{{lhs.AsLatexString()}}}{{{rhs.AsLatexString()}}})";
-            case Mul(MathExpr lhs, MathExpr rhs):
+            case Mul({ } lhs, { } rhs):
                 return $"({lhs.AsLatexString()} \\cdot {rhs.AsLatexString()})";
-            case Pow(MathExpr lhs, MathExpr rhs):
+            case Pow({ } lhs, { } rhs):
                 return $"({lhs.AsLatexString()}) ^ {{({rhs.AsLatexString()})}})";
-            case Variable(string name):
+            case Variable({ } name):
                 return name;
-            case Constant(float value):
+            case Constant(var value):
                 return value.ToString(CultureInfo.InvariantCulture);
             default:
                 throw new SystemException($"An unexpected member of the MathExpr record was encountered, this switch should be exhaustive: {this}");
