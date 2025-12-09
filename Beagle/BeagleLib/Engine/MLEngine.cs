@@ -6,6 +6,7 @@ using BeagleLib.VM;
 using ILGPU;
 using ILGPU.Runtime;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime;
 using System.Runtime.CompilerServices;
@@ -600,6 +601,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             #if DEBUG
             int score = 0;
             var fitFunc = new TFitFunc();
+            var barrier = new Barrier((int)MLSetup.Current.ExperimentsPerGeneration);
             Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, experiment =>
             {
                 var codeMachineCPU = new CodeMachine();
@@ -610,8 +612,76 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 var isOutputValid = !float.IsNaN(output) && !float.IsInfinity(output) && !float.IsNegativeInfinity(output);
                 var isCorrectOutputValid = !float.IsNaN(correctOutput) && !float.IsInfinity(correctOutput) && !float.IsNegativeInfinity(correctOutput);
 
-                if (isOutputValid && isCorrectOutputValid) Interlocked.Add(ref score, fitFunc.FitFunction(output, correctOutput));
-                else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid)); 
+                if (fitFunc.UseHardcodedCorrelationFit)
+                {
+
+                    //we first use this variable to calculate total, then divide by count to get the Mean
+                    //this is one element array because we cannot allocate scalar values in shared memory
+                    float outputsMean = 0;
+
+                    //we first use this variable to keep the count of valid outputs, then to keep the count of misaligned invalid outputs
+                    //this is one element array because we cannot allocate scalar values in shared memory
+                    uint count = 0;
+
+                    if (isOutputValid)
+                    {
+                        Interlocked.Increment(ref count);
+                        MyInterlocked.Add(ref outputsMean, output);
+                    }
+                    barrier.SignalAndWait();
+
+                    //using first thread, divide the sum over the count ot get the average
+                    if (experiment == 0) outputsMean /= count;
+                    barrier.SignalAndWait();
+
+                    //reset count, allocate sums and init them to zero
+                    var sums = new float[3];
+                    if (experiment == 0)
+                    {
+                        count = 0; //reset cound to now be used to count the number of valid/invalid mismatches
+
+                        //this is not needed but we keep it to match the kernel code
+                        sums[0] = 0;
+                        sums[1] = 0;
+                        sums[2] = 0;
+                    }
+
+                    //accumulate three sums across all threads in the block
+                    if (isOutputValid && isCorrectOutputValid)
+                    {
+                        //if both output and correct output are valid
+                        var outputDeltaVsMean = output - outputsMean;
+                        var correctOutputDeltaVsMean = correctOutput - _correctOutputsMean; //TODO: make sure I can use _correctOutputsMean
+                        Atomic.Add(ref sums[0], outputDeltaVsMean * correctOutputDeltaVsMean);
+                        Atomic.Add(ref sums[1], outputDeltaVsMean * outputDeltaVsMean);
+                        Atomic.Add(ref sums[2], correctOutputDeltaVsMean * correctOutputDeltaVsMean);
+                    }
+                    else
+                    {
+                        //if at least one of the outputs is invalid we end up here
+                        //if outputs are different, we increment the counter, otherwise we do nothing
+                        if (isOutputValid ^ isCorrectOutputValid) Atomic.Add(ref count, 1); //XOR returns true if values are different
+                    }
+                    barrier.SignalAndWait();
+
+                    //store R squared results for returning data from the Kernel
+                    if (Group.IsFirstThread)
+                    {
+                        var denominator = sums[1] * sums[2];
+                        float rSquared = 0;
+                        if (denominator != 0) rSquared = sums[0] * sums[0] / denominator;
+
+                        //r can range from 0 to 1
+                        //punishment is based on the percentage of mismatches, number of experiments cancels out
+                        score = (int)(BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration * rSquared) - BConfig.MaxScore * (int)count;
+                    }
+
+                }
+                else
+                {
+                    if (isOutputValid && isCorrectOutputValid) Interlocked.Add(ref score, fitFunc.FitFunction(output, correctOutput));
+                    else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid));
+                }
             });
 
             if (_shortestEverSatisfactoryOrganism.Score != score)
