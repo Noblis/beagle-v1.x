@@ -277,24 +277,77 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             if (FitFunc.UseHardcodedCorrelationFit)
             {
-                //set up experiments (inputs and output) and calculate correct outputs mean
-                float correctOutputsSum = 0;
-                int invalidCorrectOutputsCount = 0;
-                Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
+                using (new ConsoleTimer("Parallel"))
                 {
-                    (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
-                    if (!float.IsNaN(_correctOutputs[i]) && !float.IsInfinity(_correctOutputs[i]) && !float.IsNegativeInfinity(_correctOutputs[i]))
+                    //set up experiments (inputs and output) and calculate correct outputs mean
+                    float correctOutputsSum = 0;
+                    int invalidCorrectOutputsCount = 0;
+                    Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
                     {
-                        MyInterlocked.Add(ref correctOutputsSum, _correctOutputs[i]);
-                    }
-                    else
-                    {
-                        Interlocked.Increment(ref invalidCorrectOutputsCount);
-                    }
+                        (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+                        if (!float.IsNaN(_correctOutputs[i]) && !float.IsInfinity(_correctOutputs[i]) && !float.IsNegativeInfinity(_correctOutputs[i]))
+                        {
+                            MyInterlocked.Add(ref correctOutputsSum, _correctOutputs[i]);
+                        }
+                        else
+                        {
+                            Interlocked.Increment(ref invalidCorrectOutputsCount);
+                        }
 
-                });
-                if (invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration) throw new Exception("invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration");
-                _correctOutputsMean = correctOutputsSum / MLSetup.Current.ExperimentsPerGeneration - invalidCorrectOutputsCount;
+                    });
+                    if (invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration) throw new Exception("invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration");
+                    _correctOutputsMean = correctOutputsSum / MLSetup.Current.ExperimentsPerGeneration - invalidCorrectOutputsCount;
+                }
+
+                using (new ConsoleTimer("Sequential 1"))
+                {
+                    //set up experiments (inputs and output) and calculate correct outputs mean
+                    float correctOutputsSum = 0;
+                    int invalidCorrectOutputsCount = 0;
+                    Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
+                    {
+                        (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+
+                    });
+                    for (var i = 0; i < MLSetup.Current.ExperimentsPerGeneration; i++)
+                    {
+                        if (!float.IsNaN(_correctOutputs[i]) && !float.IsInfinity(_correctOutputs[i]) && !float.IsNegativeInfinity(_correctOutputs[i]))
+                        {
+                            correctOutputsSum += _correctOutputs[i];
+                        }
+                        else
+                        {
+                            invalidCorrectOutputsCount++;
+                        }
+                    }
+                    if (invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration) throw new Exception("invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration");
+                    _correctOutputsMean = correctOutputsSum / MLSetup.Current.ExperimentsPerGeneration - invalidCorrectOutputsCount;
+                }
+
+                using (new ConsoleTimer("Sequential 2"))
+                {
+                    //set up experiments (inputs and output) and calculate correct outputs mean
+                    float correctOutputsSum = 0;
+                    int invalidCorrectOutputsCount = 0;
+                    Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
+                    {
+                        (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+                        if (float.IsNaN(_correctOutputs[i]) || float.IsInfinity(_correctOutputs[i]) || float.IsNegativeInfinity(_correctOutputs[i]))
+                        {
+                            Interlocked.Increment(ref invalidCorrectOutputsCount);
+                        }
+
+                    });
+                    for (var i = 0; i < MLSetup.Current.ExperimentsPerGeneration; i++)
+                    {
+                        if (!float.IsNaN(_correctOutputs[i]) && !float.IsInfinity(_correctOutputs[i]) && !float.IsNegativeInfinity(_correctOutputs[i]))
+                        {
+                            correctOutputsSum += _correctOutputs[i];
+                        }
+                    }
+                    if (invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration) throw new Exception("invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration");
+                    _correctOutputsMean = correctOutputsSum / MLSetup.Current.ExperimentsPerGeneration - invalidCorrectOutputsCount;
+                }
             }
             else
             {
@@ -302,8 +355,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
                 {
                     (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
-                    _correctOutputsMean = 0;
                 });
+                _correctOutputsMean = 0;
             }
 
             //convert inputs to one long array
