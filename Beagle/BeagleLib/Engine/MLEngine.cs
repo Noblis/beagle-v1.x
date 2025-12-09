@@ -277,77 +277,29 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             if (FitFunc.UseHardcodedCorrelationFit)
             {
-                using (new ConsoleTimer("Parallel"))
+                //set up experiments (inputs and output) and calculate correct outputs mean
+                float correctOutputsSum = 0;
+                int invalidCorrectOutputsCount = 0;
+                Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
                 {
-                    //set up experiments (inputs and output) and calculate correct outputs mean
-                    float correctOutputsSum = 0;
-                    int invalidCorrectOutputsCount = 0;
-                    Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
-                    {
-                        (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
-                        if (!float.IsNaN(_correctOutputs[i]) && !float.IsInfinity(_correctOutputs[i]) && !float.IsNegativeInfinity(_correctOutputs[i]))
-                        {
-                            MyInterlocked.Add(ref correctOutputsSum, _correctOutputs[i]);
-                        }
-                        else
-                        {
-                            Interlocked.Increment(ref invalidCorrectOutputsCount);
-                        }
+                    (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
 
-                    });
-                    if (invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration) throw new Exception("invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration");
-                    _correctOutputsMean = correctOutputsSum / MLSetup.Current.ExperimentsPerGeneration - invalidCorrectOutputsCount;
-                }
+                });
 
-                using (new ConsoleTimer("Sequential 1"))
+                //Doing it this way (sequentially) is faster since float Interlocked does not exists
+                for (var i = 0; i < MLSetup.Current.ExperimentsPerGeneration; i++)
                 {
-                    //set up experiments (inputs and output) and calculate correct outputs mean
-                    float correctOutputsSum = 0;
-                    int invalidCorrectOutputsCount = 0;
-                    Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
+                    if (!float.IsNaN(_correctOutputs[i]) && !float.IsInfinity(_correctOutputs[i]) && !float.IsNegativeInfinity(_correctOutputs[i]))
                     {
-                        (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
-
-                    });
-                    for (var i = 0; i < MLSetup.Current.ExperimentsPerGeneration; i++)
-                    {
-                        if (!float.IsNaN(_correctOutputs[i]) && !float.IsInfinity(_correctOutputs[i]) && !float.IsNegativeInfinity(_correctOutputs[i]))
-                        {
-                            correctOutputsSum += _correctOutputs[i];
-                        }
-                        else
-                        {
-                            invalidCorrectOutputsCount++;
-                        }
+                        correctOutputsSum += _correctOutputs[i];
                     }
-                    if (invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration) throw new Exception("invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration");
-                    _correctOutputsMean = correctOutputsSum / MLSetup.Current.ExperimentsPerGeneration - invalidCorrectOutputsCount;
-                }
-
-                using (new ConsoleTimer("Sequential 2"))
-                {
-                    //set up experiments (inputs and output) and calculate correct outputs mean
-                    float correctOutputsSum = 0;
-                    int invalidCorrectOutputsCount = 0;
-                    Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
+                    else
                     {
-                        (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
-                        if (float.IsNaN(_correctOutputs[i]) || float.IsInfinity(_correctOutputs[i]) || float.IsNegativeInfinity(_correctOutputs[i]))
-                        {
-                            Interlocked.Increment(ref invalidCorrectOutputsCount);
-                        }
-
-                    });
-                    for (var i = 0; i < MLSetup.Current.ExperimentsPerGeneration; i++)
-                    {
-                        if (!float.IsNaN(_correctOutputs[i]) && !float.IsInfinity(_correctOutputs[i]) && !float.IsNegativeInfinity(_correctOutputs[i]))
-                        {
-                            correctOutputsSum += _correctOutputs[i];
-                        }
+                        invalidCorrectOutputsCount++;
                     }
-                    if (invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration) throw new Exception("invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration");
-                    _correctOutputsMean = correctOutputsSum / MLSetup.Current.ExperimentsPerGeneration - invalidCorrectOutputsCount;
                 }
+                if (invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration) throw new Exception("invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration");
+                _correctOutputsMean = correctOutputsSum / MLSetup.Current.ExperimentsPerGeneration - invalidCorrectOutputsCount;
             }
             else
             {
