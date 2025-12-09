@@ -6,8 +6,10 @@ using BeagleLib.VM;
 using ILGPU;
 using ILGPU.Runtime;
 using Newtonsoft.Json;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Runtime;
 using System.Runtime.CompilerServices;
 using WebMonk;
@@ -601,88 +603,84 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             #if DEBUG
             int score = 0;
             var fitFunc = new TFitFunc();
-            var barrier = new Barrier((int)MLSetup.Current.ExperimentsPerGeneration);
+            float[] outputs = new float[MLSetup.Current.ExperimentsPerGeneration];
             Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, experiment =>
             {
                 var codeMachineCPU = new CodeMachine();
-                var output = codeMachineCPU.RunCommands(_inputsArray[experiment], _shortestEverSatisfactoryOrganism.Commands);
-                var correctOutput = _correctOutputs[experiment];
+                outputs[experiment] = codeMachineCPU.RunCommands(_inputsArray[experiment], _shortestEverSatisfactoryOrganism.Commands);
+            });
 
-                //fit function plus script length adjustment
-                var isOutputValid = !float.IsNaN(output) && !float.IsInfinity(output) && !float.IsNegativeInfinity(output);
-                var isCorrectOutputValid = !float.IsNaN(correctOutput) && !float.IsInfinity(correctOutput) && !float.IsNegativeInfinity(correctOutput);
-
-                if (fitFunc.UseHardcodedCorrelationFit)
+            if (fitFunc.UseHardcodedCorrelationFit)
+            {
+                //calculate output mean
+                float outputsMean = 0;
+                uint count = 0;
+                for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
                 {
+                    var output = outputs[experiment];
 
-                    //we first use this variable to calculate total, then divide by count to get the Mean
-                    //this is one element array because we cannot allocate scalar values in shared memory
-                    float outputsMean = 0;
-
-                    //we first use this variable to keep the count of valid outputs, then to keep the count of misaligned invalid outputs
-                    //this is one element array because we cannot allocate scalar values in shared memory
-                    uint count = 0;
-
+                    //valid/invalid outputs
+                    var isOutputValid = !float.IsNaN(output) && !float.IsInfinity(output) && !float.IsNegativeInfinity(output);
                     if (isOutputValid)
                     {
-                        Interlocked.Increment(ref count);
-                        MyInterlocked.Add(ref outputsMean, output);
+                        count++;
+                        outputsMean += output;
                     }
-                    barrier.SignalAndWait();
+                }
+                outputsMean /= count;
 
-                    //using first thread, divide the sum over the count ot get the average
-                    if (experiment == 0) outputsMean /= count;
-                    barrier.SignalAndWait();
+                //calculate score
+                var sums = new float[3];
+                count = 0;
+                for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
+                {
+                    var output = outputs[experiment];
+                    var correctOutput = _correctOutputs[experiment];
 
-                    //reset count, allocate sums and init them to zero
-                    var sums = new float[3];
-                    if (experiment == 0)
-                    {
-                        count = 0; //reset cound to now be used to count the number of valid/invalid mismatches
+                    //valid/invalid outputs
+                    var isOutputValid = !float.IsNaN(output) && !float.IsInfinity(output) && !float.IsNegativeInfinity(output);
+                    var isCorrectOutputValid = !float.IsNaN(correctOutput) && !float.IsInfinity(correctOutput) && !float.IsNegativeInfinity(correctOutput);
 
-                        //this is not needed but we keep it to match the kernel code
-                        sums[0] = 0;
-                        sums[1] = 0;
-                        sums[2] = 0;
-                    }
-
-                    //accumulate three sums across all threads in the block
                     if (isOutputValid && isCorrectOutputValid)
                     {
                         //if both output and correct output are valid
                         var outputDeltaVsMean = output - outputsMean;
                         var correctOutputDeltaVsMean = correctOutput - _correctOutputsMean; //TODO: make sure I can use _correctOutputsMean
-                        Atomic.Add(ref sums[0], outputDeltaVsMean * correctOutputDeltaVsMean);
-                        Atomic.Add(ref sums[1], outputDeltaVsMean * outputDeltaVsMean);
-                        Atomic.Add(ref sums[2], correctOutputDeltaVsMean * correctOutputDeltaVsMean);
+                        sums[0] += outputDeltaVsMean * correctOutputDeltaVsMean;
+                        sums[1] += outputDeltaVsMean * outputDeltaVsMean;
+                        sums[2] += correctOutputDeltaVsMean * correctOutputDeltaVsMean;
                     }
                     else
                     {
                         //if at least one of the outputs is invalid we end up here
                         //if outputs are different, we increment the counter, otherwise we do nothing
-                        if (isOutputValid ^ isCorrectOutputValid) Atomic.Add(ref count, 1); //XOR returns true if values are different
+                        if (isOutputValid ^ isCorrectOutputValid) count++; //XOR returns true if values are different
                     }
-                    barrier.SignalAndWait();
-
-                    //store R squared results for returning data from the Kernel
-                    if (Group.IsFirstThread)
-                    {
-                        var denominator = sums[1] * sums[2];
-                        float rSquared = 0;
-                        if (denominator != 0) rSquared = sums[0] * sums[0] / denominator;
-
-                        //r can range from 0 to 1
-                        //punishment is based on the percentage of mismatches, number of experiments cancels out
-                        score = (int)(BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration * rSquared) - BConfig.MaxScore * (int)count;
-                    }
-
                 }
-                else
+
+                var denominator = sums[1] * sums[2];
+                float rSquared = 0;
+                if (denominator != 0) rSquared = sums[0] * sums[0] / denominator;
+
+                //r can range from 0 to 1
+                //punishment is based on the percentage of mismatches, number of experiments cancels out
+                score = (int)(BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration * rSquared) - BConfig.MaxScore * (int)count;
+            }
+            else
+            {
+                for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
                 {
+                    var output = outputs[experiment];
+                    var correctOutput = _correctOutputs[experiment];
+
+                    //valid/invalid outputs
+                    var isOutputValid = !float.IsNaN(output) && !float.IsInfinity(output) && !float.IsNegativeInfinity(output);
+                    var isCorrectOutputValid = !float.IsNaN(correctOutput) && !float.IsInfinity(correctOutput) && !float.IsNegativeInfinity(correctOutput);
+
                     if (isOutputValid && isCorrectOutputValid) Interlocked.Add(ref score, fitFunc.FitFunction(output, correctOutput));
                     else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid));
                 }
-            });
+            }
 
             if (_shortestEverSatisfactoryOrganism.Score != score)
             {

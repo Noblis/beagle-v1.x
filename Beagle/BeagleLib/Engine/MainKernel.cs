@@ -44,7 +44,7 @@ public static class MainKernel
         //get correct output
         var correctOutput = correctOutputs[groupStart + experimentIdx];
 
-        //fit function plus script length adjustment
+        //valid/invalid outputs
         var isOutputValid = !float.IsNaN(output) && !float.IsInfinity(output) && !float.IsNegativeInfinity(output);
         var isCorrectOutputValid = !float.IsNaN(correctOutput) && !float.IsInfinity(correctOutput) && !float.IsNegativeInfinity(correctOutput);
 
