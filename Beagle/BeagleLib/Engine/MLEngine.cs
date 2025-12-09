@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime;
-using System.Runtime.CompilerServices;
-using BeagleLib.Agent;
+﻿using BeagleLib.Agent;
 using BeagleLib.Engine.FitFunc;
 using BeagleLib.MathStackLib;
 using BeagleLib.Util;
@@ -9,6 +6,9 @@ using BeagleLib.VM;
 using ILGPU;
 using ILGPU.Runtime;
 using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Runtime;
+using System.Runtime.CompilerServices;
 using WebMonk;
 
 namespace BeagleLib.Engine;
@@ -139,7 +139,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _accelerators[i].CorrectOutputs = _accelerators[i].Accelerator.Allocate1D<float>(MLSetup.Current.ExperimentsPerGeneration);
 
                 //_accelerators[i].Kernel = _accelerators[i].Accelerator.LoadStreamKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
-                _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
+                _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, float, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
             }
             #endregion
 
@@ -275,11 +275,36 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             //reset stuff for new generation
             _generationWatch.Restart();
 
-            //set up experiments (inputs and output)
-            Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
+            if (FitFunc.UseHardcodedCorrelationFit)
             {
-                (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
-            });
+                //set up experiments (inputs and output) and calculate correct outputs mean
+                float correctOutputsSum = 0;
+                int invalidCorrectOutputsCount = 0;
+                Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
+                {
+                    (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+                    if (!float.IsNaN(_correctOutputs[i]) && !float.IsInfinity(_correctOutputs[i]) && !float.IsNegativeInfinity(_correctOutputs[i]))
+                    {
+                        MyInterlocked.Add(ref correctOutputsSum, _correctOutputs[i]);
+                    }
+                    else
+                    {
+                        Interlocked.Increment(ref invalidCorrectOutputsCount);
+                    }
+
+                });
+                if (invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration) throw new Exception("invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration");
+                _correctOutputsMean = correctOutputsSum / MLSetup.Current.ExperimentsPerGeneration - invalidCorrectOutputsCount;
+            }
+            else
+            {
+                //set up experiments (inputs and output), set correct output mean to 0
+                Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
+                {
+                    (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+                    _correctOutputsMean = 0;
+                });
+            }
 
             //convert inputs to one long array
             Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
@@ -688,7 +713,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                             #region Copy stuff that changes to GPU
                             acceleratorScriptStarts.View.CopyFromCPU(stream, batchScriptStarts);
                             acceleratorAllCommands.View.CopyFromCPU(stream, batchAllCommands);
-                            acceleratorGrossRewards.View.MemSetToZero(stream);
+                            if (!FitFunc.UseHardcodedCorrelationFit) acceleratorGrossRewards.View.MemSetToZero(stream);
                             #endregion
 
                             #region Execute Kernel
@@ -698,7 +723,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration - groupStart);
                                 var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
 
-                                accelerator.Kernel(stream, launchDimension, useLibDevice, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, acceleratorGrossRewards.View, FitFunc);
+                                accelerator.Kernel(stream, launchDimension, useLibDevice, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, _correctOutputsMean, acceleratorGrossRewards.View, FitFunc);
                                 if (flashFileStream) Output.FlushFileStream();
                                 stream.Synchronize();
 
@@ -997,6 +1022,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly string[] _inputLabels;
     protected readonly float[][] _inputsArray;
     protected readonly float[] _correctOutputs;
+    protected float _correctOutputsMean;
     protected readonly float[] _allInputs;
 
     protected readonly int[] _taxedScorePercentiles;

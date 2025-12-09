@@ -16,6 +16,8 @@ public static class MainKernel
         ArrayView<float> allInputs,
         uint inputsCount,
         ArrayView<float> correctOutputs,
+        float correctOutputsMean,
+
         ArrayView<int> rewards,
         TFitFunc gpuMLSetup)
 
