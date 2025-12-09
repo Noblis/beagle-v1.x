@@ -321,7 +321,7 @@ public class Organism
     #region Diagnistics Helpers
     private void ReportInvalidScriptAndBreak()
     {
-        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.6: Invalid script copy detected on {Environment.MachineName}!", "", MailPriority.High);
+        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.7: Invalid script copy detected on {Environment.MachineName}!", "", MailPriority.High);
         Debugger.Break();
     }
     #endregion
