@@ -19,7 +19,7 @@ public static class MainKernel
         float correctOutputsMean,
 
         ArrayView<int> rewards,
-        TFitFunc gpuMLSetup)
+        TFitFunc fitFunc)
 
         where TFitFunc : struct, IFitFunc
     {
@@ -47,12 +47,73 @@ public static class MainKernel
         var isOutputValid = !float.IsNaN(output) && !float.IsInfinity(output) && !float.IsNegativeInfinity(output);
         var isCorrectOutputValid = !float.IsNaN(correctOutput) && !float.IsInfinity(correctOutput) && !float.IsNegativeInfinity(correctOutput);
 
-        int score;
-        if (isOutputValid && isCorrectOutputValid) score = gpuMLSetup.FitFunction(allInputs, (uint)(groupStart + experimentIdx*inputsCount), inputsCount, output, correctOutput);
-        else score = gpuMLSetup.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid);
+        if (fitFunc.UseHardcodedCorrelationFit)
+        {
+            //we first use this variable to calculate total, then divide by count to get the Mean
+            //this is one element array because we cannot allocate scalar values in shared memory
+            var outputsMean = SharedMemory.Allocate<float>(1);
 
-        //accumulate results
-        Atomic.Add(ref rewards[organismIdx], score);
+            //we first use this variable to keep the count of valid outputs, then to keep the count of misaligned invalid outputs
+            //this is one element array because we cannot allocate scalar values in shared memory
+            var count = SharedMemory.Allocate<uint>(1);
+
+            if (isOutputValid)
+            {
+                Atomic.Add(ref count[0], 1);
+                Atomic.Add(ref outputsMean[0], output);
+            }
+            Group.Barrier();
+
+            //using first thread, calculate average
+            if (Group.IsFirstThread)
+            {
+                
+                outputsMean[0] /= count[0]; //divide the sum over the count ot get the average
+                //TODO: when everything works, try to use /=
+                //outputsMean[0] = outputsMean[0] / count[0]; 
+            }
+            Group.Barrier();
+
+            //reset count, allocate sums and init them to zero
+            var sums = SharedMemory.Allocate<float>(3);
+            if (Group.IsFirstThread)
+            {
+                count[0] = 0; //reset cound to now be used to count the number of valid/invalid mismatches
+
+                sums[0] = 0;
+                sums[1] = 0;
+                sums[2] = 0;
+            }
+
+            //accumulate three sums across all threads in the block
+            if (isOutputValid && isCorrectOutputValid)
+            {
+                //if both output and correct output are valid
+                var outputDeltaVsMean = output - outputsMean[0];
+                var correctOutputDeltaVsMean = correctOutput - correctOutputsMean;
+                Atomic.Add(ref sums[0], outputDeltaVsMean * correctOutputDeltaVsMean);
+                Atomic.Add(ref sums[1], outputDeltaVsMean * outputDeltaVsMean);
+                Atomic.Add(ref sums[2], correctOutputDeltaVsMean * correctOutputDeltaVsMean);
+            }
+            else
+            {
+                //if at least one of the outputs is invalid we end up here
+                //if outputs are different, we increment the counter, otherwise we do nothing
+                if (isOutputValid ^ isCorrectOutputValid) Atomic.Add(ref count[0], 1); //XOR returns true if values are different
+            }
+            Group.Barrier();
+
+            //TODO: punish based on number of mismatches
+        }
+        else
+        {
+            int score;
+            if (isOutputValid && isCorrectOutputValid) score = fitFunc.FitFunction(allInputs, (uint)(groupStart + experimentIdx * inputsCount), inputsCount, output, correctOutput);
+            else score = fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid);
+
+            //accumulate results
+            Atomic.Add(ref rewards[organismIdx], score);
+        }
     }
     #endregion
 }
