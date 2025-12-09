@@ -1,6 +1,8 @@
 ﻿using BeagleLib.Engine.FitFunc;
+using BeagleLib.Util;
 using BeagleLib.VM;
 using ILGPU;
+using ILGPU.Runtime.Cuda;
 
 namespace BeagleLib.Engine;
 
@@ -64,14 +66,8 @@ public static class MainKernel
             }
             Group.Barrier();
 
-            //using first thread, calculate average
-            if (Group.IsFirstThread)
-            {
-                
-                outputsMean[0] /= count[0]; //divide the sum over the count ot get the average
-                //TODO: when everything works, try to use /=
-                //outputsMean[0] = outputsMean[0] / count[0]; 
-            }
+            //using first thread, divide the sum over the count ot get the average
+            if (Group.IsFirstThread) outputsMean[0] /= count[0]; 
             Group.Barrier();
 
             //reset count, allocate sums and init them to zero
@@ -103,7 +99,16 @@ public static class MainKernel
             }
             Group.Barrier();
 
-            //TODO: punish based on number of mismatches
+            //store R squared results for returning data from the Kernel
+            if (Group.IsFirstThread)
+            {
+                var denominator = sums[1] * sums[2];
+                float r = 0;
+                if (denominator != 0) r = sums[0] / LibDevice.Sqrt(denominator);
+
+                //TODO: punish based on number of mismatches
+                rewards[organismIdx] = (int)(BConfig.MaxScore * numberOfExperiments * r);
+            }
         }
         else
         {
