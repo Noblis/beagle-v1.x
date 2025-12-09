@@ -103,11 +103,12 @@ public static class MainKernel
             if (Group.IsFirstThread)
             {
                 var denominator = sums[1] * sums[2];
-                float r = 0;
-                if (denominator != 0) r = sums[0] / LibDevice.Sqrt(denominator);
+                float rSquared = 0;
+                if (denominator != 0) rSquared = sums[0] * sums[0] / denominator;
 
-                //TODO: punish based on number of mismatches
-                rewards[organismIdx] = (int)(BConfig.MaxScore * numberOfExperiments * r);
+                //r can range from 0 to 1
+                //punishment is based on the percentage of mismatches, number of experiments cancels out
+                rewards[organismIdx] = (int)(BConfig.MaxScore * numberOfExperiments * rSquared) - BConfig.MaxScore * (int)count[0];
             }
         }
         else
