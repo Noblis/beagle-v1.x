@@ -486,6 +486,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
                                 {
                                     var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+
+                                    #if DEBUG
+                                    if (idx >= _newbornOrganisms.Length)
+                                    {
+                                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.7: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+                                        Debugger.Break();
+                                    }
+                                    #endif
+                                    
                                     _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                                 }
 
