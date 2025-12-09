@@ -14,7 +14,7 @@
     </PackageReference>
     <PackageReference Include="Namotion.Reflection" Version="3.4.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="System.Collections.Immutable" Version="10.0.1" />
+    <PackageReference Include="System.Collections.Immutable" Version="9.0.9" />
   </ItemGroup>
 
   <ItemGroup>

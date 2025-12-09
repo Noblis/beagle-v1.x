@@ -2,6 +2,7 @@
 using BeagleLib.Util;
 using BeagleLib.VM;
 using ILGPU;
+using ILGPU.Runtime.Cuda;
 
 namespace BeagleLib.Engine;
 
