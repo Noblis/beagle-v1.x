@@ -383,7 +383,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (!ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mlEngineNotificationsHandler?.HandleMostAccurateEverOrganismUpdated(_mostAccurateEverOrganism!.CloneForExport(), (uint)_currentGeneration);
             if (_mlEngineNotificationsHandler?.Quit == true) return true;
 
-            //we add the most accurate ones again with probability of 5%. It means every 20 generations
+            //we add the most accurate ones again with probability of 5%. It means approximately every 20 generations
             if (Rnd.RandomBoolWithChance(0.05))
             {
                 for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)

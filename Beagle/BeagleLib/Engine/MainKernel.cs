@@ -57,7 +57,7 @@ public static class MainKernel
 
             //we first use this variable to keep the count of valid outputs, then to keep the count of misaligned invalid outputs
             //this is one element array because we cannot allocate scalar values in shared memory
-            var count = SharedMemory.Allocate<uint>(1);
+            var count = SharedMemory.Allocate<int>(1);
 
             if (isOutputValid)
             {
@@ -102,6 +102,7 @@ public static class MainKernel
             //store R squared results for returning data from the Kernel
             if (Group.IsFirstThread)
             {
+                int reward;
                 if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
                 {
                     var denominator = sums[1] * sums[2];
@@ -112,12 +113,13 @@ public static class MainKernel
 
                     //r can range from 0 to 1
                     //punishment is based on the percentage of mismatches, number of experiments cancels out
-                    rewards[organismIdx] = (int)(BConfig.MaxScore * numberOfExperiments * rSquared) - BConfig.MaxScore * (int)count[0];
+                    reward = (int)(BConfig.MaxScore * numberOfExperiments * rSquared) - BConfig.MaxScore * count[0];
                 }
                 else
                 {
-                    rewards[organismIdx] = (int)(-BConfig.MaxScore * numberOfExperiments);
+                    reward = (int)(-BConfig.MaxScore * numberOfExperiments);
                 }
+                rewards[organismIdx] = reward;
             }
         }
         else
