@@ -59,7 +59,7 @@ public static class MainKernel
             //this is one element array because we cannot allocate scalar values in shared memory
             var count = SharedMemory.Allocate<int>(1);
 
-            //allocate three sums
+            //allocate three sums, to be used later
             var sums = SharedMemory.Allocate<double>(3);
 
             if (isOutputValid)
