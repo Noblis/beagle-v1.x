@@ -697,10 +697,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid));
                 }
             }
-
-            var errorRatio = (double)Math.Abs(_shortestEverSatisfactoryOrganism.Score - score) / _shortestEverSatisfactoryOrganism.Score;
-            Console.WriteLine($"Error Ratio: {errorRatio}");
-            if (errorRatio >= 3.0E-06)
+            if (_shortestEverSatisfactoryOrganism.Score - score != 0)
             {
                 Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.7: Invalid shortest satisfactory organism score on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                 Debugger.Break();
