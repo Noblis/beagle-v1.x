@@ -292,7 +292,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 //Doing it this way (sequentially) is faster since float Interlocked does not exists
                 for (var i = 0; i < MLSetup.Current.ExperimentsPerGeneration; i++)
                 {
-                    if (!float.IsNaN(_correctOutputs[i]) && !float.IsInfinity(_correctOutputs[i]) && !float.IsNegativeInfinity(_correctOutputs[i]))
+                    if (_correctOutputs[i].IsValidNumber())
                     {
                         correctOutputsSum += _correctOutputs[i];
                     }
@@ -629,7 +629,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     var output = outputs[experiment];
 
                     //valid/invalid outputs
-                    var isOutputValid = !float.IsNaN(output) && !float.IsInfinity(output) && !float.IsNegativeInfinity(output);
+                    var isOutputValid = output.IsValidNumber();
                     if (isOutputValid)
                     {
                         count++;
@@ -647,8 +647,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     var correctOutput = _correctOutputs[experiment];
 
                     //valid/invalid outputs
-                    var isOutputValid = !float.IsNaN(output) && !float.IsInfinity(output) && !float.IsNegativeInfinity(output);
-                    var isCorrectOutputValid = !float.IsNaN(correctOutput) && !float.IsInfinity(correctOutput) && !float.IsNegativeInfinity(correctOutput);
+                    var isOutputValid = output.IsValidNumber();
+                    var isCorrectOutputValid = correctOutput.IsValidNumber();
 
                     if (isOutputValid && isCorrectOutputValid)
                     {
@@ -683,8 +683,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     var correctOutput = _correctOutputs[experiment];
 
                     //valid/invalid outputs
-                    var isOutputValid = !float.IsNaN(output) && !float.IsInfinity(output) && !float.IsNegativeInfinity(output);
-                    var isCorrectOutputValid = !float.IsNaN(correctOutput) && !float.IsInfinity(correctOutput) && !float.IsNegativeInfinity(correctOutput);
+                    var isOutputValid = output.IsValidNumber();
+                    var isCorrectOutputValid = correctOutput.IsValidNumber();
 
                     if (isOutputValid && isCorrectOutputValid) Interlocked.Add(ref score, fitFunc.FitFunction(output, correctOutput));
                     else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid));

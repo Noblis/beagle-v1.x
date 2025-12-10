@@ -46,14 +46,14 @@ public static class MainKernel
         var correctOutput = correctOutputs[groupStart + experimentIdx];
 
         //valid/invalid outputs
-        var isOutputValid = !float.IsNaN(output) && !float.IsInfinity(output) && !float.IsNegativeInfinity(output);
-        var isCorrectOutputValid = !float.IsNaN(correctOutput) && !float.IsInfinity(correctOutput) && !float.IsNegativeInfinity(correctOutput);
+        var isOutputValid = output.IsValidNumber();
+        var isCorrectOutputValid = correctOutput.IsValidNumber();
 
         if (fitFunc.UseHardcodedCorrelationFit)
         {
             //we first use this variable to calculate total, then divide by count to get the Mean
             //this is one element array because we cannot allocate scalar values in shared memory
-            var outputsMean = SharedMemory.Allocate<float>(1);
+            var outputsMean = SharedMemory.Allocate<double>(1);
 
             //we first use this variable to keep the count of valid outputs, then to keep the count of misaligned invalid outputs
             //this is one element array because we cannot allocate scalar values in shared memory
@@ -71,7 +71,7 @@ public static class MainKernel
             Group.Barrier();
 
             //reset count, allocate sums and init them to zero
-            var sums = SharedMemory.Allocate<float>(3);
+            var sums = SharedMemory.Allocate<double>(3);
             if (Group.IsFirstThread)
             {
                 count[0] = 0; //reset cound to now be used to count the number of valid/invalid mismatches
@@ -102,9 +102,11 @@ public static class MainKernel
             //store R squared results for returning data from the Kernel
             if (Group.IsFirstThread)
             {
+                if ()
+                
                 var denominator = sums[1] * sums[2];
                 float rSquared = 0;
-                if (denominator != 0) rSquared = sums[0] * sums[0] / denominator;
+                if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
 
                 Debug.Assert(rSquared is <= 1 and >= 0);
 
