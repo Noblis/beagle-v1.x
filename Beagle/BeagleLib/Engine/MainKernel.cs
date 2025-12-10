@@ -59,6 +59,9 @@ public static class MainKernel
             //this is one element array because we cannot allocate scalar values in shared memory
             var count = SharedMemory.Allocate<int>(1);
 
+            //allocate three sums
+            var sums = SharedMemory.Allocate<double>(3);
+
             if (isOutputValid)
             {
                 Atomic.Add(ref count[0], 1);
@@ -66,20 +69,18 @@ public static class MainKernel
             }
             Group.Barrier();
 
-            //using first thread, divide the sum over the count ot get the average
-            if (Group.IsFirstThread) outputsMean[0] /= count[0]; 
-            Group.Barrier();
-
-            //reset count, allocate sums and init them to zero
-            var sums = SharedMemory.Allocate<double>(3);
+            //using first thread, divide the sum over the count ot get the average, reset count, allocate sums and init them to zero
             if (Group.IsFirstThread)
             {
+                outputsMean[0] /= count[0];
+
                 count[0] = 0; //reset cound to now be used to count the number of valid/invalid mismatches
 
                 sums[0] = 0;
                 sums[1] = 0;
                 sums[2] = 0;
             }
+            Group.Barrier();
 
             //accumulate three sums across all threads in the block
             if (isOutputValid && isCorrectOutputValid)
