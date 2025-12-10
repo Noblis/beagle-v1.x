@@ -102,17 +102,22 @@ public static class MainKernel
             //store R squared results for returning data from the Kernel
             if (Group.IsFirstThread)
             {
-                if ()
-                
-                var denominator = sums[1] * sums[2];
-                float rSquared = 0;
-                if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
+                if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
+                {
+                    var denominator = sums[1] * sums[2];
+                    float rSquared = 0;
+                    if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
 
-                Debug.Assert(rSquared is <= 1 and >= 0);
+                    Debug.Assert(rSquared is <= 1 and >= 0);
 
-                //r can range from 0 to 1
-                //punishment is based on the percentage of mismatches, number of experiments cancels out
-                rewards[organismIdx] = (int)(BConfig.MaxScore * numberOfExperiments * rSquared) - BConfig.MaxScore * (int)count[0];
+                    //r can range from 0 to 1
+                    //punishment is based on the percentage of mismatches, number of experiments cancels out
+                    rewards[organismIdx] = (int)(BConfig.MaxScore * numberOfExperiments * rSquared) - BConfig.MaxScore * (int)count[0];
+                }
+                else
+                {
+                    rewards[organismIdx] = (int)(-BConfig.MaxScore * numberOfExperiments);
+                }
             }
         }
         else

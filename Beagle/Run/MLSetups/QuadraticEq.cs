@@ -8,9 +8,9 @@ public class QuadraticEq : MLSetup
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
     {
-        var a = Rnd.Random.NextSingle()*20 - 10;
-        var b = Rnd.Random.NextSingle()*20 - 10;
-        var c = Rnd.Random.NextSingle()*20 - 10;
+        var a = Rnd.Random.NextSingle()*200 - 100;
+        var b = Rnd.Random.NextSingle()*200 - 100;
+        var c = Rnd.Random.NextSingle()*200 - 100;
         inputs[0] = a;
         inputs[1] = b;
         inputs[2] = c;
@@ -22,10 +22,10 @@ public class QuadraticEq : MLSetup
         return ["a", "b", "c"];
     }
 
-    public override int TargetColonySize(int generation)
-    {
-        return 1000;
-    }
+    //public override int TargetColonySize(int generation)
+    //{
+    //    return 100;
+    //}
 
     public override double SolutionFoundASRThreshold => 1.0;
 

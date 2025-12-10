@@ -622,7 +622,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (fitFunc.UseHardcodedCorrelationFit)
             {
                 //calculate output mean
-                float outputsMean = 0;
+                double outputsMean = 0;
                 uint count = 0;
                 for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
                 {
@@ -639,7 +639,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 outputsMean /= count;
 
                 //calculate score
-                var sums = new float[3];
+                var sums = new double[3];
                 count = 0;
                 for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
                 {
@@ -667,13 +667,20 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                 }
 
-                var denominator = sums[1] * sums[2];
-                float rSquared = 0;
-                if (denominator != 0) rSquared = sums[0] * sums[0] / denominator;
+                if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
+                {
+                    var denominator = sums[1] * sums[2];
+                    float rSquared = 0;
+                    if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
 
-                //r can range from 0 to 1
-                //punishment is based on the percentage of mismatches, number of experiments cancels out
-                score = (int)(BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration * rSquared) - BConfig.MaxScore * (int)count;
+                    //r can range from 0 to 1
+                    //punishment is based on the percentage of mismatches, number of experiments cancels out
+                    score = (int)(BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration * rSquared) - BConfig.MaxScore * (int)count;
+                }
+                else
+                {
+                    score = (int)(-BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration);
+                }
             }
             else
             {
