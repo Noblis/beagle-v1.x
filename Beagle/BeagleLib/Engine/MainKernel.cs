@@ -1,4 +1,5 @@
-﻿using BeagleLib.Engine.FitFunc;
+﻿using System.Diagnostics;
+using BeagleLib.Engine.FitFunc;
 using BeagleLib.Util;
 using BeagleLib.VM;
 using ILGPU;
@@ -104,6 +105,8 @@ public static class MainKernel
                 var denominator = sums[1] * sums[2];
                 float rSquared = 0;
                 if (denominator != 0) rSquared = sums[0] * sums[0] / denominator;
+
+                Debug.Assert(rSquared is <= 1 and >= 0);
 
                 //r can range from 0 to 1
                 //punishment is based on the percentage of mismatches, number of experiments cancels out
