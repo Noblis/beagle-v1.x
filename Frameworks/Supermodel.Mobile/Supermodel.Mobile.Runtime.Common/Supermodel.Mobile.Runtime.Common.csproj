@@ -10,7 +10,6 @@
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
     <PackageReference Include="Validation" Version="2.6.68" />
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2662" />
-    <PackageReference Include="Xam.Plugin.Media" Version="6.0.2" />
   </ItemGroup>
 
   <ItemGroup>
