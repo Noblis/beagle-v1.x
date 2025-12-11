@@ -388,20 +388,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Output.WriteLine("Resetting the colony fresh...");
                 Console.ResetColor();
 
-                //set up the new "begging of times"
+                //set up the new "beginning of times"
                 _generationAtLastColonyReset = _currentGeneration;
-
-                //save _mostAccurateOrganismSinceLastColonyReset if needed
-                for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
-                {
-                    if (_mostAccurateOrganismsSinceLastColonyReset[i] != null &&
-                        !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[i], _mostAccurateEverOrganism) &&
-                        !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[i], _shortestEverSatisfactoryOrganism))
-                    {
-                        Organism.SaveOrganismToDeadPool(_mostAccurateOrganismsSinceLastColonyReset[i]!);
-                    }
-                    _mostAccurateOrganismsSinceLastColonyReset[i] = null;
-                }
 
                 //kill all current organisms
                 Parallel.For(0, _organismsCount, i =>
@@ -414,9 +402,21 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
                     {
                         Organism.SaveOrganismToDeadPool(organism);
-                        _organisms[i] = null;
                     }
+                    _organisms[i] = null;
                 });
+
+                //kill _mostAccurateOrganismSinceLastColonyReset
+                for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+                {
+                    if (_mostAccurateOrganismsSinceLastColonyReset[i] != null &&
+                        !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[i], _mostAccurateEverOrganism) &&
+                        !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[i], _shortestEverSatisfactoryOrganism))
+                    {
+                        Organism.SaveOrganismToDeadPool(_mostAccurateOrganismsSinceLastColonyReset[i]!);
+                    }
+                    _mostAccurateOrganismsSinceLastColonyReset[i] = null;
+                }
 
                 //Create new organisms in multithreaded fashion. we always begin with the initial number of organisms - TargetColonySize(0)
                 _newbornOrganismsCount = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
@@ -470,8 +470,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
                     {
                         Organism.SaveOrganismToDeadPool(organism);
-                        _organisms[i] = null;
                     }
+                    _organisms[i] = null;
                 });
                 _newbornOrganismsCount++;
             }
