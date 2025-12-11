@@ -8,7 +8,7 @@ public class AreaOfCircle : MLSetup
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
     {
-        var r = Rnd.Random.NextSingle() * 1000;
+        var r = Rnd.Random.NextSingle() * 25;
         inputs[0] = r;
         return (inputs, r*r*MathF.PI);
     }
