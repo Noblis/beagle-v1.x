@@ -14,12 +14,13 @@ public class Organism
 {
     #region Constructors
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Organism CreateByRandomLoadOrConstCommandThenMutate(byte inputsCount, OpEnum[] allowedOperations, int allowedAdjunctOperationsCount)
+    public static Organism CreateByRandomLoadCommandThenMutate(byte inputsCount, OpEnum[] allowedOperations, int allowedAdjunctOperationsCount)
     {
         Span<Command> mutationCommands = stackalloc Command[BConfig.MaxScriptLength];
         var mutationCommandsLength = 0;
 
-        mutationCommands.Add(ref mutationCommandsLength, Command.CreateRandomLoadOrConst(inputsCount));
+        mutationCommands.Add(ref mutationCommandsLength, Command.CreateRandomLoad(inputsCount));
+        //mutationCommands.Add(ref mutationCommandsLength, Command.CreateRandomLoadOrConst(inputsCount));
         mutationCommands.Mutate(ref mutationCommandsLength, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
         var result = CreateByCopyingCommandsFromPartOfSpan(mutationCommands, mutationCommandsLength);
 

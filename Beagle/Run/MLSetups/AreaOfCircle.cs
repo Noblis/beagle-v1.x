@@ -24,10 +24,10 @@ public class AreaOfCircle : MLSetup
         // ReSharper disable once DuplicatedStatements
         //if (generation == 0) return 1_000_000;
 
-        return 50;
+        return 500_000;
     }
 
-    public override long TotalBirthsToResetColonyIfNoProgress => 200;
+    public override long TotalBirthsToResetColonyIfNoProgress => 2_000_000;
 
     public override double SolutionFoundASRThreshold => 1.0;
     public override bool KeepOptimizingAfterSolutionFound => true;

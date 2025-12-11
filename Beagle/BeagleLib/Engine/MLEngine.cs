@@ -155,11 +155,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
-                //Create new organisms in multi-threaded fashion
+                //Create new organisms in multithreaded fashion
                 _organismsCount = MLSetup.Current.TargetColonySize(0);
                 Parallel.For(0, _organismsCount, i =>
                 {
-                    var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    var newOrganism = Organism.CreateByRandomLoadCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                     _organisms[i] = newOrganism;
                 });
             }
@@ -419,6 +419,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             {
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Output.WriteLine("Resetting the colony fresh...");
+                Output.WriteLine();
                 Console.ResetColor();
 
                 //set up the new "begging of times"
@@ -451,11 +452,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _mostAccurateOrganismsSinceLastColonyReset[i] = null;
                 }
 
-                //Create new organisms in multithreaded fashion. we always begin with the initial number of organisms - TargetColonySize(0)
+                //Create new organisms in multithreaded fashion. We always begin with the initial number of organisms - TargetColonySize(0)
                 _newbornOrganismsCount = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 Parallel.For(0, _newbornOrganismsCount, i =>
                 {
-                    _newbornOrganisms[i] = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    var newOrganism = Organism.CreateByRandomLoadCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    _newbornOrganisms[i] = newOrganism;
                 });
             }
             else
