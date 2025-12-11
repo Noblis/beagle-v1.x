@@ -90,11 +90,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (Environment.GetEnvironmentVariable("CUDA_PATH") != null && !forceCPUAccelerator)
             {
                 //https://github.com/m4rs-mt/ILGPU/pull/707
-                _context = Context.Create(builder => builder.Default().LibDevice().EnableAlgorithms()); //TODO: delete
+                _context = Context.Create(builder => builder.Default().LibDevice().EnableAlgorithms()); 
             }
             else
             {
-                _context = Context.Create(builder => builder.Default().EnableAlgorithms()); //TODO: delete
+                _context = Context.Create(builder => builder.Default().EnableAlgorithms());
             }
 
             //Get CUDA devices. If CUDA device does not exist, OpenCL devices, otherwise CPU device
@@ -159,8 +159,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     var newOrganism = Organism.CreateByRandomLoadCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                     _organisms[i] = newOrganism;
                 });
-
-                _organisms[0] = Organism.CreateFromCommands(new Command(OpEnum.Load, 0), new Command(OpEnum.Square));
             }
             Output.WriteLine();
             #endregion
@@ -362,14 +360,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         #endregion
 
         #region update most accurate & shortest satisfactory organisms
-        //TODO: delete
-        var maxScore = _organisms.Max(x => x?.Score ?? int.MinValue);
-        var winnerOrganism = _organisms.FirstOrDefault(x => x != null && x.Commands.Length == 2 && x.Commands[0].Operation == OpEnum.Load && x.Commands[1].Operation == OpEnum.Square);
-        if (winnerOrganism != null && maxScore != BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration)
-        {
-            Debugger.Break();
-        }
-
         var oldShortestEverSatisfactoryOrganism = _shortestEverSatisfactoryOrganism;
         using (new ConsoleTimer("update most accurate & shortest satisfactory organisms", _showProfilingInfo))
         {
@@ -463,17 +453,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _newbornOrganismsCount = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 Parallel.For(0, _newbornOrganismsCount, i =>
                 {
-                    //TODO: delete
-                    if (i == 0)
-                    {
-                        var newOrganism = Organism.CreateFromCommands(new Command(OpEnum.Load, 0), new Command(OpEnum.Square));
-                        _newbornOrganisms[i] = newOrganism;
-                    }
-                    else
-                    {
-                        var newOrganism = Organism.CreateByRandomLoadCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
-                        _newbornOrganisms[i] = newOrganism;
-                    }
+                    var newOrganism = Organism.CreateByRandomLoadCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    _newbornOrganisms[i] = newOrganism;
                 });
             }
             else
@@ -534,9 +515,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _organisms[i] = null;
                 });
                 _newbornOrganismsCount++;
-
-                //TODO: delete
-                _newbornOrganisms[0] = Organism.CreateFromCommands(new Command(OpEnum.Load, 0), new Command(OpEnum.Square));
             }
 
             _totalBirths += _newbornOrganismsCount;
@@ -675,7 +653,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     {
                         //if both output and correct output are valid
                         var outputDeltaVsMean = output - outputsMean;
-                        var correctOutputDeltaVsMean = correctOutput - _correctOutputsMean; //TODO: make sure I can use _correctOutputsMean
+                        var correctOutputDeltaVsMean = correctOutput - _correctOutputsMean;
                         sums[0] += outputDeltaVsMean * correctOutputDeltaVsMean;
                         sums[1] += outputDeltaVsMean * outputDeltaVsMean;
                         sums[2] += correctOutputDeltaVsMean * correctOutputDeltaVsMean;

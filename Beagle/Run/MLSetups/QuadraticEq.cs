@@ -22,10 +22,11 @@ public class QuadraticEq : MLSetup
         return ["a", "b", "c"];
     }
 
-    //public override int TargetColonySize(int generation)
-    //{
-    //    return 100;
-    //}
+    public override int TargetColonySize(int generation)
+    {
+        if (generation % 1500 < 20) return 5_000_000;
+        return 500_000;
+    }
 
     public override double SolutionFoundASRThreshold => 1.0;
 

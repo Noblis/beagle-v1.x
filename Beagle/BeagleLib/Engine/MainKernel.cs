@@ -84,13 +84,6 @@ public static class MainKernel
             if (Group.IsFirstThread)
             {
                 outputsMean[0] /= count[0];
-
-                if (organismIdx == 0)
-                {
-                    Interop.WriteLine("Commands (Len = {0}): {1} {2}", commands.IntLength, commands[0].Operation, commands[1].Operation);
-                    Interop.WriteLine("outputsMean[0]={0}, count[0]={1}", outputsMean[0], count[0]);
-                }
-
                 count[0] = 0; //reset cound to now be used to count the number of valid/invalid mismatches
             }
             Group.Barrier();
@@ -116,11 +109,6 @@ public static class MainKernel
             //store R squared results for returning data from the Kernel
             if (Group.IsFirstThread)
             {
-                if (organismIdx == 0)
-                {
-                    Interop.WriteLine("sums[0]={0}, sums[1]={1}, sums[2]={2}", sums[0], sums[1], sums[2]);
-                }
-
                 int reward;
                 if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
                 {
