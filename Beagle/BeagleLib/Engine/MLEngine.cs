@@ -353,6 +353,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         {
             Parallel.For(0, _organismsCount, i =>
             {
+                Debug.Assert(Math.Abs(_scores[i]) <= BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration);
+                
                 _organisms[i]!.Score = _scores[i];
                 _organisms[i]!.TaxedScore = _scores[i] - MLSetup.Current.CalcScriptLengthTax(_organisms[i]!.Commands.Length);
             });
