@@ -364,6 +364,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         if (_mostAccurateOrganismsSinceLastColonyReset[0]?.Score <= -BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration)
         {
             var maxScore = _organisms.Max(x => x?.Score ?? int.MinValue);
+            var winnerOrganism = _organisms.FirstOrDefault(x => x != null && x.Commands.Length == 2 && x.Commands[0].Operation == OpEnum.Load && x.Commands[1].Operation == OpEnum.Square);
             Debugger.Break();
         }
         
