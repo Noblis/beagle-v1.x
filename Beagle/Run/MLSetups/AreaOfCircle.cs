@@ -17,17 +17,17 @@ public class AreaOfCircle : MLSetup
         return ["r"];
     }
 
-    public override uint ExperimentsPerGeneration => 1024;
+    public override uint ExperimentsPerGeneration => 512;
 
     public override int TargetColonySize(int generation)
     {
         // ReSharper disable once DuplicatedStatements
         //if (generation == 0) return 1_000_000;
 
-        return 1_000_000;
+        return 500_000;
     }
 
-    public override long TotalBirthsToResetColonyIfNoProgress => 100_000_000;
+    public override long TotalBirthsToResetColonyIfNoProgress => 10_000_000;
 
     public override double SolutionFoundASRThreshold => 1.0;
     public override bool KeepOptimizingAfterSolutionFound => true;
