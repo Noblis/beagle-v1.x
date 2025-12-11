@@ -624,7 +624,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             {
                 //calculate output mean
                 double outputsMean = 0;
-                uint count = 0;
+                int count0 = 0;
+                int count1 = 0;
                 for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
                 {
                     var output = outputs[experiment];
@@ -633,15 +634,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     var isOutputValid = output.IsValidNumber();
                     if (isOutputValid)
                     {
-                        count++;
+                        count0++;
                         outputsMean += output;
                     }
                 }
-                outputsMean /= count;
+                outputsMean /= count0;
 
                 //calculate score
                 var sums = new double[3];
-                count = 0;
+                count0 = 0;
                 for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
                 {
                     var output = outputs[experiment];
@@ -662,9 +663,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                     else
                     {
-                        //if at least one of the outputs is invalid we end up here
-                        //if outputs are different, we increment the counter, otherwise we do nothing
-                        if (isOutputValid ^ isCorrectOutputValid) count++; //XOR returns true if values are different
+                        //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
+                        if (isOutputValid ^ isCorrectOutputValid) count0++; //if they are different
+                        else count1++; //if they are the same
                     }
                 }
 
@@ -676,7 +677,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                     //r can range from 0 to 1
                     //punishment is based on the percentage of mismatches, number of experiments cancels out
-                    score = (int)(BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration * rSquared) - BConfig.MaxScore * (int)count;
+                    score = (int)(BConfig.MaxScore * (MLSetup.Current.ExperimentsPerGeneration - count0 - count1) * rSquared) - BConfig.MaxScore * (count0 - count1);
                 }
                 else
                 {
