@@ -102,7 +102,10 @@ public static class MainKernel
             {
                 //if at least one of the outputs is invalid we end up here
                 //if outputs are different, we increment the counter, otherwise we do nothing
-                if (isOutputValid ^ isCorrectOutputValid) Atomic.Add(ref count[0], 1); //XOR returns true if values are different
+                if (isOutputValid ^ isCorrectOutputValid)
+                {
+                    Atomic.Add(ref count[0], 1); //XOR returns true if values are different
+                }
             }
             Group.Barrier();
 
