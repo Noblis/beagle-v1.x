@@ -419,7 +419,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Output.WriteLine();
                 Console.ResetColor();
 
-                //set up the new "begging of times"
+                //set up the new "beginning of times"
                 _generationAtLastColonyReset = _currentGeneration;
 
                 //kill all current organisms
