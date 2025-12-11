@@ -360,7 +360,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         #endregion
 
         #region update most accurate & shortest satisfactory organisms
-        if (_mostAccurateOrganismsSinceLastColonyReset[0]?.Commands[0].Operation == OpEnum.Const) Debugger.Break(); //TODO: delete
+        //TODO: delete
+        if (_mostAccurateOrganismsSinceLastColonyReset[0]?.Score <= -BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration)
+        {
+            var maxScore = _organisms.Max(x => x?.Score ?? int.MinValue);
+            Debugger.Break();
+        }
         
         var oldShortestEverSatisfactoryOrganism = _shortestEverSatisfactoryOrganism;
         using (new ConsoleTimer("update most accurate & shortest satisfactory organisms", _showProfilingInfo))
