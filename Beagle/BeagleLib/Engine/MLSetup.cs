@@ -54,11 +54,11 @@ public abstract class MLSetup
             if (!_organismArraySize.HasValue)
             {
                 int max = 0;
-                for (var i = 0; i < 1000000; i++)
+                for (var i = 0; i < 10_000_000; i++)
                 {
                     if (TargetColonySize(i) > max) max = TargetColonySize(i);
                 }
-                _organismArraySize = checked(max * 2);
+                _organismArraySize = checked(max * 4);
             }
             return _organismArraySize.Value;
         }

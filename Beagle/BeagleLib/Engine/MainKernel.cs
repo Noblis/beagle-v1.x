@@ -59,6 +59,9 @@ public static class MainKernel
             //this is one element array because we cannot allocate scalar values in shared memory
             var count = SharedMemory.Allocate<int>(1);
 
+            //allocate three sums, to be used later
+            var sums = SharedMemory.Allocate<double>(3);
+
             if (isOutputValid)
             {
                 Atomic.Add(ref count[0], 1);
@@ -66,20 +69,18 @@ public static class MainKernel
             }
             Group.Barrier();
 
-            //using first thread, divide the sum over the count ot get the average
-            if (Group.IsFirstThread) outputsMean[0] /= count[0]; 
-            Group.Barrier();
-
-            //reset count, allocate sums and init them to zero
-            var sums = SharedMemory.Allocate<double>(3);
+            //using first thread, divide the sum over the count ot get the average, reset count, allocate sums and init them to zero
             if (Group.IsFirstThread)
             {
+                outputsMean[0] /= count[0];
+
                 count[0] = 0; //reset cound to now be used to count the number of valid/invalid mismatches
 
                 sums[0] = 0;
                 sums[1] = 0;
                 sums[2] = 0;
             }
+            Group.Barrier();
 
             //accumulate three sums across all threads in the block
             if (isOutputValid && isCorrectOutputValid)
@@ -106,10 +107,12 @@ public static class MainKernel
                 if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
                 {
                     var denominator = sums[1] * sums[2];
-                    float rSquared = 0;
-                    if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
-
-                    Debug.Assert(rSquared is <= 1 and >= 0);
+                    float rSquared = -1;
+                    if (denominator != 0)
+                    {
+                        rSquared = (float)(sums[0] * sums[0] / denominator);
+                        Debug.Assert(rSquared is <= 1 and >= 0);
+                    }
 
                     //r can range from 0 to 1
                     //punishment is based on the percentage of mismatches, number of experiments cancels out
