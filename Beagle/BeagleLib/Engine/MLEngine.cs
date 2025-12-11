@@ -90,11 +90,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (Environment.GetEnvironmentVariable("CUDA_PATH") != null && !forceCPUAccelerator)
             {
                 //https://github.com/m4rs-mt/ILGPU/pull/707
-                _context = Context.Create(builder => builder.Default().LibDevice().EnableAlgorithms()); 
+                _context = Context.Create(builder => builder.Default().LibDevice().EnableAlgorithms()); //TODO: delete
             }
             else
             {
-                _context = Context.Create(builder => builder.Default().EnableAlgorithms());
+                _context = Context.Create(builder => builder.Default().EnableAlgorithms()); //TODO: delete
             }
 
             //Get CUDA devices. If CUDA device does not exist, OpenCL devices, otherwise CPU device
@@ -159,6 +159,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     var newOrganism = Organism.CreateByRandomLoadCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                     _organisms[i] = newOrganism;
                 });
+
+                _organisms[0] = Organism.CreateFromCommands(new Command(OpEnum.Load, 0), new Command(OpEnum.Square));
             }
             Output.WriteLine();
             #endregion
@@ -461,8 +463,17 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _newbornOrganismsCount = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 Parallel.For(0, _newbornOrganismsCount, i =>
                 {
-                    var newOrganism = Organism.CreateByRandomLoadCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
-                    _newbornOrganisms[i] = newOrganism;
+                    //TODO: delete
+                    if (i == 0)
+                    {
+                        var newOrganism = Organism.CreateFromCommands(new Command(OpEnum.Load, 0), new Command(OpEnum.Square));
+                        _newbornOrganisms[i] = newOrganism;
+                    }
+                    else
+                    {
+                        var newOrganism = Organism.CreateByRandomLoadCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                        _newbornOrganisms[i] = newOrganism;
+                    }
                 });
             }
             else
@@ -523,6 +534,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _organisms[i] = null;
                 });
                 _newbornOrganismsCount++;
+
+                //TODO: delete
+                _newbornOrganisms[0] = Organism.CreateFromCommands(new Command(OpEnum.Load, 0), new Command(OpEnum.Square));
             }
 
             _totalBirths += _newbornOrganismsCount;
