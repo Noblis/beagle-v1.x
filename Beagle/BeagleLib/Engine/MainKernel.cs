@@ -57,7 +57,9 @@ public static class MainKernel
 
             //we first use this variable to keep the count of valid outputs, then to keep the count of misaligned invalid outputs
             //this is one element array because we cannot allocate scalar values in shared memory
-            var count = SharedMemory.Allocate<int>(1);
+
+            //we use the second count to count the number of invalid/invalid matches
+            var count = SharedMemory.Allocate<int>(2);
 
             //allocate three sums, to be used later
             var sums = SharedMemory.Allocate<double>(3);
@@ -67,6 +69,7 @@ public static class MainKernel
             {
                 outputsMean[0] = 0;
                 count[0] = 0;
+                count[1] = 0; //set count1 to zero, we count invalid/invalid matches
                 sums[0] = 0;
                 sums[1] = 0;
                 sums[2] = 0;
@@ -84,7 +87,7 @@ public static class MainKernel
             if (Group.IsFirstThread)
             {
                 outputsMean[0] /= count[0];
-                count[0] = 0; //reset cound to now be used to count the number of valid/invalid mismatches
+                count[0] = 0; //reset count0 to now be used to count the number of valid/invalid & invalid/valid mismatches
             }
             Group.Barrier();
 
@@ -100,12 +103,9 @@ public static class MainKernel
             }
             else
             {
-                //if at least one of the outputs is invalid we end up here
-                //if outputs are different, we increment the counter, otherwise we do nothing
-                if (isOutputValid ^ isCorrectOutputValid)
-                {
-                    Atomic.Add(ref count[0], 1); //XOR returns true if values are different
-                }
+                //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
+                if (isOutputValid ^ isCorrectOutputValid) Atomic.Add(ref count[0], 1); //if they are different
+                else Atomic.Add(ref count[1], 1); //if they are the same
             }
             Group.Barrier();
 
@@ -125,7 +125,7 @@ public static class MainKernel
 
                     //r can range from 0 to 1
                     //punishment is based on the percentage of mismatches, number of experiments cancels out
-                    reward = (int)(BConfig.MaxScore * numberOfExperiments * rSquared) - BConfig.MaxScore * count[0];
+                    reward = (int)(BConfig.MaxScore * (numberOfExperiments - count[0] - count[1]) * rSquared) - BConfig.MaxScore * (count[0] - count[1]);
                 }
                 else
                 {
