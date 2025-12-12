@@ -18,8 +18,6 @@ public static class MainKernel
         ArrayView<float> allInputs,
         uint inputsCount,
         ArrayView<float> correctOutputs,
-        float correctOutputsMean,
-        double sum2,
 
         ArrayView<int> rewards,
         TFitFunc fitFunc)
@@ -54,7 +52,8 @@ public static class MainKernel
         {
             //we first use this variable to calculate total, then divide by count to get the Mean
             //this is one element array because we cannot allocate scalar values in shared memory
-            var outputsMean = SharedMemory.Allocate<double>(1);
+            //0 is output, 1 is correct output mean
+            var outputsMean = SharedMemory.Allocate<double>(2);
 
             //we first use this variable to keep the count of valid outputs, then to keep the count of misaligned invalid outputs
             //this is one element array because we cannot allocate scalar values in shared memory
@@ -63,31 +62,40 @@ public static class MainKernel
             var count = SharedMemory.Allocate<int>(2);
 
             //allocate three sums, to be used later
-            var sums = SharedMemory.Allocate<double>(2);
+            var sums = SharedMemory.Allocate<double>(3);
 
             //set all to zero
             if (Group.IsFirstThread)
             {
                 outputsMean[0] = 0;
+                outputsMean[1] = 0;
+
                 count[0] = 0;
                 count[1] = 0; //set count1 to zero, we count invalid/invalid matches
+
                 sums[0] = 0;
                 sums[1] = 0;
-                //sums[2] = 0;
+                sums[2] = 0;
             }
             Group.Barrier();
 
-            if (isOutputValid)
+            if (isOutputValid && isCorrectOutputValid)
             {
                 Atomic.Add(ref count[0], 1);
                 Atomic.Add(ref outputsMean[0], output);
+                Atomic.Add(ref outputsMean[1], correctOutput);
             }
             Group.Barrier();
 
             //using first thread, divide the sum over the count ot get the average, reset count, allocate sums and init them to zero
             if (Group.IsFirstThread)
             {
-                outputsMean[0] /= count[0];
+                if (count[0] != 0)
+                {
+                    outputsMean[0] /= count[0];
+                    outputsMean[1] /= count[0];
+                }
+
                 count[0] = 0; //reset count0 to now be used to count the number of valid/invalid & invalid/valid mismatches
             }
             Group.Barrier();
@@ -97,10 +105,10 @@ public static class MainKernel
             {
                 //if both output and correct output are valid
                 var outputDeltaVsMean = output - outputsMean[0];
-                var correctOutputDeltaVsMean = correctOutput - correctOutputsMean;
+                var correctOutputDeltaVsMean = correctOutput - outputsMean[1];
                 Atomic.Add(ref sums[0], outputDeltaVsMean * correctOutputDeltaVsMean);
                 Atomic.Add(ref sums[1], outputDeltaVsMean * outputDeltaVsMean);
-                //Atomic.Add(ref sums[2], correctOutputDeltaVsMean * correctOutputDeltaVsMean);
+                Atomic.Add(ref sums[2], correctOutputDeltaVsMean * correctOutputDeltaVsMean);
             }
             else
             {
@@ -114,9 +122,9 @@ public static class MainKernel
             if (Group.IsFirstThread)
             {
                 int score;
-                if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sum2.IsValidNumber())
+                if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
                 {
-                    var denominator = sums[1] * sum2;
+                    var denominator = sums[1] * sums[2];
                     float rSquared = 0;
                     if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
 

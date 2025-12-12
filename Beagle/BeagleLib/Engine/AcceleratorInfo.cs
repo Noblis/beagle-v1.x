@@ -27,6 +27,6 @@ public class AcceleratorInfo<TFitFunc> : IDisposable where TFitFunc : struct, IF
     public MemoryBuffer1D<float, Stride1D.Dense> AllInputs { get; set; } = null!;
     public MemoryBuffer1D<float, Stride1D.Dense> CorrectOutputs { get; set; } = null!;
 
-    public Action<AcceleratorStream, KernelConfig, byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, float, double, ArrayView<int>, TFitFunc> Kernel { get; set; } = null!;
+    public Action<AcceleratorStream, KernelConfig, byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc> Kernel { get; set; } = null!;
     #endregion
 }

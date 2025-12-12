@@ -139,7 +139,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _accelerators[i].CorrectOutputs = _accelerators[i].Accelerator.Allocate1D<float>(MLSetup.Current.ExperimentsPerGeneration);
 
                 //_accelerators[i].Kernel = _accelerators[i].Accelerator.LoadStreamKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
-                _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, float, double, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
+                _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
             }
             #endregion
 
@@ -275,47 +275,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             //reset stuff for new generation
             _generationWatch.Restart();
 
-            if (FitFunc.UseHardcodedCorrelationFit)
+            //set up experiments (inputs and output), set correct output mean to 0
+            Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
             {
-                //set up experiments (inputs and output) and calculate correct outputs mean
-                Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
-                {
-                    (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
-
-                });
-
-                //Doing it this way (sequentially) is faster since float Interlocked does not exist for float
-                float correctOutputsSum = 0;
-                int invalidCorrectOutputsCount = 0;
-                for (var i = 0; i < MLSetup.Current.ExperimentsPerGeneration; i++)
-                {
-                    if (_correctOutputs[i].IsValidNumber()) correctOutputsSum += _correctOutputs[i];
-                    else invalidCorrectOutputsCount++;
-                }
-                if (invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration) throw new Exception("invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration");
-                _correctOutputsMean = correctOutputsSum / MLSetup.Current.ExperimentsPerGeneration - invalidCorrectOutputsCount;
-
-                _sum2 = 0;
-                for (var i = 0; i < MLSetup.Current.ExperimentsPerGeneration; i++)
-                {
-                    if (_correctOutputs[i].IsValidNumber())
-                    {
-                        var correctOutputDeltaVsMean = _correctOutputs[i] - _correctOutputsMean;
-                        _sum2 += correctOutputDeltaVsMean * correctOutputDeltaVsMean;
-                    }
-                }
-                Debug.Assert(_sum2 != 0); //TODO: comment out
-            }
-            else
-            {
-                //set up experiments (inputs and output), set correct output mean to 0
-                Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
-                {
-                    (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
-                });
-                _correctOutputsMean = 0;
-                _sum2 = 0;
-            }
+                (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+            });
 
             //convert inputs to one long array
             Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
@@ -629,26 +593,35 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (fitFunc.UseHardcodedCorrelationFit)
             {
                 //calculate output mean
-                double outputsMean = 0;
+                double outputsMean0 = 0;
+                double outputsMean1 = 0;
                 int count0 = 0;
                 int count1 = 0;
                 for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
                 {
                     var output = outputs[experiment];
+                    var correctOutput = _correctOutputs[experiment];
 
                     //valid/invalid outputs
                     var isOutputValid = output.IsValidNumber();
-                    if (isOutputValid)
+                    var isCorrectOutputValid = correctOutput.IsValidNumber();
+
+                    if (isOutputValid && isCorrectOutputValid)
                     {
                         count0++;
-                        outputsMean += output;
+                        outputsMean0 += output;
+                        outputsMean1 += correctOutput;
                     }
                 }
-                outputsMean /= count0;
+                if (count0 != 0)
+                {
+                    outputsMean0 /= count0;
+                    outputsMean1 /= count0;
+                }
+                count0 = 0;
 
                 //calculate score
-                var sums = new double[2];
-                count0 = 0;
+                var sums = new double[3];
                 for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
                 {
                     var output = outputs[experiment];
@@ -661,10 +634,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     if (isOutputValid && isCorrectOutputValid)
                     {
                         //if both output and correct output are valid
-                        var outputDeltaVsMean = output - outputsMean;
-                        var correctOutputDeltaVsMean = correctOutput - _correctOutputsMean;
+                        var outputDeltaVsMean = output - outputsMean0;
+                        var correctOutputDeltaVsMean = correctOutput - outputsMean1;
                         sums[0] += outputDeltaVsMean * correctOutputDeltaVsMean;
                         sums[1] += outputDeltaVsMean * outputDeltaVsMean;
+                        sums[2] += correctOutputDeltaVsMean * correctOutputDeltaVsMean;
                     }
                     else
                     {
@@ -674,9 +648,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                 }
 
-                if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && _sum2.IsValidNumber())
+                if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
                 {
-                    var denominator = sums[1] * _sum2;
+                    var denominator = sums[1] * sums[2];
                     float rSquared = 0;
                     if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
 
@@ -818,7 +792,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration - groupStart);
                                 var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
 
-                                accelerator.Kernel(stream, launchDimension, useLibDevice, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, _correctOutputsMean, _sum2, acceleratorGrossRewards.View, FitFunc);
+                                accelerator.Kernel(stream, launchDimension, useLibDevice, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, acceleratorGrossRewards.View, FitFunc);
                                 if (flashFileStream) Output.FlushFileStream();
                                 stream.Synchronize();
 
@@ -1117,8 +1091,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly string[] _inputLabels;
     protected readonly float[][] _inputsArray;
     protected readonly float[] _correctOutputs;
-    protected float _correctOutputsMean;
-    protected double _sum2;
     protected readonly float[] _allInputs;
 
     protected readonly int[] _taxedScorePercentiles;
