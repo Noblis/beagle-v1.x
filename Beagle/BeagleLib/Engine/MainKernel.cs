@@ -19,6 +19,7 @@ public static class MainKernel
         uint inputsCount,
         ArrayView<float> correctOutputs,
         float correctOutputsMean,
+        double sum2,
 
         ArrayView<int> rewards,
         TFitFunc fitFunc)
@@ -62,7 +63,7 @@ public static class MainKernel
             var count = SharedMemory.Allocate<int>(2);
 
             //allocate three sums, to be used later
-            var sums = SharedMemory.Allocate<double>(3);
+            var sums = SharedMemory.Allocate<double>(2);
 
             //set all to zero
             if (Group.IsFirstThread)
@@ -72,7 +73,7 @@ public static class MainKernel
                 count[1] = 0; //set count1 to zero, we count invalid/invalid matches
                 sums[0] = 0;
                 sums[1] = 0;
-                sums[2] = 0;
+                //sums[2] = 0;
             }
             Group.Barrier();
 
@@ -99,7 +100,7 @@ public static class MainKernel
                 var correctOutputDeltaVsMean = correctOutput - correctOutputsMean;
                 Atomic.Add(ref sums[0], outputDeltaVsMean * correctOutputDeltaVsMean);
                 Atomic.Add(ref sums[1], outputDeltaVsMean * outputDeltaVsMean);
-                Atomic.Add(ref sums[2], correctOutputDeltaVsMean * correctOutputDeltaVsMean);
+                //Atomic.Add(ref sums[2], correctOutputDeltaVsMean * correctOutputDeltaVsMean);
             }
             else
             {
@@ -113,15 +114,13 @@ public static class MainKernel
             if (Group.IsFirstThread)
             {
                 int score;
-                if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
+                if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sum2.IsValidNumber())
                 {
-                    var denominator = sums[1] * sums[2];
-                    float rSquared = -1;
-                    if (denominator != 0)
-                    {
-                        rSquared = (float)(sums[0] * sums[0] / denominator);
-                        Debug.Assert(rSquared is <= 1 and >= 0);
-                    }
+                    var denominator = sums[1] * sum2;
+                    float rSquared = 0;
+                    if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
+
+                    Debug.Assert(rSquared is <= 1 and >= 0);
 
                     //r can range from 0 to 1
                     //punishment is based on the percentage of mismatches, number of experiments cancels out

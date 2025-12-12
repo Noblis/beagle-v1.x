@@ -139,7 +139,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _accelerators[i].CorrectOutputs = _accelerators[i].Accelerator.Allocate1D<float>(MLSetup.Current.ExperimentsPerGeneration);
 
                 //_accelerators[i].Kernel = _accelerators[i].Accelerator.LoadStreamKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
-                _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, float, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
+                _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, float, double, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
             }
             #endregion
 
@@ -156,7 +156,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _organismsCount = MLSetup.Current.TargetColonySize(0);
                 Parallel.For(0, _organismsCount, i =>
                 {
-                    var newOrganism = Organism.CreateByRandomLoadCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                     _organisms[i] = newOrganism;
                 });
             }
@@ -278,28 +278,33 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (FitFunc.UseHardcodedCorrelationFit)
             {
                 //set up experiments (inputs and output) and calculate correct outputs mean
-                float correctOutputsSum = 0;
-                int invalidCorrectOutputsCount = 0;
                 Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
                 {
                     (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
 
                 });
 
-                //Doing it this way (sequentially) is faster since float Interlocked does not exists
+                //Doing it this way (sequentially) is faster since float Interlocked does not exist for float
+                float correctOutputsSum = 0;
+                int invalidCorrectOutputsCount = 0;
+                for (var i = 0; i < MLSetup.Current.ExperimentsPerGeneration; i++)
+                {
+                    if (_correctOutputs[i].IsValidNumber()) correctOutputsSum += _correctOutputs[i];
+                    else invalidCorrectOutputsCount++;
+                }
+                if (invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration) throw new Exception("invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration");
+                _correctOutputsMean = correctOutputsSum / MLSetup.Current.ExperimentsPerGeneration - invalidCorrectOutputsCount;
+
+                _sum2 = 0;
                 for (var i = 0; i < MLSetup.Current.ExperimentsPerGeneration; i++)
                 {
                     if (_correctOutputs[i].IsValidNumber())
                     {
-                        correctOutputsSum += _correctOutputs[i];
-                    }
-                    else
-                    {
-                        invalidCorrectOutputsCount++;
+                        var correctOutputDeltaVsMean = _correctOutputs[i] - _correctOutputsMean;
+                        _sum2 += correctOutputDeltaVsMean * correctOutputDeltaVsMean;
                     }
                 }
-                if (invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration) throw new Exception("invalidCorrectOutputsCount == MLSetup.Current.ExperimentsPerGeneration");
-                _correctOutputsMean = correctOutputsSum / MLSetup.Current.ExperimentsPerGeneration - invalidCorrectOutputsCount;
+                Debug.Assert(_sum2 != 0); //TODO: comment out
             }
             else
             {
@@ -309,6 +314,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
                 });
                 _correctOutputsMean = 0;
+                _sum2 = 0;
             }
 
             //convert inputs to one long array
@@ -455,7 +461,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _newbornOrganismsCount = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 Parallel.For(0, _newbornOrganismsCount, i =>
                 {
-                    var newOrganism = Organism.CreateByRandomLoadCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                     _newbornOrganisms[i] = newOrganism;
                 });
             }
@@ -641,7 +647,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 outputsMean /= count0;
 
                 //calculate score
-                var sums = new double[3];
+                var sums = new double[2];
                 count0 = 0;
                 for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
                 {
@@ -659,7 +665,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         var correctOutputDeltaVsMean = correctOutput - _correctOutputsMean;
                         sums[0] += outputDeltaVsMean * correctOutputDeltaVsMean;
                         sums[1] += outputDeltaVsMean * outputDeltaVsMean;
-                        sums[2] += correctOutputDeltaVsMean * correctOutputDeltaVsMean;
                     }
                     else
                     {
@@ -669,9 +674,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                 }
 
-                if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
+                if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && _sum2.IsValidNumber())
                 {
-                    var denominator = sums[1] * sums[2];
+                    var denominator = sums[1] * _sum2;
                     float rSquared = 0;
                     if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
 
@@ -813,7 +818,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration - groupStart);
                                 var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
 
-                                accelerator.Kernel(stream, launchDimension, useLibDevice, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, _correctOutputsMean, acceleratorGrossRewards.View, FitFunc);
+                                accelerator.Kernel(stream, launchDimension, useLibDevice, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, _correctOutputsMean, _sum2, acceleratorGrossRewards.View, FitFunc);
                                 if (flashFileStream) Output.FlushFileStream();
                                 stream.Synchronize();
 
@@ -1113,6 +1118,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly float[][] _inputsArray;
     protected readonly float[] _correctOutputs;
     protected float _correctOutputsMean;
+    protected double _sum2;
     protected readonly float[] _allInputs;
 
     protected readonly int[] _taxedScorePercentiles;
