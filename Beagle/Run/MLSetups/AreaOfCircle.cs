@@ -19,14 +19,6 @@ public class AreaOfCircle : MLSetup
 
     public override uint ExperimentsPerGeneration => 512;
 
-    public override int TargetColonySize(int generation)
-    {
-        // ReSharper disable once DuplicatedStatements
-        //if (generation == 0) return 1_000_000;
-
-        return 500_000;
-    }
-
     public override long TotalBirthsToResetColonyIfNoProgress => 2_000_000;
 
     public override double SolutionFoundASRThreshold => 1.0;

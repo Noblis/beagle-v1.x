@@ -488,9 +488,7 @@ public class Organism
     #region Lieaner Regression Methods
     public void CalcScaleAndOffsetIfNeeded(float[][] inputsArray, float[] correctOutputs)
     {
-        if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot call SetScaleAndOffset when IsCorrelationFunctionRun is false");
-
-        if (!LinearRegressionDone)
+        if (MLSetup.IsCorrelationFunctionRun && !LinearRegressionDone)
         {
             _dblCorrectOutputs ??= new double[correctOutputs.Length];
             _dblOutputs ??= new double[correctOutputs.Length];
@@ -504,6 +502,9 @@ public class Organism
             (double, double) lineRegression = Fit.Line(_dblOutputs, _dblCorrectOutputs);
             var offset = (float)lineRegression.Item1;
             var scale = (float)lineRegression.Item2;
+
+            if (!offset.IsValidNumber()) offset = 0;
+            if (!scale.IsValidNumber()) scale = 1;
 
             SetScaleAndOffset(scale, offset);
         }
