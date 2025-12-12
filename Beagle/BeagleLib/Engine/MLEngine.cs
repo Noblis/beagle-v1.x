@@ -38,7 +38,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             #region Save ML Setup & init IsCorrelationFunctionRun flag
             // ReSharper disable once ObjectCreationAsStatement
             new TMLSetup(); //this will automatically save into MLSetup.Current
-            MLSetup.IsCorrelationFunctionRun = FitFunc.UseHardcodedCorrelationFit;
+            MLSetup.IsCorrelationFunctionRun = FitFunc.UseCorrelationFit;
             #endregion
 
             #region Set up Console 
@@ -591,7 +591,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 outputs[experiment] = codeMachineCPU.RunCommands(_inputsArray[experiment], _shortestEverSatisfactoryOrganism.Commands);
             });
 
-            if (fitFunc.UseHardcodedCorrelationFit)
+            if (fitFunc.UseCorrelationFit)
             {
                 //calculate output mean
                 double outputsMean0 = 0;
@@ -783,7 +783,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                             #region Copy stuff that changes to GPU
                             acceleratorScriptStarts.View.CopyFromCPU(stream, batchScriptStarts);
                             acceleratorAllCommands.View.CopyFromCPU(stream, batchAllCommands);
-                            if (!FitFunc.UseHardcodedCorrelationFit) acceleratorGrossRewards.View.MemSetToZero(stream);
+                            if (!FitFunc.UseCorrelationFit) acceleratorGrossRewards.View.MemSetToZero(stream);
                             #endregion
 
                             #region Execute Kernel

@@ -48,7 +48,7 @@ public static class MainKernel
         var isOutputValid = output.IsValidNumber();
         var isCorrectOutputValid = correctOutput.IsValidNumber();
 
-        if (fitFunc.UseHardcodedCorrelationFit)
+        if (fitFunc.UseCorrelationFit)
         {
             //we first use this variable to calculate total, then divide by count to get the Mean
             //this is one element array because we cannot allocate scalar values in shared memory

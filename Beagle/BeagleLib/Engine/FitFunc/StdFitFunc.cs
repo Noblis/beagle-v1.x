@@ -5,7 +5,7 @@ namespace BeagleLib.Engine.FitFunc;
 
 public struct StdFitFunc : IFitFunc
 {
-    public bool UseHardcodedCorrelationFit => false;
+    public bool UseCorrelationFit => false;
 
     public int FitFunction(ArrayView<float> arrayViewInputs, uint startIdx, uint length, float output, float correctOutput)
     {

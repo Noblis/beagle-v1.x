@@ -493,18 +493,33 @@ public class Organism
             _dblCorrectOutputs ??= new double[correctOutputs.Length];
             _dblOutputs ??= new double[correctOutputs.Length];
 
-            Parallel.For(0, correctOutputs.Length, i =>
+            int dblIdx = 0;
+            float total = 0;
+            for (var i = 0; i < correctOutputs.Length; i++)
             {
-                _dblCorrectOutputs[i] = correctOutputs[i];
-                _dblOutputs[i] = new CodeMachine().RunCommands(inputsArray[i], Commands);
-            });
+                if (correctOutputs[i].IsValidNumber())
+                {
+                    var output = new CodeMachine().RunCommands(inputsArray[i], Commands);
+                    if (output.IsValidNumber())
+                    {
+                        _dblCorrectOutputs[i] = correctOutputs[i];
+                        _dblOutputs[i] = output;
+                        total += output;
+                        dblIdx++;
+                    }
+                }
+            }
+            float mean = total / dblIdx;
 
             (double, double) lineRegression = Fit.Line(_dblOutputs, _dblCorrectOutputs);
             var offset = (float)lineRegression.Item1;
             var scale = (float)lineRegression.Item2;
 
-            if (!offset.IsValidNumber() || Math.Abs(offset) < 1E-6) offset = 0;
-            if (!scale.IsValidNumber() || Math.Abs(scale - 1) < 1E-6) scale = 1;
+            Debug.Assert(offset.IsValidNumber());
+            Debug.Assert(scale.IsValidNumber());
+
+            if (Math.Abs(offset)/mean < 5E-7) offset = 0;
+            if (Math.Abs(scale - 1) < 5E-7) scale = 1;
 
             SetScaleAndOffset(scale, offset);
         }
