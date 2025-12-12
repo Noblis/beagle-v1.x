@@ -297,7 +297,33 @@ public class Organism
         mutationCommands.Mutate(ref mutationCommandsLength, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
         return CreateByCopyingCommandsFromPartOfSpan(mutationCommands, mutationCommandsLength);
     }
-    public List<Command> GetTrueCommandList
+    public IEnumerable<Command> GetFullCommands(float[][] inputsArray, float[] correctOutputs)
+    {
+        if (MLSetup.IsCorrelationFunctionRun)
+        {
+            CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
+            var commandsList = Commands.ToList();
+
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (Scale != 1)
+            {
+                commandsList.Add(new Command(OpEnum.Const, Scale));
+                commandsList.Add(new Command(OpEnum.Mul));
+            }
+
+            if (Offset != 0)
+            {
+                commandsList.Add(new Command(OpEnum.Const, Offset));
+                commandsList.Add(new Command(OpEnum.Add));
+            }
+
+            return commandsList;
+        }
+        else
+        {
+            return Commands;
+        }
+    }
     #endregion
 
     #region Print and ToJson Commands
@@ -371,23 +397,7 @@ public class Organism
     
     public string CommandsToJson(float[][] inputsArray, float[] correctOutputs)
     {
-        CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
-        var commandsList = Commands.ToList();
-
-        // ReSharper disable once CompareOfFloatsByEqualityOperator
-        if (Scale != 1)
-        {
-            commandsList.Add(new Command(OpEnum.Const, _mostAccurateEverOrganism.Scale));
-            commandsList.Add(new Command(OpEnum.Mul));
-        }
-
-        if (Offset != 0)
-        {
-            commandsList.Add(new Command(OpEnum.Const, _mostAccurateEverOrganism.Offset));
-            commandsList.Add(new Command(OpEnum.Add));
-        }
-
-        return JsonConvert.SerializeObject(Commands);
+        return JsonConvert.SerializeObject(GetFullCommands(inputsArray, correctOutputs));
     }
     #endregion
 

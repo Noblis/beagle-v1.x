@@ -1010,25 +1010,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
     protected void DisplayAsLatex()
     {
-        here need to fix this to work with no correleation
-        
-        _mostAccurateEverOrganism!.CalcScaleAndOffsetIfNeeded(_inputsArray, _correctOutputs);
-        var commandsList = _mostAccurateEverOrganism!.Commands.ToList();
-        
-        // ReSharper disable once CompareOfFloatsByEqualityOperator
-        if (_mostAccurateEverOrganism.Scale != 1)
-        {
-            commandsList.Add(new Command(OpEnum.Const, _mostAccurateEverOrganism.Scale));
-            commandsList.Add(new Command(OpEnum.Mul));
-        }
-
-        if (_mostAccurateEverOrganism.Offset != 0)
-        {
-            commandsList.Add(new Command(OpEnum.Const, _mostAccurateEverOrganism.Offset));
-            commandsList.Add(new Command(OpEnum.Add));
-        }
-
-        var expr = MathExpr.FromCommands(commandsList, MLSetup.Current.GetInputLabels());
+        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_inputsArray, _correctOutputs);
+        var expr = MathExpr.FromCommands(fullCommands, MLSetup.Current.GetInputLabels());
         var url = $"https://arachnoid.com/latex/?equ={expr.AsLatexString()}";
         WebServer.OpenInBrowser(url);
     }
