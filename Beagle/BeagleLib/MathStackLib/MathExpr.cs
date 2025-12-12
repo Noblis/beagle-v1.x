@@ -13,7 +13,7 @@ public abstract record MathExpr
         return FromCommands(organism.Commands, inputLabels);
     }
 
-    public static MathExpr FromCommands(Command[] commands, string[] inputLabels)
+    public static MathExpr FromCommands(IEnumerable<Command> commands, string[] inputLabels)
     {
         var queue = new Queue<ByteCode>();
         foreach (var command in commands)
