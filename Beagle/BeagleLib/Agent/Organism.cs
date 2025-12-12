@@ -8,6 +8,10 @@ using BeagleLib.Util;
 using BeagleLib.VM;
 using MathNet.Numerics;
 using Newtonsoft.Json;
+using WebMonk.RazorSharp.HtmlTags;
+using Command = BeagleLib.VM.Command;
+using Output = BeagleLib.Util.Output;
+
 //using Command = BeagleLib.VM.Command;
 //using Output = BeagleLib.Util.Output;
 
@@ -509,10 +513,9 @@ public class Organism
     {
         if (MLSetup.IsCorrelationFunctionRun && !LinearRegressionDone)
         {
-            _dblCorrectOutputs ??= new double[correctOutputs.Length];
-            _dblOutputs ??= new double[correctOutputs.Length];
+            var dblCorrectOutputs = new List<double>();
+            var dblOutputs = new List<double>();
 
-            int dblIdx = 0;
             float total = 0;
             for (var i = 0; i < correctOutputs.Length; i++)
             {
@@ -521,16 +524,16 @@ public class Organism
                     var output = new CodeMachine().RunCommands(inputsArray[i], Commands);
                     if (output.IsValidNumber())
                     {
-                        _dblCorrectOutputs[i] = correctOutputs[i];
-                        _dblOutputs[i] = output;
+                        dblCorrectOutputs.Add(correctOutputs[i]);
+                        dblOutputs.Add(output);
                         total += output;
-                        dblIdx++;
                     }
                 }
             }
-            float mean = total / dblIdx;
+            Debug.Assert(dblOutputs.Count == dblCorrectOutputs.Count);
+            float mean = total / dblOutputs.Count;
 
-            (double, double) lineRegression = Fit.Line(_dblOutputs, _dblCorrectOutputs);
+            (double, double) lineRegression = Fit.Line(dblOutputs.ToArray(), dblCorrectOutputs.ToArray());
 
             var offset = (float)lineRegression.Item1;
             Debug.Assert(offset.IsValidNumber());
@@ -593,9 +596,5 @@ public class Organism
     private double? _asr;
 
     private static StringBuilder _sb = new(8192); //buffer to build strings
-
-    //buffers for linear regression 
-    private static double[]? _dblCorrectOutputs;
-    private static double[]? _dblOutputs;
     #endregion
 }
