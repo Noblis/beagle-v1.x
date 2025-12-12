@@ -300,8 +300,10 @@ public class Organism
     #endregion
 
     #region Print and ToJson Commands
-    public void PrintCommands(string[] inputLabels)
+    public void PrintCommands(string[] inputLabels, float[][] inputsArray, float[] correctOutputs)
     {
+        CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
+        
         int addr;
         for (addr = 0; addr < Commands.Length; addr++)
         {
@@ -331,8 +333,10 @@ public class Organism
             }
         }
     }
-    public void PrintCommandsInLine(string[] inputLabels)
+    public void PrintCommandsInLine(string[] inputLabels, float[][] inputsArray, float[] correctOutputs)
     {
+        CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
+
         for (var addr = 0; addr < Commands.Length; addr++)
         {
             _sb.Clear();
@@ -405,24 +409,27 @@ public class Organism
     #endregion
 
     #region Lieaner Regression Methods
-    public void ForceLinearRegressionCalculation(float[][] inputsArray, float[] correctOutputs)
+    public void CalcScaleAndOffsetIfNeeded(float[][] inputsArray, float[] correctOutputs)
     {
         if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot call SetScaleAndOffset when IsCorrelationFunctionRun is false");
 
-        _dblCorrectOutputs ??= new double[correctOutputs.Length];
-        _dblOutputs ??= new double[correctOutputs.Length];
-
-        Parallel.For(0, correctOutputs.Length, i =>
+        if (!LinearRegressionDone)
         {
-            _dblCorrectOutputs[i] = correctOutputs[i];
-            _dblOutputs[i] = new CodeMachine().RunCommands(inputsArray[i], Commands);
-        }); 
-        
-        (double, double) lineRegression = Fit.Line(_dblOutputs, _dblCorrectOutputs);
-        var offset = (float)lineRegression.Item1;
-        var scale = (float)lineRegression.Item2;
+            _dblCorrectOutputs ??= new double[correctOutputs.Length];
+            _dblOutputs ??= new double[correctOutputs.Length];
 
-        SetScaleAndOffset(scale, offset);
+            Parallel.For(0, correctOutputs.Length, i =>
+            {
+                _dblCorrectOutputs[i] = correctOutputs[i];
+                _dblOutputs[i] = new CodeMachine().RunCommands(inputsArray[i], Commands);
+            });
+
+            (double, double) lineRegression = Fit.Line(_dblOutputs, _dblCorrectOutputs);
+            var offset = (float)lineRegression.Item1;
+            var scale = (float)lineRegression.Item2;
+
+            SetScaleAndOffset(scale, offset);
+        }
     }
     public void SetScaleAndOffset(float scale, float offset)
     {
@@ -442,7 +449,7 @@ public class Organism
         get
         {
             if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot read Scale when IsCorrelationFunctionRun is false");
-            if (!LinearRegressionDone) ForceLinearRegressionCalculation();
+            if (!LinearRegressionDone) throw new InvalidOperationException("Cannot read Scale when LinearRegressionDone is false");
             return _scale;
         }
     }
@@ -453,7 +460,7 @@ public class Organism
         get
         {
             if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot read Offset when IsCorrelationFunctionRun is false");
-            if (!LinearRegressionDone) ForceLinearRegressionCalculation();
+            if (!LinearRegressionDone) throw new InvalidOperationException("Cannot read Offset when LinearRegressionDone is false");
             return _offset;
         }
     }

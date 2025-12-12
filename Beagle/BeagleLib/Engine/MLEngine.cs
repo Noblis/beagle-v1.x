@@ -535,7 +535,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Output.WriteLine(" total births");
         Console.ForegroundColor = ConsoleColor.White;
         
-        _mostAccurateEverOrganism.PrintCommandsInLine(_inputLabels);
+        _mostAccurateEverOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
         //Output.WriteLine(_mostAccurateEverOrganism.CommandsToJson());
 
         if (_mostAccurateOrganismsSinceLastColonyReset[0] != null && !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[0], _mostAccurateEverOrganism))
@@ -560,7 +560,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Output.Write($"{_totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate:N0}");
             Console.ForegroundColor = ConsoleColor.White;
             Output.WriteLine(" total births");
-            _mostAccurateOrganismsSinceLastColonyReset[0]!.PrintCommandsInLine(_inputLabels);
+            _mostAccurateOrganismsSinceLastColonyReset[0]!.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
         }
         //Output.WriteLine($"Total births since last colony reset / reset after: {_totalBirthSinceLastColonyReset:N0}/{MLSetup.Current.TotalBirthsToResetColonyIfNoProgress:N0}");
         //Output.WriteLine(_mostAccurateOrganismSinceLastColonyReset!.CommandsToJson());
@@ -578,7 +578,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Output.WriteLine($"Satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00##}) Solution found. ASR = {_shortestEverSatisfactoryOrganism!.ASR:0.00##} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0})");
 
             //Output.WriteLine(_shortestEverSatisfactoryOrganism.CommandsToJson());
-            _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels);
+            _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
             Console.ResetColor();
 
             #if DEBUG
@@ -704,7 +704,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Output.WriteLine($"Shortest satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00##}) solution found so far. ASR = {_shortestEverSatisfactoryOrganism.ASR:0.00##} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}), Length = {_shortestEverSatisfactoryOrganism.Commands.Length}");
-                _shortestEverSatisfactoryOrganism.PrintCommandsInLine(_inputLabels);
+                _shortestEverSatisfactoryOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
                 Console.ResetColor();
             }
         }
