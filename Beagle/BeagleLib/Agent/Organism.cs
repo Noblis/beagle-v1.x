@@ -503,8 +503,8 @@ public class Organism
             var offset = (float)lineRegression.Item1;
             var scale = (float)lineRegression.Item2;
 
-            if (!offset.IsValidNumber()) offset = 0;
-            if (!scale.IsValidNumber()) scale = 1;
+            if (!offset.IsValidNumber() || Math.Abs(offset) < 1E-6) offset = 0;
+            if (!scale.IsValidNumber() || Math.Abs(scale - 1) < 1E-6) scale = 1;
 
             SetScaleAndOffset(scale, offset);
         }
