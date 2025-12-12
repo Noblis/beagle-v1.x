@@ -54,28 +54,23 @@ public class Organism
             var idx = commands.Length;
             
             float offset = 0;
-            if (commands[--idx].Operation == OpEnum.Add && commands[--idx].Operation == OpEnum.Const)
+            if (commands[idx - 1].Operation == OpEnum.Add && commands[idx - 2].Operation == OpEnum.Const)
             {
                 //process add command, calculate offset
+                idx -= 2;
                 Debug.Assert(commands[idx + 1].Operation == OpEnum.Const);
                 offset = commands[idx + 1].ConstValue;
             }
-            else
-            {
-                idx += 2;
-            }
 
             float scale = 1;
-            if (commands[--idx].Operation == OpEnum.Mul && commands[--idx].Operation == OpEnum.Const)
+            if (commands[idx - 1].Operation == OpEnum.Mul && commands[idx - 1].Operation == OpEnum.Const)
             {
+                idx -= 2;
                 //process mul command, calculate scale
                 Debug.Assert(commands[idx + 1].Operation == OpEnum.Const);
                 scale = commands[idx + 1].ConstValue;
             }
-            else
-            {
-                idx += 2;
-            }
+
             organism = CreateByCopyingCommandsFromPartOfSpan(commands, idx);
             organism.SetScaleAndOffset(scale, offset);
         }
@@ -416,19 +411,19 @@ public class Organism
             if (Scale != 1)
             {
                 _sb.Clear();
-                Output.WriteLine($"{addr + 1}: {new Command(OpEnum.Const, Scale).AppendToStringBuilder(inputLabels, _sb)}");
+                Output.WriteLine($"{++addr}: {new Command(OpEnum.Const, Scale).AppendToStringBuilder(inputLabels, _sb)}");
 
                 _sb.Clear();
-                Output.WriteLine($"{addr + 1}: {new Command(OpEnum.Mul).AppendToStringBuilder(inputLabels, _sb)}");
+                Output.WriteLine($"{++addr}: {new Command(OpEnum.Mul).AppendToStringBuilder(inputLabels, _sb)}");
             }
 
             if (Offset != 0)
             {
                 _sb.Clear();
-                Output.WriteLine($"{addr + 1}: {new Command(OpEnum.Const, Offset).AppendToStringBuilder(inputLabels, _sb)}");
+                Output.WriteLine($"{++addr}: {new Command(OpEnum.Const, Offset).AppendToStringBuilder(inputLabels, _sb)}");
 
                 _sb.Clear();
-                Output.WriteLine($"{addr + 1}: {new Command(OpEnum.Add).AppendToStringBuilder(inputLabels, _sb)}");
+                Output.WriteLine($"{++addr}: {new Command(OpEnum.Add).AppendToStringBuilder(inputLabels, _sb)}");
             }
         }
     }
@@ -537,7 +532,7 @@ public class Organism
 
             var offset = (float)lineRegression.Item1.RoundToSignificantDigits(4);
             Debug.Assert(offset.IsValidNumber());
-            if (Math.Abs(offset) / mean < 1E-4) offset = 0;
+            if (Math.Abs(offset / mean) < 1E-4) offset = 0;
 
             var scale = (float)lineRegression.Item2.RoundToSignificantDigits(4);
             Debug.Assert(scale.IsValidNumber());
