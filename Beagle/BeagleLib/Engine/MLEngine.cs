@@ -350,7 +350,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _shortestEverSatisfactoryOrganism = organism;
                 }
             }
-            if (!ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mlEngineNotificationsHandler?.HandleMostAccurateEverOrganismUpdated(_mostAccurateEverOrganism!.CloneForExport(), (uint)_currentGeneration);
+            if (!ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mlEngineNotificationsHandler?.HandleMostAccurateEverOrganismUpdated(_mostAccurateEverOrganism!.CloneForExport(_inputsArray, _correctOutputs), (uint)_currentGeneration);
             if (_mlEngineNotificationsHandler?.Quit == true) return true;
 
             //we add the most accurate ones again with probability of 5%. It means approximately every 20 generations

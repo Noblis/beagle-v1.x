@@ -8,6 +8,8 @@ using BeagleLib.Util;
 using BeagleLib.VM;
 using MathNet.Numerics;
 using Newtonsoft.Json;
+//using Command = BeagleLib.VM.Command;
+//using Output = BeagleLib.Util.Output;
 
 namespace BeagleLib.Agent;
 
@@ -40,33 +42,79 @@ public class Organism
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Organism CreateFromCommands(params Command[] commands)
+    public static Organism CreateFromCommandsStripLinearRegressionIfNeeded(params Command[] commands)
     {
-        var organism = new Organism(commands);
+        Organism organism;
+        if (MLSetup.IsCorrelationFunctionRun)
+        {
+            var idx = commands.Length;
+            
+            float offset = 0;
+            if (commands[--idx].Operation == OpEnum.Add && commands[--idx].Operation == OpEnum.Const)
+            {
+                //process add command, calculate offset
+                Debug.Assert(commands[idx + 1].Operation == OpEnum.Const);
+                offset = commands[idx + 1].ConstValue;
+            }
+            else
+            {
+                idx += 2;
+            }
+
+            float scale = 1;
+            if (commands[--idx].Operation == OpEnum.Mul && commands[--idx].Operation == OpEnum.Const)
+            {
+                //process mul command, calculate scale
+                Debug.Assert(commands[idx + 1].Operation == OpEnum.Const);
+                scale = commands[idx + 1].ConstValue;
+            }
+            else
+            {
+                idx += 2;
+            }
+            organism = CreateByCopyingCommandsFromPartOfSpan(commands, idx);
+            organism.SetScaleAndOffset(scale, offset);
+        }
+        else
+        {
+            organism = new Organism(commands);
+        }
         return organism;
     }
 
     //This method circumvents the dead organism pool for both creating and destroying an organism.
     //It is meant to only be used for thread-safe data exchange between MLEngine and another thread.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Organism CloneForExport()
+    public Organism CloneForExport(float[][] inputsArray, float[] correctOutputs)
     {
-        //allocate array of the same size
-        var commandsDeepCopy = new Command[Commands.Length];
-        
-        //Deep copy of commands 
-        for (var i = 0; i < Commands.Length; i++)
+        Organism organism;
+        //we check for this because, this, if true, GetFullCommands returns a deep copy bt if false, returns a reference to Commands array
+        if (MLSetup.IsCorrelationFunctionRun) 
         {
-            commandsDeepCopy[i] = Commands[i];
+            var fullCommands = GetFullCommands(inputsArray, correctOutputs);
+            organism = new Organism(fullCommands.ToArray());
+        }
+        else
+        {
+            //allocate array of the same size
+            var commandsDeepCopy = new Command[Commands.Length];
+
+            //Deep copy of commands 
+            for (var i = 0; i < Commands.Length; i++)
+            {
+                commandsDeepCopy[i] = Commands[i];
+            }
+            organism = new Organism(commandsDeepCopy);
         }
 
         //Copy fields and properties
-        var organism = new Organism(commandsDeepCopy)
-        {
-            Score = Score,
-            TaxedScore = TaxedScore,
-            _asr = _asr
-        };
+        organism.LinearRegressionDone = LinearRegressionDone;
+        organism._scale = Scale;
+        organism._offset = Offset;
+
+        organism.Score = Score;
+        organism.TaxedScore = TaxedScore;
+        organism._asr = _asr;
 
         return organism;
     }
@@ -81,7 +129,7 @@ public class Organism
         var commands = JsonConvert.DeserializeObject<Command[]>(json);
         var commandsSpan = new Span<Command>(commands);
         commandsSpan.VerifyScriptValid(commandsSpan.Length, false);
-        return CreateFromCommands(commands!);
+        return CreateFromCommandsStripLinearRegressionIfNeeded(commands!);
     }
     public static Organism CreateFromGCLAssembly(string stdFormat)
     {
@@ -214,7 +262,7 @@ public class Organism
         }
         var commandsSpan = new Span<Command>(commands.ToArray());
         commandsSpan.VerifyScriptValid(commandsSpan.Length, false);
-        return CreateFromCommands(commands.ToArray());
+        return CreateFromCommandsStripLinearRegressionIfNeeded(commands.ToArray());
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)] 
@@ -338,6 +386,7 @@ public class Organism
             Output.WriteLine($"{addr + 1}: {Commands[addr].AppendToStringBuilder(inputLabels, _sb)}");
         }
 
+        //we could have used GetFullCommands() methods here to make it simpler, but it would give more work to GC
         if (MLSetup.IsCorrelationFunctionRun)
         {
             // ReSharper disable once CompareOfFloatsByEqualityOperator
@@ -370,6 +419,7 @@ public class Organism
             Output.Write($"{Commands[addr].AppendToStringBuilder(inputLabels, _sb)}; ");
         }
 
+        //we could have used GetFullCommands() methods here to make it simpler, but it would give more work to GC
         if (MLSetup.IsCorrelationFunctionRun)
         {
             // ReSharper disable once CompareOfFloatsByEqualityOperator
