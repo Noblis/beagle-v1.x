@@ -6,6 +6,7 @@ using System.Text;
 using BeagleLib.Engine;
 using BeagleLib.Util;
 using BeagleLib.VM;
+using MathNet.Numerics;
 using Newtonsoft.Json;
 
 namespace BeagleLib.Agent;
@@ -362,7 +363,18 @@ public class Organism
     {
         if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot call SetScaleAndOffset when IsCorrelationFunctionRun is false");
 
+        _dblCorrectOutputs ??= new double[correctOutputs.Length];
+        _dblOutputs ??= new double[correctOutputs.Length];
 
+        Parallel.For(0, correctOutputs.Length, i =>
+        {
+            _dblCorrectOutputs[i] = correctOutputs[i];
+            _dblOutputs[i] = new CodeMachine().RunCommands(inputsArray[i], Commands);
+        }); 
+        
+        (double, double) lineRegression = Fit.Line(_dblOutputs, _dblCorrectOutputs);
+        var offset = (float)lineRegression.Item1;
+        var scale = (float)lineRegression.Item2;
 
         SetScaleAndOffset(scale, offset);
     }
@@ -416,5 +428,9 @@ public class Organism
     private double? _asr;
 
     private static StringBuilder _sb = new(8192); //buffer to build strings
+
+    //buffers for linear regression 
+    private static double[]? _dblCorrectOutputs;
+    private static double[]? _dblOutputs;
     #endregion
 }
