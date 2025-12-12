@@ -231,8 +231,8 @@ public class Organism
     protected void ResetPropertiesForNewOrganism()
     {
         LinearRegressionDone = false;
-        Scale = 1;
-        Offset = 0;
+        _scale = 1;
+        _offset = 0;
 
         Score = TaxedScore = 0;
         _asr = null;
@@ -302,10 +302,33 @@ public class Organism
     #region Print and ToJson Commands
     public void PrintCommands(string[] inputLabels)
     {
-        for (var addr = 0; addr < Commands.Length; addr++)
+        int addr;
+        for (addr = 0; addr < Commands.Length; addr++)
         {
             _sb.Clear();
             Output.WriteLine($"{addr + 1}: {Commands[addr].AppendToStringBuilder(inputLabels, _sb)}");
+        }
+
+        if (MLSetup.IsCorrelationFunctionRun)
+        {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (Scale != 1)
+            {
+                _sb.Clear();
+                Output.WriteLine($"{addr + 1}: {new Command(OpEnum.Const, Scale).AppendToStringBuilder(inputLabels, _sb)}");
+
+                _sb.Clear();
+                Output.WriteLine($"{addr + 1}: {new Command(OpEnum.Mul).AppendToStringBuilder(inputLabels, _sb)}");
+            }
+
+            if (Offset != 0)
+            {
+                _sb.Clear();
+                Output.WriteLine($"{addr + 1}: {new Command(OpEnum.Const, Offset).AppendToStringBuilder(inputLabels, _sb)}");
+
+                _sb.Clear();
+                Output.WriteLine($"{addr + 1}: {new Command(OpEnum.Add).AppendToStringBuilder(inputLabels, _sb)}");
+            }
         }
     }
     public void PrintCommandsInLine(string[] inputLabels)
@@ -315,6 +338,29 @@ public class Organism
             _sb.Clear();
             Output.Write($"{Commands[addr].AppendToStringBuilder(inputLabels, _sb)}; ");
         }
+
+        if (MLSetup.IsCorrelationFunctionRun)
+        {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (Scale != 1)
+            {
+                _sb.Clear();
+                Output.Write($"{new Command(OpEnum.Const, Scale).AppendToStringBuilder(inputLabels, _sb)}; ");
+
+                _sb.Clear();
+                Output.Write($"{new Command(OpEnum.Mul).AppendToStringBuilder(inputLabels, _sb)}; ");
+            }
+
+            if (Offset != 0)
+            {
+                _sb.Clear();
+                Output.Write($"{new Command(OpEnum.Const, Offset).AppendToStringBuilder(inputLabels, _sb)}; ");
+
+                _sb.Clear();
+                Output.Write($"{new Command(OpEnum.Add).AppendToStringBuilder(inputLabels, _sb)}; ");
+            }
+        }
+
         Output.WriteLine("");
     }
     
@@ -380,7 +426,7 @@ public class Organism
     }
     public void SetScaleAndOffset(float scale, float offset)
     {
-        if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot call SetScaleAndOffset when IsCorrelationFunctionRun is false")
+        if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot call SetScaleAndOffset when IsCorrelationFunctionRun is false");
 
         LinearRegressionDone = true;
         _scale = scale;
@@ -395,7 +441,7 @@ public class Organism
     {
         get
         {
-            if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot read Scale when IsCorrelationFunctionRun is false")
+            if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot read Scale when IsCorrelationFunctionRun is false");
             if (!LinearRegressionDone) ForceLinearRegressionCalculation();
             return _scale;
         }
@@ -406,7 +452,7 @@ public class Organism
     {
         get
         {
-            if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot read Offset when IsCorrelationFunctionRun is false")
+            if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot read Offset when IsCorrelationFunctionRun is false");
             if (!LinearRegressionDone) ForceLinearRegressionCalculation();
             return _offset;
         }
