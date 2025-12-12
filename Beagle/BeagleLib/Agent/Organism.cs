@@ -372,6 +372,25 @@ public class Organism
             return Commands;
         }
     }
+    public int GetFullCommandsLength(float[][] inputsArray, float[] correctOutputs)
+    {
+        if (MLSetup.IsCorrelationFunctionRun)
+        {
+            CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
+
+            var length = Commands.Length;
+
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (Scale != 1) length += 2;
+            if (Offset != 0) length += 2;
+
+            return length;
+        }
+        else
+        {
+            return Commands.Length;
+        }
+    }
     #endregion
 
     #region Print and ToJson Commands
@@ -512,14 +531,14 @@ public class Organism
             float mean = total / dblIdx;
 
             (double, double) lineRegression = Fit.Line(_dblOutputs, _dblCorrectOutputs);
+
             var offset = (float)lineRegression.Item1;
-            var scale = (float)lineRegression.Item2;
-
             Debug.Assert(offset.IsValidNumber());
-            Debug.Assert(scale.IsValidNumber());
+            if (Math.Abs(offset) / mean < 1E-2) offset = 0;
 
-            if (Math.Abs(offset)/mean < 5E-7) offset = 0;
-            if (Math.Abs(scale - 1) < 5E-7) scale = 1;
+            var scale = (float)lineRegression.Item2; //(float)Math.Round(lineRegression.Item2, 3);
+            Debug.Assert(scale.IsValidNumber());
+            if (Math.Abs(scale - 1) < 1E-2) scale = 1;
 
             SetScaleAndOffset(scale, offset);
         }

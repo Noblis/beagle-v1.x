@@ -520,7 +520,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         Output.Write("), length = ");
         Console.ForegroundColor = ConsoleColor.Red;
-        Output.Write($"{_mostAccurateEverOrganism.Commands.Length}");
+        Output.Write($"{_mostAccurateEverOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
         Console.ForegroundColor = ConsoleColor.White;
         
         Output.Write(" from ");
@@ -553,7 +553,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Console.ForegroundColor = ConsoleColor.White;
             Output.Write(", length = ");
             Console.ForegroundColor = ConsoleColor.Red;
-            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.Commands.Length}");
+            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
             Console.ForegroundColor = ConsoleColor.White;
             Output.Write(" at ");
             Console.ForegroundColor = ConsoleColor.Red;
@@ -703,7 +703,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (_shortestEverSatisfactoryOrganism != null)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Output.WriteLine($"Shortest satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00##}) solution found so far. ASR = {_shortestEverSatisfactoryOrganism.ASR:0.00##} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}), Length = {_shortestEverSatisfactoryOrganism.Commands.Length}");
+                Output.WriteLine($"Shortest satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00##}) solution found so far. ASR = {_shortestEverSatisfactoryOrganism.ASR:0.00##} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}), Length = {_shortestEverSatisfactoryOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
                 _shortestEverSatisfactoryOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
                 Console.ResetColor();
             }

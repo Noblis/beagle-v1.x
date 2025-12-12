@@ -77,7 +77,7 @@ public abstract class MLSetup
         }
     }
     private int? _scriptLengthTaxRate;
-    protected virtual int ScriptLengthTaxRateInternal => BConfig.MaxScore * (int)ExperimentsPerGeneration / 200;
+    protected virtual int ScriptLengthTaxRateInternal => BConfig.MaxScore * (int)ExperimentsPerGeneration / 100;
 
     public virtual bool KeepOptimizingAfterSolutionFound => false;
     #endregion
