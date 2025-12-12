@@ -363,6 +363,7 @@ public class Organism
         if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot call SetScaleAndOffset when IsCorrelationFunctionRun is false");
 
 
+
         SetScaleAndOffset(scale, offset);
     }
     public void SetScaleAndOffset(float scale, float offset)
