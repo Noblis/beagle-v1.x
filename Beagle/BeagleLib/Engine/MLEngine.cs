@@ -35,9 +35,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _mlEngineNotificationsHandler = mlEngineNotificationsHandler;
             #endregion
 
-            #region Save ML Setup
+            #region Save ML Setup & init IsCorrelationFunctionRun flag
             // ReSharper disable once ObjectCreationAsStatement
             new TMLSetup(); //this will automatically save into MLSetup.Current
+            MLSetup.IsCorrelationFunctionRun = FitFunc.UseHardcodedCorrelationFit;
             #endregion
 
             #region Set up Console 

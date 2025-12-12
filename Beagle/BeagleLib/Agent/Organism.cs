@@ -229,6 +229,10 @@ public class Organism
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected void ResetPropertiesForNewOrganism()
     {
+        LinearRegressionDone = false;
+        Scale = 1;
+        Offset = 0;
+
         Score = TaxedScore = 0;
         _asr = null;
     }
@@ -353,7 +357,49 @@ public class Organism
     private static readonly ConcurrentStack<Organism>[] _organismDeadPools;
     #endregion
 
+    #region Lieaner Regression Methods
+    public void ForceLinearRegressionCalculation(float[][] inputsArray, float[] correctOutputs)
+    {
+        if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot call SetScaleAndOffset when IsCorrelationFunctionRun is false");
+
+
+        SetScaleAndOffset(scale, offset);
+    }
+    public void SetScaleAndOffset(float scale, float offset)
+    {
+        if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot call SetScaleAndOffset when IsCorrelationFunctionRun is false")
+
+        LinearRegressionDone = true;
+        _scale = scale;
+        _offset = offset;
+    }
+    #endregion
+
     #region Properties
+    public bool LinearRegressionDone { get; protected set; }
+
+    public float Scale
+    {
+        get
+        {
+            if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot read Scale when IsCorrelationFunctionRun is false")
+            if (!LinearRegressionDone) ForceLinearRegressionCalculation();
+            return _scale;
+        }
+    }
+    protected float _scale;
+
+    public float Offset
+    {
+        get
+        {
+            if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot read Offset when IsCorrelationFunctionRun is false")
+            if (!LinearRegressionDone) ForceLinearRegressionCalculation();
+            return _offset;
+        }
+    }
+    protected float _offset;
+
     public Command[] Commands { get; protected set; }
     public int Score { get; set; }
     public int TaxedScore { get; set; }

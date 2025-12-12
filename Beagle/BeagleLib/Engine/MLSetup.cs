@@ -86,5 +86,6 @@ public abstract class MLSetup
     public static MLSetup Current { get; private set; } = null!;
     public static int SolutionFoundGenerationScore { get; private set; }
     public static int MaxGenerationScore { get; private set; }
+    public static bool IsCorrelationFunctionRun { get; set; }
     #endregion
 }
