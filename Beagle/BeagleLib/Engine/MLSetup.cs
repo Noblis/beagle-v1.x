@@ -44,8 +44,8 @@ public abstract class MLSetup
 
     public virtual int TargetColonySize(int generation)
     {
-        if (generation % 1500 < 20) return 10_000_000;
-        return 1_000_000;
+        if (generation % 1500 < 20) return 3_000_000;
+        return 250_000;
     }
     public int OrganismsArraySize
     {
