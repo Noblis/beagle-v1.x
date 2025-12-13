@@ -584,7 +584,7 @@ public class Organism
     {
         get
         {
-            _asr ??= Math.Round((double)Score / MLSetup.MaxGenerationScore, 4);
+            _asr ??= Math.Round((double)Score / MLSetup.MaxGenerationScore, 5);
             return _asr.Value;
         }
     }
