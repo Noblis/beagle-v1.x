@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using BeagleLib.MathStackLib;
 using BeagleLib.Util;
 using ILGPU;
 using ILGPU.Algorithms;

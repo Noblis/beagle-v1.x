@@ -722,7 +722,7 @@ public static class CommandSpanMutationExt
         {
             if (isForDebugging)
             {
-                Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.6: Invalid mutation detected on {Environment.MachineName}!", ex.ToString(), MailPriority.High);
+                Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.7: Invalid mutation detected on {Environment.MachineName}!", ex.ToString(), MailPriority.High);
                 Console.WriteLine(ex);
                 Debugger.Break();
             }

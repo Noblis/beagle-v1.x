@@ -1,7 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime;
-using System.Runtime.CompilerServices;
-using BeagleLib.Agent;
+﻿using BeagleLib.Agent;
 using BeagleLib.Engine.FitFunc;
 using BeagleLib.MathStackLib;
 using BeagleLib.Util;
@@ -9,6 +6,9 @@ using BeagleLib.VM;
 using ILGPU;
 using ILGPU.Runtime;
 using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Runtime;
+using System.Runtime.CompilerServices;
 using WebMonk;
 
 namespace BeagleLib.Engine;
@@ -35,16 +35,17 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _mlEngineNotificationsHandler = mlEngineNotificationsHandler;
             #endregion
 
-            #region Save ML Setup
+            #region Save ML Setup & init IsCorrelationFunctionRun flag
             // ReSharper disable once ObjectCreationAsStatement
             new TMLSetup(); //this will automatically save into MLSetup.Current
+            MLSetup.IsCorrelationFunctionRun = FitFunc.UseCorrelationFit;
             #endregion
 
             #region Set up Console 
             Console.ResetColor();
             Console.CursorVisible = false;
             Console.Clear();
-            Console.Title = $"Beagle 1.6: {MLSetup.Current.Name}-{typeof(TFitFunc).Name}";
+            Console.Title = $"Beagle 1.7: {MLSetup.Current.Name}-{typeof(TFitFunc).Name}";
             #endregion
 
             #region Set up Json settings
@@ -152,7 +153,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
-                //Create new organisms in multi-threaded fashion
+                //Create new organisms in multithreaded fashion
                 _organismsCount = MLSetup.Current.TargetColonySize(0);
                 Parallel.For(0, _organismsCount, i =>
                 {
@@ -258,7 +259,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         catch(Exception ex)
         {
-            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Run Error on {Environment.MachineName}", $"Beagle 1.6: Error occurred on {Environment.MachineName} while running {MLSetup.Current.Name}\n\n{ex}");
+            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Run Error on {Environment.MachineName}", $"Beagle 1.7: Error occurred on {Environment.MachineName} while running {MLSetup.Current.Name}\n\n{ex}");
             Output.WriteLine(ex.ToString());
             throw;
         }
@@ -275,7 +276,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             //reset stuff for new generation
             _generationWatch.Restart();
 
-            //set up experiments (inputs and output)
+            //set up experiments (inputs and output), set correct output mean to 0
             Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
             {
                 (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
@@ -323,6 +324,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         {
             Parallel.For(0, _organismsCount, i =>
             {
+                Debug.Assert(Math.Abs(_scores[i]) <= BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration);
+                
                 _organisms[i]!.Score = _scores[i];
                 _organisms[i]!.TaxedScore = _scores[i] - MLSetup.Current.CalcScriptLengthTax(_organisms[i]!.Commands.Length);
             });
@@ -347,10 +350,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _shortestEverSatisfactoryOrganism = organism;
                 }
             }
-            if (!ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mlEngineNotificationsHandler?.HandleMostAccurateEverOrganismUpdated(_mostAccurateEverOrganism!.CloneForExport(), (uint)_currentGeneration);
+            if (!ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mlEngineNotificationsHandler?.HandleMostAccurateEverOrganismUpdated(_mostAccurateEverOrganism!.CloneForExport(_inputsArray, _correctOutputs), (uint)_currentGeneration);
             if (_mlEngineNotificationsHandler?.Quit == true) return true;
 
-            //we add the most accurate ones again with probability of 5%. It means every 20 generations
+            //we add the most accurate ones again with probability of 5%. It means approximately every 20 generations
             if (Rnd.RandomBoolWithChance(0.05))
             {
                 for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
@@ -386,6 +389,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             {
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Output.WriteLine("Resetting the colony fresh...");
+                Output.WriteLine();
                 Console.ResetColor();
 
                 //set up the new "beginning of times"
@@ -397,7 +401,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     var organism = _organisms[i]!;
 
                     //death (100% chance)
-                    if (!ReferenceEquals(organism, _mostAccurateEverOrganism) && 
+                    if (!ReferenceEquals(organism, _mostAccurateEverOrganism) &&
                         !ReferenceEquals(organism, _shortestEverSatisfactoryOrganism) &&
                         !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
                     {
@@ -418,11 +422,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _mostAccurateOrganismsSinceLastColonyReset[i] = null;
                 }
 
-                //Create new organisms in multithreaded fashion. we always begin with the initial number of organisms - TargetColonySize(0)
+                //Create new organisms in multithreaded fashion. We always begin with the initial number of organisms - TargetColonySize(0)
                 _newbornOrganismsCount = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 Parallel.For(0, _newbornOrganismsCount, i =>
                 {
-                    _newbornOrganisms[i] = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    _newbornOrganisms[i] = newOrganism;
                 });
             }
             else
@@ -453,6 +458,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
                                 {
                                     var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+
+                                    #if DEBUG
+                                    if (idx >= _newbornOrganisms.Length)
+                                    {
+                                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.7: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+                                        Debugger.Break();
+                                    }
+                                    #endif
+                                    
                                     _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                                 }
 
@@ -492,7 +506,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         Output.Write("Most accurate ever genome: ASR = ");
         Console.ForegroundColor = ConsoleColor.Red;
-        Output.Write($"{_mostAccurateEverOrganism!.ASR:0.00##}");
+        Output.Write($"{_mostAccurateEverOrganism!.ASR:0.000##}");
         Console.ForegroundColor = ConsoleColor.White;
         
         Output.Write(" (");
@@ -506,7 +520,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         Output.Write("), length = ");
         Console.ForegroundColor = ConsoleColor.Red;
-        Output.Write($"{_mostAccurateEverOrganism.Commands.Length}");
+        Output.Write($"{_mostAccurateEverOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
         Console.ForegroundColor = ConsoleColor.White;
         
         Output.Write(" from ");
@@ -521,7 +535,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Output.WriteLine(" total births");
         Console.ForegroundColor = ConsoleColor.White;
         
-        _mostAccurateEverOrganism.PrintCommandsInLine(_inputLabels);
+        _mostAccurateEverOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
         //Output.WriteLine(_mostAccurateEverOrganism.CommandsToJson());
 
         if (_mostAccurateOrganismsSinceLastColonyReset[0] != null && !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[0], _mostAccurateEverOrganism))
@@ -535,18 +549,18 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Console.ForegroundColor = ConsoleColor.White;
             Output.Write("Most accurate genome since last colony reset: ASR = ");
             Console.ForegroundColor = ConsoleColor.Red;
-            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.ASR:0.00##}");
+            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.ASR:0.000##}");
             Console.ForegroundColor = ConsoleColor.White;
             Output.Write(", length = ");
             Console.ForegroundColor = ConsoleColor.Red;
-            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.Commands.Length}");
+            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
             Console.ForegroundColor = ConsoleColor.White;
             Output.Write(" at ");
             Console.ForegroundColor = ConsoleColor.Red;
             Output.Write($"{_totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate:N0}");
             Console.ForegroundColor = ConsoleColor.White;
             Output.WriteLine(" total births");
-            _mostAccurateOrganismsSinceLastColonyReset[0]!.PrintCommandsInLine(_inputLabels);
+            _mostAccurateOrganismsSinceLastColonyReset[0]!.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
         }
         //Output.WriteLine($"Total births since last colony reset / reset after: {_totalBirthSinceLastColonyReset:N0}/{MLSetup.Current.TotalBirthsToResetColonyIfNoProgress:N0}");
         //Output.WriteLine(_mostAccurateOrganismSinceLastColonyReset!.CommandsToJson());
@@ -561,37 +575,118 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         if (!ReferenceEquals(oldShortestEverSatisfactoryOrganism, _shortestEverSatisfactoryOrganism))
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Output.WriteLine($"Satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00##}) Solution found. ASR = {_shortestEverSatisfactoryOrganism!.ASR:0.00##} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0})");
+            Output.WriteLine($"Satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.000##}) Solution found. ASR = {_shortestEverSatisfactoryOrganism!.ASR:0.00##} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0})");
 
             //Output.WriteLine(_shortestEverSatisfactoryOrganism.CommandsToJson());
-            _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels);
+            _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
             Console.ResetColor();
 
             #if DEBUG
             int score = 0;
             var fitFunc = new TFitFunc();
+            float[] outputs = new float[MLSetup.Current.ExperimentsPerGeneration];
             Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, experiment =>
             {
                 var codeMachineCPU = new CodeMachine();
-                var output = codeMachineCPU.RunCommands(_inputsArray[experiment], _shortestEverSatisfactoryOrganism.Commands);
-                var correctOutput = _correctOutputs[experiment];
-
-                //fit function plus script length adjustment
-                var isOutputValid = !float.IsNaN(output) && !float.IsInfinity(output) && !float.IsNegativeInfinity(output);
-                var isCorrectOutputValid = !float.IsNaN(correctOutput) && !float.IsInfinity(correctOutput) && !float.IsNegativeInfinity(correctOutput);
-
-                if (isOutputValid && isCorrectOutputValid) Interlocked.Add(ref score, fitFunc.FitFunction(output, correctOutput));
-                else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid)); 
+                outputs[experiment] = codeMachineCPU.RunCommands(_inputsArray[experiment], _shortestEverSatisfactoryOrganism.Commands);
             });
 
-            if (_shortestEverSatisfactoryOrganism.Score != score)
+            if (fitFunc.UseCorrelationFit)
             {
-                Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.6: Invalid shortest satisfactory organism score on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+                //calculate output mean
+                double outputsMean0 = 0;
+                double outputsMean1 = 0;
+                int count0 = 0;
+                int count1 = 0;
+                for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
+                {
+                    var output = outputs[experiment];
+                    var correctOutput = _correctOutputs[experiment];
+
+                    //valid/invalid outputs
+                    var isOutputValid = output.IsValidNumber();
+                    var isCorrectOutputValid = correctOutput.IsValidNumber();
+
+                    if (isOutputValid && isCorrectOutputValid)
+                    {
+                        count0++;
+                        outputsMean0 += output;
+                        outputsMean1 += correctOutput;
+                    }
+                }
+                if (count0 != 0)
+                {
+                    outputsMean0 /= count0;
+                    outputsMean1 /= count0;
+                }
+                count0 = 0;
+
+                //calculate score
+                var sums = new double[3];
+                for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
+                {
+                    var output = outputs[experiment];
+                    var correctOutput = _correctOutputs[experiment];
+
+                    //valid/invalid outputs
+                    var isOutputValid = output.IsValidNumber();
+                    var isCorrectOutputValid = correctOutput.IsValidNumber();
+
+                    if (isOutputValid && isCorrectOutputValid)
+                    {
+                        //if both output and correct output are valid
+                        var outputDeltaVsMean = output - outputsMean0;
+                        var correctOutputDeltaVsMean = correctOutput - outputsMean1;
+                        sums[0] += outputDeltaVsMean * correctOutputDeltaVsMean;
+                        sums[1] += outputDeltaVsMean * outputDeltaVsMean;
+                        sums[2] += correctOutputDeltaVsMean * correctOutputDeltaVsMean;
+                    }
+                    else
+                    {
+                        //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
+                        if (isOutputValid ^ isCorrectOutputValid) count0++; //if they are different
+                        else count1++; //if they are the same
+                    }
+                }
+
+                if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
+                {
+                    var denominator = sums[1] * sums[2];
+                    float rSquared = 0;
+                    if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
+
+                    //r can range from 0 to 1
+                    //punishment is based on the percentage of mismatches, number of experiments cancels out
+                    score = (int)(BConfig.MaxScore * (MLSetup.Current.ExperimentsPerGeneration - count0 - count1) * rSquared) - BConfig.MaxScore * (count0 - count1);
+                }
+                else
+                {
+                    score = (int)(-BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration);
+                }
+            }
+            else
+            {
+                for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
+                {
+                    var output = outputs[experiment];
+                    var correctOutput = _correctOutputs[experiment];
+
+                    //valid/invalid outputs
+                    var isOutputValid = output.IsValidNumber();
+                    var isCorrectOutputValid = correctOutput.IsValidNumber();
+
+                    if (isOutputValid && isCorrectOutputValid) Interlocked.Add(ref score, fitFunc.FitFunction(output, correctOutput));
+                    else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid));
+                }
+            }
+            if (_shortestEverSatisfactoryOrganism.Score - score != 0)
+            {
+                Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.7: Invalid shortest satisfactory organism score on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                 Debugger.Break();
             }
             #endif
 
-            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Found Satisfactory Solution on {Environment.MachineName}", $"Beagle 1.6: {MLSetup.Current.Name} completed in {_totalTimeWatch.Elapsed:c} on {Environment.MachineName}\n\n{_shortestEverSatisfactoryOrganism.ToString(_inputLabels)}");
+            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Found Satisfactory Solution on {Environment.MachineName}", $"Beagle 1.7: {MLSetup.Current.Name} completed in {_totalTimeWatch.Elapsed:c} on {Environment.MachineName}\n\n{_shortestEverSatisfactoryOrganism.ToString(_inputLabels)}");
             if (!MLSetup.Current.KeepOptimizingAfterSolutionFound)
             {
                 _totalTimeWatch.Stop();
@@ -608,8 +703,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (_shortestEverSatisfactoryOrganism != null)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Output.WriteLine($"Shortest satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00##}) solution found so far. ASR = {_shortestEverSatisfactoryOrganism.ASR:0.00##} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}), Length = {_shortestEverSatisfactoryOrganism.Commands.Length}");
-                _shortestEverSatisfactoryOrganism.PrintCommandsInLine(_inputLabels);
+                Output.WriteLine($"Shortest satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.000##}) solution found so far. ASR = {_shortestEverSatisfactoryOrganism.ASR:0.00##} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}), Length = {_shortestEverSatisfactoryOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
+                _shortestEverSatisfactoryOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
                 Console.ResetColor();
             }
         }
@@ -688,7 +783,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                             #region Copy stuff that changes to GPU
                             acceleratorScriptStarts.View.CopyFromCPU(stream, batchScriptStarts);
                             acceleratorAllCommands.View.CopyFromCPU(stream, batchAllCommands);
-                            acceleratorGrossRewards.View.MemSetToZero(stream);
+                            if (!FitFunc.UseCorrelationFit) acceleratorGrossRewards.View.MemSetToZero(stream);
                             #endregion
 
                             #region Execute Kernel
@@ -915,7 +1010,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
     protected void DisplayAsLatex()
     {
-        var expr = MathExpr.FromCommands(_mostAccurateEverOrganism!.Commands, MLSetup.Current.GetInputLabels());
+        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_inputsArray, _correctOutputs);
+        var expr = MathExpr.FromCommands(fullCommands, MLSetup.Current.GetInputLabels());
         var url = $"https://arachnoid.com/latex/?equ={expr.AsLatexString()}";
         WebServer.OpenInBrowser(url);
     }

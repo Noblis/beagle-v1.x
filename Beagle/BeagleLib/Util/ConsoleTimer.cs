@@ -4,7 +4,7 @@ namespace BeagleLib.Util;
 
 public class ConsoleTimer : IDisposable
 {
-    public ConsoleTimer(string name, bool enabled, ConsoleColor? color = null)
+    public ConsoleTimer(string name, bool enabled = true, ConsoleColor? color = null)
     {
         Enabled = enabled;
         if (!Enabled) return;

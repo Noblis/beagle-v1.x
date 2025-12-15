@@ -6,7 +6,14 @@ using System.Text;
 using BeagleLib.Engine;
 using BeagleLib.Util;
 using BeagleLib.VM;
+using MathNet.Numerics;
 using Newtonsoft.Json;
+using WebMonk.RazorSharp.HtmlTags;
+using Command = BeagleLib.VM.Command;
+using Output = BeagleLib.Util.Output;
+
+//using Command = BeagleLib.VM.Command;
+//using Output = BeagleLib.Util.Output;
 
 namespace BeagleLib.Agent;
 
@@ -19,6 +26,7 @@ public class Organism
         Span<Command> mutationCommands = stackalloc Command[BConfig.MaxScriptLength];
         var mutationCommandsLength = 0;
 
+        //mutationCommands.Add(ref mutationCommandsLength, Command.CreateRandomLoad(inputsCount));
         mutationCommands.Add(ref mutationCommandsLength, Command.CreateRandomLoadOrConst(inputsCount));
         mutationCommands.Mutate(ref mutationCommandsLength, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
         var result = CreateByCopyingCommandsFromPartOfSpan(mutationCommands, mutationCommandsLength);
@@ -38,33 +46,74 @@ public class Organism
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Organism CreateFromCommands(params Command[] commands)
+    public static Organism CreateFromCommandsStripLinearRegressionIfNeeded(params Command[] commands)
     {
-        var organism = new Organism(commands);
+        Organism organism;
+        if (MLSetup.IsCorrelationFunctionRun)
+        {
+            var idx = commands.Length;
+            
+            float offset = 0;
+            if (commands[idx - 1].Operation == OpEnum.Add && commands[idx - 2].Operation == OpEnum.Const)
+            {
+                //process add command, calculate offset
+                idx -= 2;
+                Debug.Assert(commands[idx + 1].Operation == OpEnum.Const);
+                offset = commands[idx + 1].ConstValue;
+            }
+
+            float scale = 1;
+            if (commands[idx - 1].Operation == OpEnum.Mul && commands[idx - 1].Operation == OpEnum.Const)
+            {
+                idx -= 2;
+                //process mul command, calculate scale
+                Debug.Assert(commands[idx + 1].Operation == OpEnum.Const);
+                scale = commands[idx + 1].ConstValue;
+            }
+
+            organism = CreateByCopyingCommandsFromPartOfSpan(commands, idx);
+            organism.SetScaleAndOffset(scale, offset);
+        }
+        else
+        {
+            organism = new Organism(commands);
+        }
         return organism;
     }
 
     //This method circumvents the dead organism pool for both creating and destroying an organism.
     //It is meant to only be used for thread-safe data exchange between MLEngine and another thread.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Organism CloneForExport()
+    public Organism CloneForExport(float[][] inputsArray, float[] correctOutputs)
     {
-        //allocate array of the same size
-        var commandsDeepCopy = new Command[Commands.Length];
-        
-        //Deep copy of commands 
-        for (var i = 0; i < Commands.Length; i++)
+        Organism organism;
+        //we check for this because, this, if true, GetFullCommands returns a deep copy bt if false, returns a reference to Commands array
+        if (MLSetup.IsCorrelationFunctionRun) 
         {
-            commandsDeepCopy[i] = Commands[i];
+            var fullCommands = GetFullCommands(inputsArray, correctOutputs);
+            organism = new Organism(fullCommands.ToArray());
+        }
+        else
+        {
+            //allocate array of the same size
+            var commandsDeepCopy = new Command[Commands.Length];
+
+            //Deep copy of commands 
+            for (var i = 0; i < Commands.Length; i++)
+            {
+                commandsDeepCopy[i] = Commands[i];
+            }
+            organism = new Organism(commandsDeepCopy);
         }
 
         //Copy fields and properties
-        var organism = new Organism(commandsDeepCopy)
-        {
-            Score = Score,
-            TaxedScore = TaxedScore,
-            _asr = _asr
-        };
+        organism.LinearRegressionDone = LinearRegressionDone;
+        organism._scale = Scale;
+        organism._offset = Offset;
+
+        organism.Score = Score;
+        organism.TaxedScore = TaxedScore;
+        organism._asr = _asr;
 
         return organism;
     }
@@ -79,7 +128,7 @@ public class Organism
         var commands = JsonConvert.DeserializeObject<Command[]>(json);
         var commandsSpan = new Span<Command>(commands);
         commandsSpan.VerifyScriptValid(commandsSpan.Length, false);
-        return CreateFromCommands(commands!);
+        return CreateFromCommandsStripLinearRegressionIfNeeded(commands!);
     }
     public static Organism CreateFromGCLAssembly(string stdFormat)
     {
@@ -212,7 +261,7 @@ public class Organism
         }
         var commandsSpan = new Span<Command>(commands.ToArray());
         commandsSpan.VerifyScriptValid(commandsSpan.Length, false);
-        return CreateFromCommands(commands.ToArray());
+        return CreateFromCommandsStripLinearRegressionIfNeeded(commands.ToArray());
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)] 
@@ -228,6 +277,10 @@ public class Organism
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected void ResetPropertiesForNewOrganism()
     {
+        LinearRegressionDone = false;
+        _scale = 1;
+        _offset = 0;
+
         Score = TaxedScore = 0;
         _asr = null;
     }
@@ -291,37 +344,135 @@ public class Organism
         mutationCommands.Mutate(ref mutationCommandsLength, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
         return CreateByCopyingCommandsFromPartOfSpan(mutationCommands, mutationCommandsLength);
     }
+    public IEnumerable<Command> GetFullCommands(float[][] inputsArray, float[] correctOutputs)
+    {
+        if (MLSetup.IsCorrelationFunctionRun)
+        {
+            CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
+            var commandsList = Commands.ToList();
+
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (Scale != 1)
+            {
+                commandsList.Add(new Command(OpEnum.Const, Scale));
+                commandsList.Add(new Command(OpEnum.Mul));
+            }
+
+            if (Offset != 0)
+            {
+                commandsList.Add(new Command(OpEnum.Const, Offset));
+                commandsList.Add(new Command(OpEnum.Add));
+            }
+
+            return commandsList;
+        }
+        else
+        {
+            return Commands;
+        }
+    }
+    public int GetFullCommandsLength(float[][] inputsArray, float[] correctOutputs)
+    {
+        if (MLSetup.IsCorrelationFunctionRun)
+        {
+            CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
+
+            var length = Commands.Length;
+
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (Scale != 1) length += 2;
+            if (Offset != 0) length += 2;
+
+            return length;
+        }
+        else
+        {
+            return Commands.Length;
+        }
+    }
     #endregion
 
     #region Print and ToJson Commands
-    public void PrintCommands(string[] inputLabels)
+    public void PrintCommands(string[] inputLabels, float[][] inputsArray, float[] correctOutputs)
     {
-        for (var addr = 0; addr < Commands.Length; addr++)
+        CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
+        
+        int addr;
+        for (addr = 0; addr < Commands.Length; addr++)
         {
             _sb.Clear();
             Output.WriteLine($"{addr + 1}: {Commands[addr].AppendToStringBuilder(inputLabels, _sb)}");
         }
+
+        //we could have used GetFullCommands() methods here to make it simpler, but it would give more work to GC
+        if (MLSetup.IsCorrelationFunctionRun)
+        {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (Scale != 1)
+            {
+                _sb.Clear();
+                Output.WriteLine($"{++addr}: {new Command(OpEnum.Const, Scale).AppendToStringBuilder(inputLabels, _sb)}");
+
+                _sb.Clear();
+                Output.WriteLine($"{++addr}: {new Command(OpEnum.Mul).AppendToStringBuilder(inputLabels, _sb)}");
+            }
+
+            if (Offset != 0)
+            {
+                _sb.Clear();
+                Output.WriteLine($"{++addr}: {new Command(OpEnum.Const, Offset).AppendToStringBuilder(inputLabels, _sb)}");
+
+                _sb.Clear();
+                Output.WriteLine($"{++addr}: {new Command(OpEnum.Add).AppendToStringBuilder(inputLabels, _sb)}");
+            }
+        }
     }
-    public void PrintCommandsInLine(string[] inputLabels)
+    public void PrintCommandsInLine(string[] inputLabels, float[][] inputsArray, float[] correctOutputs)
     {
+        CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
+
         for (var addr = 0; addr < Commands.Length; addr++)
         {
             _sb.Clear();
             Output.Write($"{Commands[addr].AppendToStringBuilder(inputLabels, _sb)}; ");
         }
+
+        //we could have used GetFullCommands() methods here to make it simpler, but it would give more work to GC
+        if (MLSetup.IsCorrelationFunctionRun)
+        {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (Scale != 1)
+            {
+                _sb.Clear();
+                Output.Write($"{new Command(OpEnum.Const, Scale).AppendToStringBuilder(inputLabels, _sb)}; ");
+
+                _sb.Clear();
+                Output.Write($"{new Command(OpEnum.Mul).AppendToStringBuilder(inputLabels, _sb)}; ");
+            }
+
+            if (Offset != 0)
+            {
+                _sb.Clear();
+                Output.Write($"{new Command(OpEnum.Const, Offset).AppendToStringBuilder(inputLabels, _sb)}; ");
+
+                _sb.Clear();
+                Output.Write($"{new Command(OpEnum.Add).AppendToStringBuilder(inputLabels, _sb)}; ");
+            }
+        }
+
         Output.WriteLine("");
     }
     
-    public string CommandsToJson()
+    public string CommandsToJson(float[][] inputsArray, float[] correctOutputs)
     {
-        return JsonConvert.SerializeObject(Commands);
+        return JsonConvert.SerializeObject(GetFullCommands(inputsArray, correctOutputs));
     }
     #endregion
 
     #region Diagnistics Helpers
     private void ReportInvalidScriptAndBreak()
     {
-        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.6: Invalid script copy detected on {Environment.MachineName}!", "", MailPriority.High);
+        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.7: Invalid script copy detected on {Environment.MachineName}!", "", MailPriority.High);
         Debugger.Break();
     }
     #endregion
@@ -352,7 +503,79 @@ public class Organism
     private static readonly ConcurrentStack<Organism>[] _organismDeadPools;
     #endregion
 
+    #region Lieaner Regression Methods
+    public void CalcScaleAndOffsetIfNeeded(float[][] inputsArray, float[] correctOutputs)
+    {
+        if (MLSetup.IsCorrelationFunctionRun && !LinearRegressionDone)
+        {
+            var dblCorrectOutputs = new List<double>();
+            var dblOutputs = new List<double>();
+
+            float total = 0;
+            for (var i = 0; i < correctOutputs.Length; i++)
+            {
+                if (correctOutputs[i].IsValidNumber())
+                {
+                    var output = new CodeMachine().RunCommands(inputsArray[i], Commands);
+                    if (output.IsValidNumber())
+                    {
+                        dblCorrectOutputs.Add(correctOutputs[i]);
+                        dblOutputs.Add(output);
+                        total += output;
+                    }
+                }
+            }
+            Debug.Assert(dblOutputs.Count == dblCorrectOutputs.Count);
+            float mean = total / dblOutputs.Count;
+
+            (double, double) lineRegression = Fit.Line(dblOutputs.ToArray(), dblCorrectOutputs.ToArray());
+
+            var offset = (float)lineRegression.Item1.RoundToSignificantDigits(4);
+            Debug.Assert(offset.IsValidNumber());
+            if (Math.Abs(offset / mean) < 1E-4) offset = 0;
+
+            var scale = (float)lineRegression.Item2.RoundToSignificantDigits(4);
+            Debug.Assert(scale.IsValidNumber());
+            if (Math.Abs(scale - 1) < 1E-4) scale = 1;
+
+            SetScaleAndOffset(scale, offset);
+        }
+    }
+    public void SetScaleAndOffset(float scale, float offset)
+    {
+        if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot call SetScaleAndOffset when IsCorrelationFunctionRun is false");
+
+        LinearRegressionDone = true;
+        _scale = scale;
+        _offset = offset;
+    }
+    #endregion
+
     #region Properties
+    public bool LinearRegressionDone { get; protected set; }
+
+    public float Scale
+    {
+        get
+        {
+            if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot read Scale when IsCorrelationFunctionRun is false");
+            if (!LinearRegressionDone) throw new InvalidOperationException("Cannot read Scale when LinearRegressionDone is false");
+            return _scale;
+        }
+    }
+    protected float _scale;
+
+    public float Offset
+    {
+        get
+        {
+            if (!MLSetup.IsCorrelationFunctionRun) throw new InvalidOperationException("Cannot read Offset when IsCorrelationFunctionRun is false");
+            if (!LinearRegressionDone) throw new InvalidOperationException("Cannot read Offset when LinearRegressionDone is false");
+            return _offset;
+        }
+    }
+    protected float _offset;
+
     public Command[] Commands { get; protected set; }
     public int Score { get; set; }
     public int TaxedScore { get; set; }
@@ -361,7 +584,7 @@ public class Organism
     {
         get
         {
-            _asr ??= Math.Round((double)Score / MLSetup.MaxGenerationScore, 4);
+            _asr ??= Math.Round((double)Score / MLSetup.MaxGenerationScore, 5);
             return _asr.Value;
         }
     }

@@ -28,8 +28,8 @@ public class DemoForMSU : MLSetup
 
     public override int TargetColonySize(int generation)
     {
-        if (generation % 1000 < 25) return 15_000_000;
-        return 1_000_000;
+        if (generation % 1000 < 15) return 5_000_000;
+        return 500_000;
     }
 
     public override long TotalBirthsToResetColonyIfNoProgress => 500_000_000;

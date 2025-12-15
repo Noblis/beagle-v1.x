@@ -10,6 +10,7 @@ public class Program
     static void Main(string[] args)
     {
         #region Read Command-line parameters
+        // ReSharper disable once RedundantAssignment
         var stopAfterMin = -1;
         var noEscMenu = false;
         foreach (var arg in args)
@@ -91,10 +92,10 @@ public class Program
         #endregion
 
         #region Benchmarking
-        stopAfterMin = 20;
-        using var mlBenchmarkEngine = new MLEngine<SinApproximation, StdCubeFitFunc>(forceCPUAccelerator: false);
-        mlBenchmarkEngine.Train(stopAfterMin, noEscMenu);
-        return;
+        //stopAfterMin = 20;
+        //using var mlBenchmarkEngine = new MLEngine<SinApproximation, StdCubeFitFunc>(forceCPUAccelerator: false);
+        //mlBenchmarkEngine.Train(stopAfterMin, noEscMenu);
+        //return;
 
         //using var mlBenchmarkEngine = new MLEngine<Benchmark, StdFitFunc>(forceCPUAccelerator: false);
         //mlBenchmarkEngine.Train(stopAfterMin, noEscMenu, benchmarkRun: true);
@@ -103,11 +104,13 @@ public class Program
 
         //new CsvGen<RydbergFormula>().CreateAndSaveCsvFile(5000); return;
 
-        //using var mlEngine = new MLEngine<DemoForMSU, StdFitFunc>(forceCPUAccelerator: false);
+        //using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(forceCPUAccelerator: false);
+        //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
+        //using var mlEngine = new MLEngine<DemoForMSU, CorrelationFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<DemoForMSU2, StdHyperFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<DemoForMSU3, StdFitFunc>(forceCPUAccelerator: false);
-        using var mlEngine = new MLEngine<DemoForMSU4, StdHyperFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<AreaOfCircle, StdFitFunc>(forceCPUAccelerator: false);
+        //using var mlEngine = new MLEngine<DemoForMSU4, CorrelationFitFunc>(forceCPUAccelerator: false);
+        //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<XPowY, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<AvgOf2, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<QuadraticEqNormalized, StdFitFunc>(forceCPUAccelerator: false);
@@ -115,7 +118,7 @@ public class Program
         //using var mlEngine = new MLEngine<DepressedCubicEq, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<SinApproximation, StdCubeFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<DemoForJdAndTheBoys, StdFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<RydbergFormula, StdFitFunc>(forceCPUAccelerator: false);
+        using var mlEngine = new MLEngine<RydbergFormula, CorrelationFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<ThrustData, StdFitFunc>(forceCPUAccelerator: false);
 
         mlEngine.Train(stopAfterMin, noEscMenu);

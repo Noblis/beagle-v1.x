@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 
 namespace ExecuteGenome
 {
-    internal class Program
+    public class Program
     {
         static void Main()
         {
@@ -60,6 +60,7 @@ namespace ExecuteGenome
                 Console.WriteLine($"Output: {output}");
                 Console.WriteLine();
             }
+            // ReSharper disable once FunctionNeverReturns
         }
 
         static float ReadFloat()

@@ -8,7 +8,7 @@ public class AreaOfCircle : MLSetup
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
     {
-        var r = Rnd.Random.NextSingle() * 1000;
+        var r = Rnd.Random.NextSingle() * 25;
         inputs[0] = r;
         return (inputs, r*r*MathF.PI);
     }
@@ -17,15 +17,9 @@ public class AreaOfCircle : MLSetup
         return ["r"];
     }
 
-    public override int TargetColonySize(int generation)
-    {
-        // ReSharper disable once DuplicatedStatements
-        //if (generation == 0) return 1_000_000;
+    public override uint ExperimentsPerGeneration => 512;
 
-        return 1_000_000;
-    }
-
-    public override long TotalBirthsToResetColonyIfNoProgress => 100_000_000;
+    public override long TotalBirthsToResetColonyIfNoProgress => 2_000_000;
 
     public override double SolutionFoundASRThreshold => 1.0;
     public override bool KeepOptimizingAfterSolutionFound => true;

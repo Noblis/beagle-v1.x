@@ -44,8 +44,8 @@ public abstract class MLSetup
 
     public virtual int TargetColonySize(int generation)
     {
-        if (generation % 1500 < 20) return 10_000_000;
-        return 1_000_000;
+        if (generation % 1500 < 20) return 3_000_000;
+        return 250_000;
     }
     public int OrganismsArraySize
     {
@@ -54,11 +54,11 @@ public abstract class MLSetup
             if (!_organismArraySize.HasValue)
             {
                 int max = 0;
-                for (var i = 0; i < 1000000; i++)
+                for (var i = 0; i < 10_000_000; i++)
                 {
                     if (TargetColonySize(i) > max) max = TargetColonySize(i);
                 }
-                _organismArraySize = checked(max * 2);
+                _organismArraySize = checked(max * 4);
             }
             return _organismArraySize.Value;
         }
@@ -77,7 +77,7 @@ public abstract class MLSetup
         }
     }
     private int? _scriptLengthTaxRate;
-    protected virtual int ScriptLengthTaxRateInternal => BConfig.MaxScore * (int)ExperimentsPerGeneration / 200;
+    protected virtual int ScriptLengthTaxRateInternal => BConfig.MaxScore * (int)ExperimentsPerGeneration / 100;
 
     public virtual bool KeepOptimizingAfterSolutionFound => false;
     #endregion
@@ -86,5 +86,6 @@ public abstract class MLSetup
     public static MLSetup Current { get; private set; } = null!;
     public static int SolutionFoundGenerationScore { get; private set; }
     public static int MaxGenerationScore { get; private set; }
+    public static bool IsCorrelationFunctionRun { get; set; }
     #endregion
 }
