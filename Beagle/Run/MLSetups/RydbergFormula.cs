@@ -1,7 +1,5 @@
 ﻿using BeagleLib.Engine;
 using BeagleLib.Util;
-using BeagleLib.VM;
-using NumSharp;
 
 namespace Run.MLSetups;
 
