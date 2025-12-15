@@ -25,15 +25,15 @@ public class DemoForMSU2 : MLSetup
         return ["x", "v", "c"];
     }
 
-    public override int TargetColonySize(int generation)
-    {
-        if (generation % 1000 < 25) return 15_000_000;
-        return 1_000_000;
-    }
+    //public override int TargetColonySize(int generation)
+    //{
+    //    if (generation % 1000 < 25) return 15_000_000;
+    //    return 1_000_000;
+    //}
 
     public override long TotalBirthsToResetColonyIfNoProgress => 500_000_000;
 
-    public override uint ExperimentsPerGeneration => 1024;
+    //public override uint ExperimentsPerGeneration => 1024;
 
     public override double SolutionFoundASRThreshold => 1.0;
     public override bool KeepOptimizingAfterSolutionFound => true;

@@ -43,17 +43,17 @@ public class DemoForMSU3 : MLSetup
         return ["G", "m1", "m2", "x1", "x2"];
     }
 
-    public override int TargetColonySize(int generation)
-    {
-        if (generation % 1000 < 25) return 20_000_000;
-        return 1_000_000;
-    }
+    //public override int TargetColonySize(int generation)
+    //{
+    //    if (generation % 1000 < 25) return 20_000_000;
+    //    return 1_000_000;
+    //}
 
     protected override int ScriptLengthTaxRateInternal => BConfig.MaxScore * (int)ExperimentsPerGeneration / 200;
 
     public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
 
-    public override uint ExperimentsPerGeneration => 1024;
+    //public override uint ExperimentsPerGeneration => 1024;
 
     public override double SolutionFoundASRThreshold => 1.0;
     public override bool KeepOptimizingAfterSolutionFound => true;
@@ -64,5 +64,4 @@ public class DemoForMSU3 : MLSetup
                                                                                                 x != OpEnum.Cube &&
                                                                                                 x != OpEnum.Ln).ToArray();
     #endregion
-
 }
