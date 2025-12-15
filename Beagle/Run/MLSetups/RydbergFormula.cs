@@ -32,14 +32,14 @@ public class RydbergFormula : MLSetup
     {
         return ["n1", "n2"];
     }
-    public override OpEnum[] GetAllowedOperations()
-    {
-        return base.GetAllowedOperations().Where(x => x != OpEnum.Sin && x != OpEnum.Cbrt && x != OpEnum.Cube && x != OpEnum.Ln).ToArray();
-    }
+    //public override OpEnum[] GetAllowedOperations()
+    //{
+    //    return base.GetAllowedOperations().Where(x => x != OpEnum.Sin && x != OpEnum.Cbrt && x != OpEnum.Cube && x != OpEnum.Ln).ToArray();
+    //}
     public override uint ExperimentsPerGeneration => 512;
     public override long TotalBirthsToResetColonyIfNoProgress => 750_000_000;
     public override bool KeepOptimizingAfterSolutionFound => true;
 
-    private readonly NumPyRandom _rs = np.random.RandomState();
+    //private readonly NumPyRandom _rs = np.random.RandomState();
     #endregion
 }
