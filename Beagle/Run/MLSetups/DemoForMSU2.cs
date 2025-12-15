@@ -9,9 +9,9 @@ public class DemoForMSU2 : MLSetup
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
     {
-        var x = 1 + Rnd.Random.NextSingle() * 4;
-        var v = 1 + Rnd.Random.NextSingle();
-        var c = 3 + Rnd.Random.NextSingle() * 7;
+        var x = 1 + Rnd.Random.NextSingle() * 15;
+        var v = 1 + Rnd.Random.NextSingle() * 10;
+        var c = 11 + Rnd.Random.NextSingle() * 10;
 
         inputs[0] = x;
         inputs[1] = v;
@@ -38,10 +38,10 @@ public class DemoForMSU2 : MLSetup
     public override double SolutionFoundASRThreshold => 1.0;
     public override bool KeepOptimizingAfterSolutionFound => true;
 
-    public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Sin &&
-                                                                                              x != OpEnum.Cbrt &&
-                                                                                              x != OpEnum.Cube &&
-                                                                                              x != OpEnum.Ln &&
-                                                                                              x != OpEnum.Pow).ToArray();
+    //public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Sin &&
+    //                                                                                          x != OpEnum.Cbrt &&
+    //                                                                                          x != OpEnum.Cube &&
+    //                                                                                          x != OpEnum.Ln &&
+    //                                                                                          x != OpEnum.Pow).ToArray();
     #endregion
 }

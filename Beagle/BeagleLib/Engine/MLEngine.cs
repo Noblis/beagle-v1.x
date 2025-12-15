@@ -108,7 +108,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             var acceleratorCount = useSingleAccelerator ? 1 : devices.Length; //this is for benchmarking One vs Multiple GPUs
             if (firstDevice.AcceleratorType == AcceleratorType.CPU) Output.WriteLine($"Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} exclusively on a CPU using a GPU emulator");
-            else Output.WriteLine($"{Environment.MachineName}: Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} on {Environment.ProcessorCount} CPU(s) & {acceleratorCount} GPU(s) @ {MLSetup.Current.SolutionFoundASRThreshold:0.00##} target ASR");
+            else Output.WriteLine($"{Environment.MachineName}: Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} on {Environment.ProcessorCount} CPU(s) & {acceleratorCount} GPU(s) @ {MLSetup.Current.SolutionFoundASRThreshold:0.00000} target ASR");
 
             _accelerators = new AcceleratorInfo<TFitFunc>[acceleratorCount];
             for (var i = 0; i < _accelerators.Length; i++)
@@ -575,7 +575,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         if (!ReferenceEquals(oldShortestEverSatisfactoryOrganism, _shortestEverSatisfactoryOrganism))
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Output.WriteLine($"Satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00000}) Solution found. ASR = {_shortestEverSatisfactoryOrganism!.ASR:0.00##} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0})");
+            Output.WriteLine($"Satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00000}) Solution found. ASR = {_shortestEverSatisfactoryOrganism!.ASR:0.00000} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0})");
 
             //Output.WriteLine(_shortestEverSatisfactoryOrganism.CommandsToJson());
             _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
@@ -703,7 +703,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (_shortestEverSatisfactoryOrganism != null)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Output.WriteLine($"Shortest satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00000}) solution found so far. ASR = {_shortestEverSatisfactoryOrganism.ASR:0.00##} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}), Length = {_shortestEverSatisfactoryOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
+                Output.WriteLine($"Shortest satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00000}) solution found so far. ASR = {_shortestEverSatisfactoryOrganism.ASR:0.00000} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}), Length = {_shortestEverSatisfactoryOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
                 _shortestEverSatisfactoryOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
                 Console.ResetColor();
             }
