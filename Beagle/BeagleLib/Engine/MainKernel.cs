@@ -125,7 +125,7 @@ public static class MainKernel
                 if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
                 {
                     var denominator = sums[1] * sums[2];
-                    double rSquared = 0;
+                    float rSquared = 0;
                     if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
 
                     Debug.Assert(rSquared is <= 1 and >= 0);
