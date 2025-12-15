@@ -132,7 +132,7 @@ public static class MainKernel
 
                     //r can range from 0 to 1
                     //punishment is based on the percentage of mismatches, number of experiments cancels out
-                    score = (int)(BConfig.MaxScore * (numberOfExperiments - (count[0] + count[1])) * rSquared * rSquared * rSquared) - BConfig.MaxScore * (count[0] - count[1]);
+                    score = (int)(BConfig.MaxScore * (numberOfExperiments - (count[0] + count[1])) * rSquared * rSquared) - BConfig.MaxScore * (count[0] - count[1]);
                 }
                 else
                 {
