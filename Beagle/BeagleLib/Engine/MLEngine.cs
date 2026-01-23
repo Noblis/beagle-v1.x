@@ -45,7 +45,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Console.ResetColor();
             Console.CursorVisible = false;
             Console.Clear();
-            Console.Title = $"Beagle 1.7: {MLSetup.Current.Name}-{typeof(TFitFunc).Name}";
+            Console.Title = $"Beagle {BConfig.Version}: {MLSetup.Current.Name}-{typeof(TFitFunc).Name}";
             #endregion
 
             #region Set up Json settings
@@ -259,7 +259,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         catch(Exception ex)
         {
-            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Run Error on {Environment.MachineName}", $"Beagle 1.7: Error occurred on {Environment.MachineName} while running {MLSetup.Current.Name}\n\n{ex}");
+            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Run Error on {Environment.MachineName}", $"Beagle {BConfig.Version}: Error occurred on {Environment.MachineName} while running {MLSetup.Current.Name}\n\n{ex}");
             Output.WriteLine(ex.ToString());
             throw;
         }
@@ -459,14 +459,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 {
                                     var idx = Interlocked.Increment(ref _newbornOrganismsCount);
 
-                                    #if DEBUG
+#if DEBUG
                                     if (idx >= _newbornOrganisms.Length)
                                     {
-                                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.7: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+                                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                                         Debugger.Break();
                                     }
-                                    #endif
-                                    
+#endif
+
                                     _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                                 }
 
@@ -581,7 +581,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
             Console.ResetColor();
 
-            #if DEBUG
+#if DEBUG
             int score = 0;
             var fitFunc = new TFitFunc();
             float[] outputs = new float[MLSetup.Current.ExperimentsPerGeneration];
@@ -681,12 +681,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             }
             if (_shortestEverSatisfactoryOrganism.Score - score != 0)
             {
-                Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle 1.7: Invalid shortest satisfactory organism score on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+                Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: Invalid shortest satisfactory organism score on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                 Debugger.Break();
             }
-            #endif
+#endif
 
-            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Found Satisfactory Solution on {Environment.MachineName}", $"Beagle 1.7: {MLSetup.Current.Name} completed in {_totalTimeWatch.Elapsed:c} on {Environment.MachineName}\n\n{_shortestEverSatisfactoryOrganism.ToString(_inputLabels)}");
+            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Found Satisfactory Solution on {Environment.MachineName}", $"Beagle {BConfig.Version}: {MLSetup.Current.Name} completed in {_totalTimeWatch.Elapsed:c} on {Environment.MachineName}\n\n{_shortestEverSatisfactoryOrganism.ToString(_inputLabels)}");
             if (!MLSetup.Current.KeepOptimizingAfterSolutionFound)
             {
                 _totalTimeWatch.Stop();
