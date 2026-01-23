@@ -12,7 +12,8 @@ public abstract record ByteCode
     public sealed record Cube : ByteCode;
     public sealed record Ln : ByteCode;
     public sealed record Sin : ByteCode;
-    public sealed record Abs : ByteCode;
+    public sealed record Cos : ByteCode;
+    //public sealed record Abs : ByteCode;
     // Don't know how to or if we want to represent rounding
     // public sealed record Round : Bytecode;
     #endregion unary

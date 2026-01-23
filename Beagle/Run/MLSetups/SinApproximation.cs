@@ -37,6 +37,6 @@ public class SinApproximation : MLSetup
     public override double SolutionFoundASRThreshold => 1.0; //0.9999;
     public override uint ExperimentsPerGeneration => 1024;
 
-    public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Sin).ToArray();
+    public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Sin && x != OpEnum.Cos).ToArray();
     #endregion
 }

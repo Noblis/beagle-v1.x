@@ -81,6 +81,9 @@ public struct CodeMachine
             case (OpEnum.Pow, false): ExecutePow(); return;
             case (OpEnum.Pow, true): ExecutePowWithLibDevice(); return;
 
+            case (OpEnum.Cos, false): ExecuteCos(); return;
+            case (OpEnum.Cos, true): ExecuteCosWithLibDevice(); return;
+
             //case (OpEnum.Abs, false): ExecuteAbs(); return;
             //case (OpEnum.Abs, true): ExecuteAbsWithLibDevice(); return;
 
@@ -314,6 +317,21 @@ public struct CodeMachine
         var y = StackPop();
         StackPush(LibDevice.Pow(y, x));
     }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteCos()
+    {
+        var x = StackPop();
+        x = XMath.Cos(x);
+        StackPush(x);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteCosWithLibDevice()
+    {
+        var x = StackPop();
+        x = LibDevice.Cos(x);
+        StackPush(x);
+    }
+
 
     //[MethodImpl(MethodImplOptions.AggressiveInlining)]
     //private void ExecuteAbs()

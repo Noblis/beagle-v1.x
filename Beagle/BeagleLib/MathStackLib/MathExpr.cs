@@ -71,6 +71,9 @@ public abstract record MathExpr
                 case OpEnum.Sin:
                     queue.Enqueue(new ByteCode.Sin());
                     break;
+                case OpEnum.Cos:
+                    queue.Enqueue(new ByteCode.Cos());
+                    break;
                 case OpEnum.Pow:
                     queue.Enqueue(new ByteCode.Pow());
                     break;
@@ -125,9 +128,9 @@ public abstract record MathExpr
                 case ByteCode.Sin:
                     stack.Add(new Sin(stack.PopLast(1).First()));
                     break;
-                case ByteCode.Abs:
-                    stack.Add(new Abs(stack.PopLast(1).First()));
-                    break;
+                //case ByteCode.Abs:
+                //    stack.Add(new Abs(stack.PopLast(1).First()));
+                //    break;
                 #endregion unary
 
                 #region binary
