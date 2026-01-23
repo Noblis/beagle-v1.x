@@ -106,14 +106,14 @@ public class Program
 
         //using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<Eq58s, CorrelationFitFunc>(forceCPUAccelerator: false);
+        using var mlEngine = new MLEngine<Eq58s, CorrelationFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<CosApproximation, CorrelationFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<DemoForMSU, CorrelationFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<DemoForMSU2, CorrelationFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<DemoForMSU3, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<DemoForMSU4, CorrelationFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
-        using var mlEngine = new MLEngine<XPowY, StdFitFunc>(forceCPUAccelerator: false);
+        //using var mlEngine = new MLEngine<XPowY, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<AvgOf2, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<QuadraticEqNormalized, StdFitFunc>(forceCPUAccelerator: false);
         //using var mlEngine = new MLEngine<QuadraticEq, StdFitFunc>(forceCPUAccelerator: false);

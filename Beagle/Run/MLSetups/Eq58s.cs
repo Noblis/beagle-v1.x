@@ -17,7 +17,7 @@ public class Eq58s : MLSetupV16
         inputs[2] = d;
 
         // f = (3/5) * ( q^2 / (4*pi*eps*d) )
-        var result = (3 / 5) * ((q * q) / (4f * MathF.PI * eps * d));
+        var result = (3f / 5f) * ((q * q) / (4f * MathF.PI * eps * d));
         return (inputs, result);
     }
     public override string[] GetInputLabels()
