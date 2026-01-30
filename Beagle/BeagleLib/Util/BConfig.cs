@@ -5,7 +5,7 @@ namespace BeagleLib.Util;
 //Noblis Setup
 public static class BConfig
 {
-    public static string Version => "v1.71";
+    public static string Version => "v1.72";
     public static bool EmailEnabled => false;
 
     public static string SystemEmail => @"""Beagle"" <beagle@noblis.org>";
