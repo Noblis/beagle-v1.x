@@ -4,7 +4,7 @@ using BeagleLib.VM;
 
 namespace Run.Feynman100;
 
-public class FeynmanEq2 : MLSetup
+public class Eq2 : MLSetup
 {
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
@@ -23,7 +23,7 @@ public class FeynmanEq2 : MLSetup
 
     public override string[] GetInputLabels()
     {
-        return ["x1", "x2"];
+        return ["θ", "σ"];
     }
 
     public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;

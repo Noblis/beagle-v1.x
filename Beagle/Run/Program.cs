@@ -17,9 +17,9 @@ public class Program
 
         #region Read Command-line parameters
         // ReSharper disable once RedundantAssignment
-        var stopAfterMin = 10;
-        var noEscMenu = true;
-        var runFeynmanFormula = 1;
+        var stopAfterMin = -1;
+        var noEscMenu = false;
+        var runFeynmanFormula = -1;
         foreach (var arg in args)
         {
             try
