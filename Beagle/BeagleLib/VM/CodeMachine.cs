@@ -84,8 +84,8 @@ public struct CodeMachine
             case (OpEnum.Tan, false): ExecuteTan(); return;
             case (OpEnum.Tan, true): ExecuteTanWithLibDevice(); return;
 
-            case (OpEnum.Arcos, false): ExecuteArcos(); return;
-            case (OpEnum.Arcos, true): ExecuteArcosWithLibDevice(); return;
+            case (OpEnum.Arccos, false): ExecuteArccos(); return;
+            case (OpEnum.Arccos, true): ExecuteArccosWithLibDevice(); return;
 
             case (OpEnum.Arcsin, false): ExecuteArcsin(); return;
             case (OpEnum.Arcsin, true): ExecuteArcsinWithLibDevice(); return;
@@ -352,14 +352,14 @@ public struct CodeMachine
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteArcos()
+    private void ExecuteArccos()
     {
         var x = StackPop();
         x = XMath.Acos(x);
         StackPush(x);
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteArcosWithLibDevice()
+    private void ExecuteArccosWithLibDevice()
     {
         var x = StackPop();
         x = LibDevice.Acos(x);

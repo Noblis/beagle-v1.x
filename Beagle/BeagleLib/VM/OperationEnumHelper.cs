@@ -32,7 +32,7 @@ public static class OperationEnumHelper
             case OpEnum.Sin: return new OpProps(CommandTypeEnum.CommandOnly, 0, 1);
             case OpEnum.Cos: return new OpProps(CommandTypeEnum.CommandOnly, 0, 1);
             case OpEnum.Tan: return new OpProps(CommandTypeEnum.CommandOnly, 0, 1);
-            case OpEnum.Arcos: return new OpProps(CommandTypeEnum.CommandOnly, 0, 1);
+            case OpEnum.Arccos: return new OpProps(CommandTypeEnum.CommandOnly, 0, 1);
             case OpEnum.Arcsin: return new OpProps(CommandTypeEnum.CommandOnly, 0, 1);
             case OpEnum.Arctan: return new OpProps(CommandTypeEnum.CommandOnly, 0, 1);
             case OpEnum.Tanh: return new OpProps(CommandTypeEnum.CommandOnly, 0, 1);

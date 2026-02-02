@@ -14,7 +14,7 @@ public abstract record ByteCode
     public sealed record Sin : ByteCode;
     public sealed record Cos : ByteCode;
     public sealed record Tan : ByteCode;
-    public sealed record Arcos : ByteCode;
+    public sealed record Arccos : ByteCode;
     public sealed record Arcsin : ByteCode;
     public sealed record Arctan : ByteCode;
     public sealed record Tanh : ByteCode;

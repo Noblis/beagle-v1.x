@@ -173,12 +173,12 @@ public class CodeMachineTests
         ClassicAssert.AreEqual(result, MathF.Tan(MathF.PI / 2));
     }
     [Test]
-    public void TestArcos()
+    public void TestArccos()
     {
         var commands = new[]
         {
             new Command(OpEnum.Const, MathF.PI/2),
-            new Command(OpEnum.Arcos),
+            new Command(OpEnum.Arccos),
         };
         var result = _codeMachine.RunCommands(_inputs, commands);
         ClassicAssert.AreEqual(result, MathF.Acos(MathF.PI / 2));
