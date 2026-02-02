@@ -4,28 +4,23 @@ using BeagleLib.VM;
 
 namespace Run.Feynman100;
 
-public class Eq1 : MLSetup
+public class Eq1 : FeynmanMLSetup
 {
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
     {
-        var θ = 1 + Rnd.Random.NextSingle() * 2;
+        var theta = 1 + Rnd.Random.NextSingle() * 2;
 
-        inputs[0] = θ;
+        inputs[0] = theta;
 
         // Checked
-        var result = MathF.Exp(-θ * θ / 2f) / MathF.Sqrt(2f * MathF.PI);
+        var result = MathF.Exp(-theta * theta / 2f) / MathF.Sqrt(2f * MathF.PI);
         //var result = MathF.Exp(-MathF.Pow(x1, 2) / 2f) / MathF.Sqrt(2f * MathF.PI);
         return (inputs, result);
     }
     public override string[] GetInputLabels()
     {
-        return ["θ"];
+        return ["Theta"];
     }
-
-    public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
-    public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Cbrt && x != OpEnum.Cube && x != OpEnum.Pow).ToArray();
     #endregion
 }

@@ -13,6 +13,7 @@ public static class FeynmanBenchmark
             case 2: return new MLEngine<Eq2, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 3: return new MLEngine<Eq3, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 4: return new MLEngine<Eq4, CorrelationFitFunc>(forceCPUAccelerator: false);
+
             case 5: return new MLEngine<Eq5, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 6: return new MLEngine<Eq6, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 7: return new MLEngine<Eq7, CorrelationFitFunc>(forceCPUAccelerator: false);
