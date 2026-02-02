@@ -1,7 +1,8 @@
 using BeagleLib.Engine;
 using BeagleLib.Util;
+using BeagleLib.VM;
 
-namespace Run.MLSetups;
+namespace Run.Feynman100;
 
 public class FeynmanEq8 : MLSetup
 {
@@ -20,14 +21,12 @@ public class FeynmanEq8 : MLSetup
 
     public override string[] GetInputLabels()
     {
-        return new string[] { "x1", "x2" };
+        return ["x1", "x2"];
     }
 
-
-
     public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
-
     public override double SolutionFoundASRThreshold => 1.0;
     public override bool KeepOptimizingAfterSolutionFound => true;
+    public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Cbrt && x != OpEnum.Cube).ToArray();
     #endregion
 }

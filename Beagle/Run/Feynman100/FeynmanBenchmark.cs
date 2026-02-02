@@ -8,6 +8,6 @@ public static class FeynmanBenchmark
 {
     public static MLEngineCore GetFeynmanMLEngineForFormula(int formulaId)
     {
-        return new MLEngine<Eq58s, CorrelationFitFunc>(forceCPUAccelerator: false);
+        return new MLEngine<Eq1, CorrelationFitFunc>(forceCPUAccelerator: false);
     }
 }

@@ -1,7 +1,7 @@
 using BeagleLib.Engine;
 using BeagleLib.Util;
-using BeagleLib.VM;
-namespace Run.MLSetups;
+
+namespace Run.Feynman100;
 public class eq_60 : MLSetup
 {
     #region Overrides

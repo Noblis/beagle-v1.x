@@ -1,7 +1,8 @@
 using BeagleLib.Engine;
 using BeagleLib.Util;
+using BeagleLib.VM;
 
-namespace Run.MLSetups;
+namespace Run.Feynman100;
 
 public class FeynmanEq5 : MLSetup
 {
@@ -28,7 +29,11 @@ public class FeynmanEq5 : MLSetup
         inputs[7] = z1;
         inputs[8] = z2;
 
-        var result = (G * m1 * m2) / (MathF.Pow(x2 - x1, 2) + MathF.Pow(y2 - y1, 2) + MathF.Pow(z2 - z1, 2));
+        var dx = x2 - x1;
+        var dy = y2 - y1;
+        var dz = z2 - z1;
+        var result = (G * m1 * m2) / (dx*dx + dy*dy + dz*dz);
+        //var result = (G * m1 * m2) / (MathF.Pow(x2 - x1, 2) + MathF.Pow(y2 - y1, 2) + MathF.Pow(z2 - z1, 2));
         return (inputs, result);
     }
 
@@ -37,11 +42,9 @@ public class FeynmanEq5 : MLSetup
         return ["G", "m1", "m2", "x1", "x2", "y1", "y2", "z1", "z2"];
     }
 
-
-
     public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
-
     public override double SolutionFoundASRThreshold => 1.0;
     public override bool KeepOptimizingAfterSolutionFound => true;
+    public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Cbrt && x != OpEnum.Cube).ToArray();
     #endregion
 }

@@ -1,7 +1,7 @@
 using BeagleLib.Engine;
 using BeagleLib.Util;
 
-namespace Run.MLSetups;
+namespace Run.Feynman100;
 
 public class FeynmanEq18 : MLSetup
 {
