@@ -4,7 +4,7 @@ using BeagleLib.VM;
 
 namespace Run.Feynman100;
 
-public class FeynmanEq3 : MLSetup
+public class Eq3 : MLSetup
 {
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)

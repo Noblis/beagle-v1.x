@@ -3,7 +3,7 @@ using BeagleLib.Util;
 
 namespace Run.Feynman100;
 
-public class EQ42 : MLSetup
+public class Eq42 : MLSetup
 {
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
