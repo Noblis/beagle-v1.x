@@ -1,6 +1,5 @@
 ﻿using BeagleLib.Engine;
 using BeagleLib.Engine.FitFunc;
-using Run.MLSetups;
 
 namespace Run.Feynman100;
 

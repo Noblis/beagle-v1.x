@@ -498,6 +498,7 @@ namespace Supermodel.Presentation.Mvc.ModelBinding
                 return (model is TModel) ? (TModel)model : default(TModel);
             }
 
+            // ReSharper disable InvalidXmlDocComment
             /// <summary>
             /// Gets an indication whether <see cref="M:GetCompatibleCollection{T}"/> is likely to return a usable
             /// non-<c>null</c> value.
@@ -509,6 +510,7 @@ namespace Supermodel.Presentation.Mvc.ModelBinding
             /// value; <c>false</c> otherwise.
             /// </returns>
             /// <remarks>"Usable" in this context means the property can be set or its value reused.</remarks>
+            // ReSharper restore InvalidXmlDocComment
             public static bool CanGetCompatibleCollection<T>(ModelBindingContext bindingContext)
             {
                 var model = bindingContext.Model;

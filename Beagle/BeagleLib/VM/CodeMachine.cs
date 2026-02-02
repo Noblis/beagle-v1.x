@@ -322,20 +322,6 @@ public struct CodeMachine
         StackPush(x);
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecutePow()
-    {
-        var x = StackPop();
-        var y = StackPop();
-        StackPush(XMath.Pow(y, x));
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecutePowWithLibDevice()
-    {
-        var x = StackPop();
-        var y = StackPop();
-        StackPush(LibDevice.Pow(y, x));
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ExecuteCos()
     {
         var x = StackPop();
@@ -348,6 +334,111 @@ public struct CodeMachine
         var x = StackPop();
         x = LibDevice.Cos(x);
         StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteTan()
+    {
+        var x = StackPop();
+        x = XMath.Tan(x);
+        StackPush(x);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteTanWithLibDevice()
+    {
+        var x = StackPop();
+        x = LibDevice.Tan(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteArcos()
+    {
+        var x = StackPop();
+        x = XMath.Acos(x);
+        StackPush(x);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteArcosWithLibDevice()
+    {
+        var x = StackPop();
+        x = LibDevice.Acos(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteArcsin()
+    {
+        var x = StackPop();
+        x = XMath.Asin(x);
+        StackPush(x);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteArcsinWithLibDevice()
+    {
+        var x = StackPop();
+        x = LibDevice.Asin(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteArctan()
+    {
+        var x = StackPop();
+        x = XMath.Atan(x);
+        StackPush(x);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteArctanWithLibDevice()
+    {
+        var x = StackPop();
+        x = LibDevice.Atan(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteTanh()
+    {
+        var x = StackPop();
+        x = XMath.Tanh(x);
+        StackPush(x);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteTanhWithLibDevice()
+    {
+        var x = StackPop();
+        x = LibDevice.Tanh(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteExp()
+    {
+        var x = StackPop();
+        x = XMath.Exp(x);
+        StackPush(x);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteExpWithLibDevice()
+    {
+        var x = StackPop();
+        x = LibDevice.Exp(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecutePow()
+    {
+        var x = StackPop();
+        var y = StackPop();
+        StackPush(XMath.Pow(y, x));
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecutePowWithLibDevice()
+    {
+        var x = StackPop();
+        var y = StackPop();
+        StackPush(LibDevice.Pow(y, x));
     }
 
 

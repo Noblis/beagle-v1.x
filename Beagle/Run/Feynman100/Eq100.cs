@@ -6,7 +6,6 @@ namespace Run.Feynman100;
 public class Eq100 : MLSetup
 {
     #region Overrides
-
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
     {
         
