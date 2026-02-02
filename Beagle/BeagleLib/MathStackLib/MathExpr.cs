@@ -74,6 +74,24 @@ public abstract record MathExpr
                 case OpEnum.Cos:
                     queue.Enqueue(new ByteCode.Cos());
                     break;
+                case OpEnum.Tan:
+                    queue.Enqueue(new ByteCode.Tan());
+                    break;
+                case OpEnum.Arcos:
+                    queue.Enqueue(new ByteCode.Arcos());
+                    break;
+                case OpEnum.Arcsin:
+                    queue.Enqueue(new ByteCode.Arcsin());
+                    break;
+                case OpEnum.Arctan:
+                    queue.Enqueue(new ByteCode.Arctan());
+                    break;
+                case OpEnum.Tanh:
+                    queue.Enqueue(new ByteCode.Tanh());
+                    break;
+                case OpEnum.Exp:
+                    queue.Enqueue(new ByteCode.Exp());
+                    break;
                 case OpEnum.Pow:
                     queue.Enqueue(new ByteCode.Pow());
                     break;

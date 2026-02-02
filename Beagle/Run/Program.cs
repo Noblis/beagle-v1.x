@@ -3,6 +3,7 @@ using BeagleLib.Engine.FitFunc;
 using BeagleLib.Util;
 using Run.Feynman100;
 using Run.MLSetups;
+using System.Text;
 
 namespace Run;
 
@@ -10,6 +11,10 @@ public class Program
 {
     static void Main(string[] args)
     {
+        #region set Unicode character set
+        Console.OutputEncoding = Encoding.UTF8;
+        #endregion
+
         #region Read Command-line parameters
         // ReSharper disable once RedundantAssignment
         var stopAfterMin = 10;

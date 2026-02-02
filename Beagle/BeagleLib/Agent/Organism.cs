@@ -246,14 +246,44 @@ public class Organism
                     commands.Add(new Command(OpEnum.Sin));
                     break;
                 }
-                case "POW":
-                {
-                    commands.Add(new Command(OpEnum.Pow));
-                    break;
-                }
                 case "COS":
                 {
                     commands.Add(new Command(OpEnum.Cos));
+                    break;
+                }
+                case "TAN":
+                {
+                    commands.Add(new Command(OpEnum.Cos));
+                    break;
+                }
+                case "ARCOS":
+                {
+                    commands.Add(new Command(OpEnum.Cos));
+                    break;
+                }
+                case "ARCSIN":
+                {
+                    commands.Add(new Command(OpEnum.Cos));
+                    break;
+                }
+                case "ARCTAN":
+                {
+                    commands.Add(new Command(OpEnum.Cos));
+                    break;
+                }
+                case "TANH":
+                {
+                    commands.Add(new Command(OpEnum.Cos));
+                    break;
+                }
+                case "EXP":
+                {
+                    commands.Add(new Command(OpEnum.Cos));
+                    break;
+                }
+                case "POW":
+                {
+                    commands.Add(new Command(OpEnum.Pow));
                     break;
                 }
                 case "COPY":
