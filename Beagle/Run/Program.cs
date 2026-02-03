@@ -12,7 +12,7 @@ public class Program
     static void Main(string[] args)
     {
         #region set Unicode character set
-        Console.OutputEncoding = Encoding.UTF8;
+        //Console.OutputEncoding = Encoding.UTF8;
         #endregion
 
         #region Read Command-line parameters

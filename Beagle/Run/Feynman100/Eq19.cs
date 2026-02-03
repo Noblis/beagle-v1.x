@@ -1,9 +1,8 @@
-using BeagleLib.Engine;
 using BeagleLib.Util;
 
 namespace Run.Feynman100;
 
-public class Eq19 : MLSetup
+public class Eq19 : FeynmanMLSetup
 {
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
@@ -16,20 +15,13 @@ public class Eq19 : MLSetup
         inputs[1] = v;
         inputs[2] = c;
 
-        var result = (m * v) / MathF.Sqrt(1f - MathF.Pow(v, 2) / MathF.Pow(c, 2));
+        var result = (m * v) / MathF.Sqrt(1f - (v*v) / (c*c));
         return (inputs, result);
     }
 
     public override string[] GetInputLabels()
     {
-        return new string[] { "m", "v", "c" };
+        return ["m", "v", "c"];
     }
-
-
-
-    public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
-
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
     #endregion
 }

@@ -1,37 +1,28 @@
-using BeagleLib.Engine;
 using BeagleLib.Util;
 
 namespace Run.Feynman100;
 
-public class Eq24 : MLSetup
+public class Eq24 : FeynmanMLSetup
 {
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
     {
-        var x1 = 1 + Rnd.Random.NextSingle() * 2;
-        var x2 = 1 + Rnd.Random.NextSingle() * 2;
-        var x3 = 1 + Rnd.Random.NextSingle() * 2;
-        var x4 = 1 + Rnd.Random.NextSingle() * 2;
+        var m = 1 + Rnd.Random.NextSingle() * 2;
+        var w = 1 + Rnd.Random.NextSingle() * 2;
+        var w1 = 1 + Rnd.Random.NextSingle() * 2;
+        var x = 1 + Rnd.Random.NextSingle() * 2;
 
-        inputs[0] = x1;
-        inputs[1] = x2;
-        inputs[2] = x3;
-        inputs[3] = x4;
+        inputs[0] = m;
+        inputs[1] = w;
+        inputs[2] = w1;
+        inputs[3] = x;
 
-        var result = 0.25f * x1 * (MathF.Pow(x2, 2) + MathF.Pow(x3, 2)) * MathF.Pow(x4, 2);
+        var result = 0.25f * m * (w*w + w1*w1) * (x*x);
         return (inputs, result);
     }
-
     public override string[] GetInputLabels()
     {
-        return new string[] { "x1", "x2", "x3", "x4" };
+        return ["m", "w", "w1", "x"];
     }
-
-
-
-    public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
-
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
     #endregion
 }

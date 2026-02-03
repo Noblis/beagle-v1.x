@@ -13,8 +13,8 @@ public static class FeynmanBenchmark
             case 2: return new MLEngine<Eq2, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 3: return new MLEngine<Eq3, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 4: return new MLEngine<Eq4, CorrelationFitFunc>(forceCPUAccelerator: false);
-
             case 5: return new MLEngine<Eq5, CorrelationFitFunc>(forceCPUAccelerator: false);
+
             case 6: return new MLEngine<Eq6, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 7: return new MLEngine<Eq7, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 8: return new MLEngine<Eq8, CorrelationFitFunc>(forceCPUAccelerator: false);
@@ -27,6 +27,7 @@ public static class FeynmanBenchmark
             case 15: return new MLEngine<Eq15, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 16: return new MLEngine<Eq16, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 17: return new MLEngine<Eq17, CorrelationFitFunc>(forceCPUAccelerator: false);
+
             case 18: return new MLEngine<Eq18, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 19: return new MLEngine<Eq19, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 20: return new MLEngine<Eq20, CorrelationFitFunc>(forceCPUAccelerator: false);
@@ -35,6 +36,7 @@ public static class FeynmanBenchmark
             case 23: return new MLEngine<Eq23, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 24: return new MLEngine<Eq24, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 25: return new MLEngine<Eq25, CorrelationFitFunc>(forceCPUAccelerator: false);
+
             case 26: return new MLEngine<Eq26, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 27: return new MLEngine<Eq27, CorrelationFitFunc>(forceCPUAccelerator: false);
             case 28: return new MLEngine<Eq28, CorrelationFitFunc>(forceCPUAccelerator: false);
