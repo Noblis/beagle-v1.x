@@ -1,39 +1,31 @@
 ﻿using BeagleLib.Engine;
 using BeagleLib.Util;
+using WebMonk.RazorSharp.HtmlTags;
 
 namespace Run.Feynman100;
 
-public class Eq30 : MLSetup
+public class Eq30 : FeynmanMLSetup
 {
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
     {
         var l = 1 + Rnd.Random.NextSingle() * 4;
 	    var n = 1 + Rnd.Random.NextSingle() * 4;
-	    var t = 1 + Rnd.Random.NextSingle() * 4;
+	    var theta = 1 + Rnd.Random.NextSingle() * 4;
 	    
 	    inputs[0] = l;
 	    inputs[1] = n;
-	    inputs[2] = t;
-	    
-        var result = l*MathF.Pow(MathF.Sin(n*t/2),2)/MathF.Pow(MathF.Sin(t/2),2);
+	    inputs[2] = theta;
+
+        var enumerator = MathF.Sin(n * theta / 2);
+        var denominator = MathF.Sin(theta / 2);
+        var result = l * enumerator * enumerator / (denominator * denominator);
+        
         return (inputs, result);
     }
     public override string[] GetInputLabels()
     {
-        return ["L","n","t"];
+        return ["L","n","Theta"];
     }
-
-    public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
-
-    //public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Sin &&
-    //                                                                                          x != OpEnum.Add &&
-    //                                                                                          x != OpEnum.Sub &&
-    //                                                                                          x != OpEnum.Cbrt &&
-    //                                                                                          x != OpEnum.Cube &&
-    //                                                                                          x != OpEnum.Ln).ToArray();
-
     #endregion
 }
