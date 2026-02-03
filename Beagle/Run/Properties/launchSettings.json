@@ -2,7 +2,7 @@
   "profiles": {
     "Run": {
       "commandName": "Project",
-      "commandLineArgs": "RunFeynman=21 StopAfterMin=10"
+      "commandLineArgs": "RunFeynman=30 StopAfterMin=10"
     }
   }
 }
