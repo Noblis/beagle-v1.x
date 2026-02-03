@@ -3,7 +3,6 @@ using BeagleLib.Engine.FitFunc;
 using BeagleLib.Util;
 using Run.Feynman100;
 using Run.MLSetups;
-using System.Text;
 
 namespace Run;
 
