@@ -226,6 +226,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 Output.WriteLine("Load & [C]ombine colonies");
                                 Output.WriteLine("[I]nject organism[s] as string");
                                 Output.WriteLine("[D]isplay best organism as LaTeX formula");
+                                Output.WriteLine("[V]erify best organism as 10% run");
                                 Output.Write("Please choose: ");
 
                                 var input = Output.ReadLine();
@@ -239,6 +240,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 else if (input == "c") LoadColony(combine: true);
                                 else if (input == "i") InjectOrganisms();
                                 else if (input == "d") DisplayAsLatex();
+                                else if (input == "v") Verify();
                                 else Output.WriteLine("Invalid input. Please choose again.\n");
                             }
                             Console.ResetColor();
@@ -1014,6 +1016,57 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var expr = MathExpr.FromCommands(fullCommands, MLSetup.Current.GetInputLabels());
         var url = $"https://arachnoid.com/latex/?equ={expr.AsLatexString()}";
         WebServer.OpenInBrowser(url);
+    }
+    protected void Verify()
+    {
+        var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 10 + 1;
+        var inputsArray = new float[verificationExperimentsCount][];
+        Parallel.For(0, inputsArray.Length, i =>
+        {
+            inputsArray[i] = new float[_inputLabels.Length];
+        });
+        //var allInputs = new float[_inputLabels.Length * verificationExperimentsCount];
+        var correctOutputs = new float[verificationExperimentsCount];
+
+
+        //set up experiments (inputs and output), set correct output mean to 0
+        Parallel.For(0, verificationExperimentsCount, i =>
+        {
+            (inputsArray[i], correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+        });
+
+        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(inputsArray, correctOutputs).ToArray();
+        var error = false;
+        Output.WriteLine();
+        for (var i = 0; i < verificationExperimentsCount; i++)
+        {
+            var output = new CodeMachine().RunCommands(inputsArray[i], fullCommands);
+            const int sigFig = 2;
+            //var roundedOutput = ((double)output).RoundToSignificantDigits(sigFig);
+            //var roundedCorrectOutput = ((double)correctOutputs[i]).RoundToSignificantDigits(sigFig);
+            //Output.Write($"{((double)output).RoundToSignificantDigits(3)} vs {((double)correctOutputs[i]).RoundToSignificantDigits(3)}");
+            //Output.Write($"{roundedOutput} vs {roundedCorrectOutput}");
+            Output.Write($"{output} vs {correctOutputs[i]}");
+
+            //if (Math.Abs(roundedOutput / roundedCorrectOutput - 1) > 0.01) Output.WriteLine(" <- ERROR");
+            //else Output.WriteLine();
+
+            if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
+            {
+                error = true;
+                Output.WriteLine(" <- ERROR: Tolerance of 1/10 of 1% exceeded!");
+            }
+            else
+            {
+                Output.WriteLine();
+            }
+
+        }
+        Output.WriteLine();
+
+        if (error) Output.WriteLine("Model not Validated to Tolerance of 1/10 of 1%");
+        else Output.WriteLine("Model Validated to Tolerance of 1/10 of 1%");
+        Output.WriteLine();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

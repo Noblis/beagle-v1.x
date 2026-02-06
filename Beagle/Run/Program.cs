@@ -1,8 +1,9 @@
 ﻿using BeagleLib.Engine;
 using BeagleLib.Engine.FitFunc;
-using BeagleLib.Util;
 using Run.Feynman100;
 using Run.MLSetups;
+using WebMonk.RazorSharp.HtmlTags;
+using Output = BeagleLib.Util.Output;
 
 namespace Run;
 
@@ -40,6 +41,11 @@ public class Program
                     if (argParts.Length != 2 && argParts[0] != "runfeynman") throw new ArgumentException();
                     runFeynmanFormula = int.Parse(argParts[1]);
                     if (runFeynmanFormula <= 0) throw new ArgumentException();
+                }
+                else if (arg.ToLower().StartsWith("#"))
+                {
+                    //This is a comment, rest of the line is not used
+                    break;
                 }
                 else
                 {
@@ -130,7 +136,8 @@ public class Program
             //new CsvGen<RydbergFormula>().CreateAndSaveCsvFile(5000); return;
 
             //using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(forceCPUAccelerator: false);
-            //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
+            using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<AreaOfCircle, StdFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<Eq58s, CorrelationFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<CosApproximation, CorrelationFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<DemoForMSU, CorrelationFitFunc>(forceCPUAccelerator: false);
@@ -143,7 +150,7 @@ public class Program
             //using var mlEngine = new MLEngine<QuadraticEqNormalized, StdFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<QuadraticEq, StdFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<DepressedCubicEq, StdFitFunc>(forceCPUAccelerator: false);
-            using var mlEngine = new MLEngine<SinApproximation, StdCubeFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<SinApproximation, StdCubeFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<DemoForJdAndTheBoys, StdFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<RydbergFormula, CorrelationFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<ThrustData, StdFitFunc>(forceCPUAccelerator: false);
