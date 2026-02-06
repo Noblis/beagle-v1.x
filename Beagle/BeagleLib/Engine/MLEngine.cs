@@ -1020,7 +1020,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
     protected void VerifyModel()
     {
-        var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 5 + 1;
+        var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 4;
         var inputsArray = new float[verificationExperimentsCount][];
         Parallel.For(0, inputsArray.Length, i =>
         {
@@ -1069,12 +1069,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         if (error)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Output.WriteLine($"Model NOT Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~20% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
+            Output.WriteLine($"Model NOT Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
         }
         else
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Output.WriteLine($"Model Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~20% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
+            Output.WriteLine($"Model Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
         }
         Console.ForegroundColor = currentForegroundColor;
         Output.WriteLine();
