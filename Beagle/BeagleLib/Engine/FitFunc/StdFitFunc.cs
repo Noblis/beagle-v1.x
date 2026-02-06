@@ -35,7 +35,7 @@ public struct StdFitFunc : IFitFunc
 
     public int FitFunctionIfInvalid(bool isOutputValid, bool isCorrectOutputValid)
     {
-        //XOR return true if different, false if the same
+        //XOR returns true if different, false if the same
         if (isOutputValid ^ isCorrectOutputValid) return -BConfig.MaxScore;
         else return BConfig.MaxScore;
     }
