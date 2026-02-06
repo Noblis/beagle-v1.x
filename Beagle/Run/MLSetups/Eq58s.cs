@@ -3,7 +3,7 @@ using BeagleLib.Util;
 
 namespace Run.MLSetups;
 
-public class Eq58s : MLSetupV16
+public class Eq58S : MLSetupV16
 {
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)

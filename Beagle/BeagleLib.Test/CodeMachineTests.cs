@@ -143,12 +143,91 @@ public class CodeMachineTests
     {
         var commands = new[]
         {
-            new Command(OpEnum.Const, (float)Math.PI/2),
+            new Command(OpEnum.Const, MathF.PI/2),
             new Command(OpEnum.Sin),
         };
         var result = _codeMachine.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, (float)Math.Sin((float)Math.PI / 2));
+        ClassicAssert.AreEqual(result, MathF.Sin(MathF.PI / 2));
     }
+    [Test]
+    public void TestCos()
+    {
+        var commands = new[]
+        {
+            new Command(OpEnum.Const, MathF.PI/2),
+            new Command(OpEnum.Cos),
+        };
+        var result = _codeMachine.RunCommands(_inputs, commands);
+        ClassicAssert.AreEqual(result, MathF.Cos(MathF.PI / 2));
+    }
+
+    [Test]
+    public void TestTan()
+    {
+        var commands = new[]
+        {
+            new Command(OpEnum.Const, MathF.PI/2),
+            new Command(OpEnum.Tan),
+        };
+        var result = _codeMachine.RunCommands(_inputs, commands);
+        ClassicAssert.AreEqual(result, MathF.Tan(MathF.PI / 2));
+    }
+    [Test]
+    public void TestArccos()
+    {
+        var commands = new[]
+        {
+            new Command(OpEnum.Const, MathF.PI/2),
+            new Command(OpEnum.Arccos),
+        };
+        var result = _codeMachine.RunCommands(_inputs, commands);
+        ClassicAssert.AreEqual(result, MathF.Acos(MathF.PI / 2));
+    }
+    [Test]
+    public void TestArcsin()
+    {
+        var commands = new[]
+        {
+            new Command(OpEnum.Const, MathF.PI/2),
+            new Command(OpEnum.Arcsin),
+        };
+        var result = _codeMachine.RunCommands(_inputs, commands);
+        ClassicAssert.AreEqual(result, MathF.Asin(MathF.PI / 2));
+    }
+    [Test]
+    public void TestArctan()
+    {
+        var commands = new[]
+        {
+            new Command(OpEnum.Const, MathF.PI/2),
+            new Command(OpEnum.Arctan),
+        };
+        var result = _codeMachine.RunCommands(_inputs, commands);
+        ClassicAssert.AreEqual(result, MathF.Atan(MathF.PI / 2));
+    }
+    [Test]
+    public void TestTanh()
+    {
+        var commands = new[]
+        {
+            new Command(OpEnum.Const, MathF.PI/2),
+            new Command(OpEnum.Tanh),
+        };
+        var result = _codeMachine.RunCommands(_inputs, commands);
+        ClassicAssert.AreEqual(result, MathF.Tanh(MathF.PI / 2));
+    }
+    [Test]
+    public void TestExp()
+    {
+        var commands = new[]
+        {
+            new Command(OpEnum.Const, MathF.PI/2),
+            new Command(OpEnum.Exp),
+        };
+        var result = _codeMachine.RunCommands(_inputs, commands);
+        ClassicAssert.AreEqual(result, MathF.Exp(MathF.PI / 2));
+    }
+
     [Test]
     public void TestPowLoadDup()
     {
@@ -161,19 +240,6 @@ public class CodeMachineTests
         var result = _codeMachine.RunCommands(_inputs, commands);
         ClassicAssert.AreEqual(result, 4);
     }
-    [Test]
-    public void TestCos()
-    {
-        var commands = new[]
-        {
-            new Command(OpEnum.Const, (float)Math.PI/2),
-            new Command(OpEnum.Cos),
-        };
-        var result = _codeMachine.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, (float)Math.Cos((float)Math.PI / 2));
-    }
-
-
     //[Test] public void TestAbs()
     //{
     //    var commands = new[]

@@ -118,7 +118,7 @@ public static class MainKernel
             }
             Group.Barrier();
 
-            //store R squared results for returning data from the Kernel
+            //store r squared results for returning data from the Kernel
             if (Group.IsFirstThread)
             {
                 int score;

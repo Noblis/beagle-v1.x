@@ -1,7 +1,9 @@
 ﻿using BeagleLib.Engine;
 using BeagleLib.Engine.FitFunc;
-using BeagleLib.Util;
+using Run.Feynman100;
 using Run.MLSetups;
+using WebMonk.RazorSharp.HtmlTags;
+using Output = BeagleLib.Util.Output;
 
 namespace Run;
 
@@ -9,10 +11,15 @@ public class Program
 {
     static void Main(string[] args)
     {
+        #region set Unicode character set
+        //Console.OutputEncoding = Encoding.UTF8;
+        #endregion
+
         #region Read Command-line parameters
         // ReSharper disable once RedundantAssignment
         var stopAfterMin = -1;
         var noEscMenu = false;
+        var runFeynmanFormula = -1;
         foreach (var arg in args)
         {
             try
@@ -28,6 +35,18 @@ public class Program
                     stopAfterMin = int.Parse(argParts[1]);
                     if (stopAfterMin <= 0) throw new ArgumentException();
                 }
+                else if (arg.ToLower().StartsWith("runfeynman"))
+                {
+                    var argParts = arg.Split('=');
+                    if (argParts.Length != 2 && argParts[0] != "runfeynman") throw new ArgumentException();
+                    runFeynmanFormula = int.Parse(argParts[1]);
+                    if (runFeynmanFormula <= 0) throw new ArgumentException();
+                }
+                else if (arg.ToLower().StartsWith("#"))
+                {
+                    //This is a comment, rest of the line is not used
+                    break;
+                }
                 else
                 {
                     throw new ArgumentException();
@@ -39,6 +58,8 @@ public class Program
                 Output.WriteLine("Available Command Line Parameters (not case sensitive):");
                 Output.WriteLine("NoEscMenu - directs Beagle to not watch keyboard. Useful for batch runs");
                 Output.WriteLine("StopAfterMin={minutes} - directs Beagle to stop after number of minutes specified");
+                Output.WriteLine("RunFeynman={1-100} - directs Beagle to run on of the formulas from Feynman 100 benchmark");
+                Output.WriteLine("For example: RunFeynman=1 NoEscMenu StopAfterMin=10");
                 return;
             }
         }
@@ -102,27 +123,39 @@ public class Program
         //return;
         #endregion
 
-        //new CsvGen<RydbergFormula>().CreateAndSaveCsvFile(5000); return;
+        #region RunFeynmen
+        if (runFeynmanFormula > 0)
+        {
+            using var mlEngine = FeynmanBenchmark.GetFeynmanMLEngineForFormula(runFeynmanFormula);
+            mlEngine.Train(stopAfterMin, noEscMenu);
+            return;
+        }
+        #endregion
 
-        //using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
-        using var mlEngine = new MLEngine<Eq58s, CorrelationFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<CosApproximation, CorrelationFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<DemoForMSU, CorrelationFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<DemoForMSU2, CorrelationFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<DemoForMSU3, StdFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<DemoForMSU4, CorrelationFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<XPowY, StdFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<AvgOf2, StdFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<QuadraticEqNormalized, StdFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<QuadraticEq, StdFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<DepressedCubicEq, StdFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<SinApproximation, StdCubeFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<DemoForJdAndTheBoys, StdFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<RydbergFormula, CorrelationFitFunc>(forceCPUAccelerator: false);
-        //using var mlEngine = new MLEngine<ThrustData, StdFitFunc>(forceCPUAccelerator: false);
+        {
+            //new CsvGen<RydbergFormula>().CreateAndSaveCsvFile(5000); return;
 
-        mlEngine.Train(stopAfterMin, noEscMenu);
+            //using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(forceCPUAccelerator: false);
+            using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<AreaOfCircle, StdFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<Eq58s, CorrelationFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<CosApproximation, CorrelationFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<DemoForMSU, CorrelationFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<DemoForMSU2, CorrelationFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<DemoForMSU3, StdFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<DemoForMSU4, CorrelationFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<XPowY, StdFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<AvgOf2, StdFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<QuadraticEqNormalized, StdFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<QuadraticEq, StdFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<DepressedCubicEq, StdFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<SinApproximation, StdCubeFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<DemoForJdAndTheBoys, StdFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<RydbergFormula, CorrelationFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<ThrustData, StdFitFunc>(forceCPUAccelerator: false);
+
+            mlEngine.Train(stopAfterMin, noEscMenu);
+        }
     }
 }

@@ -74,6 +74,24 @@ public abstract record MathExpr
                 case OpEnum.Cos:
                     queue.Enqueue(new ByteCode.Cos());
                     break;
+                case OpEnum.Tan:
+                    queue.Enqueue(new ByteCode.Tan());
+                    break;
+                case OpEnum.Arccos:
+                    queue.Enqueue(new ByteCode.Arccos());
+                    break;
+                case OpEnum.Arcsin:
+                    queue.Enqueue(new ByteCode.Arcsin());
+                    break;
+                case OpEnum.Arctan:
+                    queue.Enqueue(new ByteCode.Arctan());
+                    break;
+                case OpEnum.Tanh:
+                    queue.Enqueue(new ByteCode.Tanh());
+                    break;
+                case OpEnum.Exp:
+                    queue.Enqueue(new ByteCode.Exp());
+                    break;
                 case OpEnum.Pow:
                     queue.Enqueue(new ByteCode.Pow());
                     break;
@@ -128,6 +146,28 @@ public abstract record MathExpr
                 case ByteCode.Sin:
                     stack.Add(new Sin(stack.PopLast(1).First()));
                     break;
+                case ByteCode.Cos:
+                    stack.Add(new Cos(stack.PopLast(1).First()));
+                    break;
+                case ByteCode.Tan:
+                    stack.Add(new Tan(stack.PopLast(1).First()));
+                    break;
+                case ByteCode.Arccos:
+                    stack.Add(new Arccos(stack.PopLast(1).First()));
+                    break;
+                case ByteCode.Arcsin:
+                    stack.Add(new Arcsin(stack.PopLast(1).First()));
+                    break;
+                case ByteCode.Arctan:
+                    stack.Add(new Arctan(stack.PopLast(1).First()));
+                    break;
+                case ByteCode.Tanh:
+                    stack.Add(new Tanh(stack.PopLast(1).First()));
+                    break;
+                case ByteCode.Exp:
+                    stack.Add(new Exp(stack.PopLast(1).First()));
+                    break;
+
                 //case ByteCode.Abs:
                 //    stack.Add(new Abs(stack.PopLast(1).First()));
                 //    break;
@@ -303,6 +343,22 @@ public abstract record MathExpr
                 return $"\\ln({mathExpr.AsLatexString()})";
             case Sin({ } mathExpr):
                 return $"\\sin({mathExpr.AsLatexString()})";
+            case Cos({ } mathExpr):
+                return $"\\cos({mathExpr.AsLatexString()})";
+
+            case Tan({ } mathExpr):
+                return $"\\tan({mathExpr.AsLatexString()})";
+            case Arccos({ } mathExpr):
+                return $"\\arccos({mathExpr.AsLatexString()})";
+            case Arcsin({ } mathExpr):
+                return $"\\arcsin({mathExpr.AsLatexString()})";
+            case Arctan({ } mathExpr):
+                return $"\\Arctan({mathExpr.AsLatexString()})";
+            case Tanh({ } mathExpr):
+                return $"\\Tanh({mathExpr.AsLatexString()})";
+            case Exp({ } mathExpr):
+                return $"(e ^ {{({mathExpr.AsLatexString()})}})";
+
             case Abs({ } mathExpr):
                 return $"|{mathExpr.AsLatexString()}|";
             case Add({ } lhs, { } rhs):
@@ -357,6 +413,13 @@ public abstract record MathExpr
     public sealed record Cube(MathExpr MathExpr) : UnaryExpr(MathExpr);
     public sealed record Ln(MathExpr MathExpr) : UnaryExpr(MathExpr);
     public sealed record Sin(MathExpr MathExpr) : UnaryExpr(MathExpr);
+    public sealed record Cos(MathExpr MathExpr) : UnaryExpr(MathExpr);
+    public sealed record Tan(MathExpr MathExpr) : UnaryExpr(MathExpr);
+    public sealed record Arccos(MathExpr MathExpr) : UnaryExpr(MathExpr);
+    public sealed record Arcsin(MathExpr MathExpr) : UnaryExpr(MathExpr);
+    public sealed record Arctan(MathExpr MathExpr) : UnaryExpr(MathExpr);
+    public sealed record Tanh(MathExpr MathExpr) : UnaryExpr(MathExpr);
+    public sealed record Exp(MathExpr MathExpr) : UnaryExpr(MathExpr);
     public sealed record Abs(MathExpr MathExpr) : UnaryExpr(MathExpr);
     #endregion unary
 

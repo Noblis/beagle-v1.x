@@ -226,6 +226,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 Output.WriteLine("Load & [C]ombine colonies");
                                 Output.WriteLine("[I]nject organism[s] as string");
                                 Output.WriteLine("[D]isplay best organism as LaTeX formula");
+                                Output.WriteLine("[V]erify best organism as 10% run");
                                 Output.Write("Please choose: ");
 
                                 var input = Output.ReadLine();
@@ -238,7 +239,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 else if (input == "r") LoadColony();
                                 else if (input == "c") LoadColony(combine: true);
                                 else if (input == "i") InjectOrganisms();
-                                else if (input == "d") DisplayAsLatex();
+                                else if (input == "d") DisplayModelAsLatex();
+                                else if (input == "v") VerifyModel();
                                 else Output.WriteLine("Invalid input. Please choose again.\n");
                             }
                             Console.ResetColor();
@@ -252,6 +254,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 if (stopAfterMin > 0 && _totalTimeWatch.Elapsed.TotalMinutes > stopAfterMin)
                 {
                     Output.WriteLine("Allotted time exceeded");
+                    VerifyModel();
                     break;
                 }
             }
@@ -1008,12 +1011,73 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             }
         }
     }
-    protected void DisplayAsLatex()
+    protected void DisplayModelAsLatex()
     {
         var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_inputsArray, _correctOutputs);
         var expr = MathExpr.FromCommands(fullCommands, MLSetup.Current.GetInputLabels());
         var url = $"https://arachnoid.com/latex/?equ={expr.AsLatexString()}";
         WebServer.OpenInBrowser(url);
+    }
+    protected void VerifyModel()
+    {
+        var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 4;
+        var inputsArray = new float[verificationExperimentsCount][];
+        Parallel.For(0, inputsArray.Length, i =>
+        {
+            inputsArray[i] = new float[_inputLabels.Length];
+        });
+        //var allInputs = new float[_inputLabels.Length * verificationExperimentsCount];
+        var correctOutputs = new float[verificationExperimentsCount];
+
+
+        //set up experiments (inputs and output), set correct output mean to 0
+        Parallel.For(0, verificationExperimentsCount, i =>
+        {
+            (inputsArray[i], correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+        });
+
+        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(inputsArray, correctOutputs).ToArray();
+        var error = false;
+        var currentForegroundColor = Console.ForegroundColor;
+        Output.WriteLine();
+        for (var i = 0; i < verificationExperimentsCount; i++)
+        {
+            Output.Write("IN: ");
+            for (var j = 0; j < _inputLabels.Length; j++)
+            {
+                Output.Write($"{_inputLabels[j]}={inputsArray[i][j]}; ");
+            }
+            
+            var output = new CodeMachine().RunCommands(inputsArray[i], fullCommands);
+            Output.Write($"OUT: {output} (model) vs. {correctOutputs[i]} (target)");
+
+            if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
+            {
+                error = true;
+                Console.ForegroundColor = ConsoleColor.Red;
+                Output.WriteLine(" <- ERROR: Tolerance of 1/10 of 1% exceeded!");
+                Console.ForegroundColor = currentForegroundColor;
+            }
+            else
+            {
+                Output.WriteLine();
+            }
+
+        }
+        Output.WriteLine();
+
+        if (error)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Output.WriteLine($"Model NOT Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
+        }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Output.WriteLine($"Model Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
+        }
+        Console.ForegroundColor = currentForegroundColor;
+        Output.WriteLine();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
