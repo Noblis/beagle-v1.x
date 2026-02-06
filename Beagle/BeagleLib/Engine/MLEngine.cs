@@ -239,8 +239,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 else if (input == "r") LoadColony();
                                 else if (input == "c") LoadColony(combine: true);
                                 else if (input == "i") InjectOrganisms();
-                                else if (input == "d") DisplayAsLatex();
-                                else if (input == "v") Verify();
+                                else if (input == "d") DisplayModelAsLatex();
+                                else if (input == "v") VerifyModel();
                                 else Output.WriteLine("Invalid input. Please choose again.\n");
                             }
                             Console.ResetColor();
@@ -254,6 +254,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 if (stopAfterMin > 0 && _totalTimeWatch.Elapsed.TotalMinutes > stopAfterMin)
                 {
                     Output.WriteLine("Allotted time exceeded");
+                    VerifyModel();
                     break;
                 }
             }
@@ -1010,14 +1011,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             }
         }
     }
-    protected void DisplayAsLatex()
+    protected void DisplayModelAsLatex()
     {
         var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_inputsArray, _correctOutputs);
         var expr = MathExpr.FromCommands(fullCommands, MLSetup.Current.GetInputLabels());
         var url = $"https://arachnoid.com/latex/?equ={expr.AsLatexString()}";
         WebServer.OpenInBrowser(url);
     }
-    protected void Verify()
+    protected void VerifyModel()
     {
         var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 10 + 1;
         var inputsArray = new float[verificationExperimentsCount][];
@@ -1040,16 +1041,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Output.WriteLine();
         for (var i = 0; i < verificationExperimentsCount; i++)
         {
+            Output.Write("IN: ");
+            for (var j = 0; j < _inputLabels.Length; j++)
+            {
+                Output.Write($"{_inputLabels[j]}={inputsArray[i][j]}; ");
+            }
+            
             var output = new CodeMachine().RunCommands(inputsArray[i], fullCommands);
-            const int sigFig = 2;
-            //var roundedOutput = ((double)output).RoundToSignificantDigits(sigFig);
-            //var roundedCorrectOutput = ((double)correctOutputs[i]).RoundToSignificantDigits(sigFig);
-            //Output.Write($"{((double)output).RoundToSignificantDigits(3)} vs {((double)correctOutputs[i]).RoundToSignificantDigits(3)}");
-            //Output.Write($"{roundedOutput} vs {roundedCorrectOutput}");
-            Output.Write($"{output} vs {correctOutputs[i]}");
-
-            //if (Math.Abs(roundedOutput / roundedCorrectOutput - 1) > 0.01) Output.WriteLine(" <- ERROR");
-            //else Output.WriteLine();
+            Output.Write($"OUT: {output} (model) vs. {correctOutputs[i]} (target)");
 
             if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
             {
@@ -1064,8 +1063,18 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         Output.WriteLine();
 
-        if (error) Output.WriteLine("Model not Validated to Tolerance of 1/10 of 1%");
-        else Output.WriteLine("Model Validated to Tolerance of 1/10 of 1%");
+        var currentForegroundColor = Console.ForegroundColor;
+        if (error)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Output.WriteLine("Model NOT Validated to Tolerance of 1/10 of 1%");
+        }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Output.WriteLine("Model Validated to Tolerance of 1/10 of 1%");
+        }
+        Console.ForegroundColor = currentForegroundColor;
         Output.WriteLine();
     }
 
