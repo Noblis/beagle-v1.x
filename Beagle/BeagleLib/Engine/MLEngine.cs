@@ -1020,7 +1020,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
     protected void VerifyModel()
     {
-        var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 10 + 1;
+        var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 5 + 1;
         var inputsArray = new float[verificationExperimentsCount][];
         Parallel.For(0, inputsArray.Length, i =>
         {
@@ -1038,6 +1038,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(inputsArray, correctOutputs).ToArray();
         var error = false;
+        var currentForegroundColor = Console.ForegroundColor;
         Output.WriteLine();
         for (var i = 0; i < verificationExperimentsCount; i++)
         {
@@ -1053,7 +1054,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
             {
                 error = true;
+                Console.ForegroundColor = ConsoleColor.Red;
                 Output.WriteLine(" <- ERROR: Tolerance of 1/10 of 1% exceeded!");
+                Console.ForegroundColor = currentForegroundColor;
             }
             else
             {
@@ -1063,16 +1066,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         Output.WriteLine();
 
-        var currentForegroundColor = Console.ForegroundColor;
         if (error)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Output.WriteLine("Model NOT Validated to Tolerance of 1/10 of 1%");
+            Output.WriteLine($"Model NOT Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} data points");
         }
         else
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Output.WriteLine("Model Validated to Tolerance of 1/10 of 1%");
+            Output.WriteLine($"Model Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} data points");
         }
         Console.ForegroundColor = currentForegroundColor;
         Output.WriteLine();
