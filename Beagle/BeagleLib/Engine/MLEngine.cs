@@ -1055,18 +1055,28 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             var output = new CodeMachine().RunCommands(inputsArray[i], fullCommands);
             Output.Write($"OUT: {output} (model) vs. {correctOutputs[i]} (target)");
 
-            if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
+            if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
             {
-                error = true;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Output.WriteLine(" <- ERROR: Tolerance of 1/10 of 1% exceeded!");
-                Console.ForegroundColor = currentForegroundColor;
+                if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
+                {
+                    error = true;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Output.Write(" <- ERROR: Tolerance of 1/10 of 1% exceeded!");
+                    Console.ForegroundColor = currentForegroundColor;
+                }
             }
             else
             {
-                Output.WriteLine();
+                if (output.IsValidNumber() ^ correctOutputs[i].IsValidNumber())
+                {
+                    //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
+                    error = true;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Output.Write(" <- ERROR: Valid/Invalid mismatch!");
+                    Console.ForegroundColor = currentForegroundColor;
+                }
             }
-
+            Output.WriteLine();
         }
         Output.WriteLine();
 
