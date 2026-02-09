@@ -108,7 +108,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             var acceleratorCount = useSingleAccelerator ? 1 : devices.Length; //this is for benchmarking One vs Multiple GPUs
             if (firstDevice.AcceleratorType == AcceleratorType.CPU) Output.WriteLine($"Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} exclusively on a CPU using a GPU emulator");
-            else Output.WriteLine($"{Environment.MachineName}: Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} on {Environment.ProcessorCount} CPU(s) & {acceleratorCount} GPU(s) @ {MLSetup.Current.SolutionFoundASRThreshold:0.00000} target ASR");
+            else Output.WriteLine($"{Environment.MachineName}: Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} on {Environment.ProcessorCount} CPU(s) & {acceleratorCount} {devices.First().Name} GPU(s) @ {MLSetup.Current.SolutionFoundASRThreshold:0.00000} target ASR");
 
             _accelerators = new AcceleratorInfo<TFitFunc>[acceleratorCount];
             for (var i = 0; i < _accelerators.Length; i++)
