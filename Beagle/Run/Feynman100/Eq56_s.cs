@@ -30,7 +30,7 @@ public class Eq56 : MLSetup
     }
     public override string[] GetInputLabels()
     {
-        return ["eps", "p", "z", "r", "x", "y"];
+        return ["Eps", "p", "z", "r", "x", "y"];
     }
     #endregion
 }
