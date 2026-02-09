@@ -1041,7 +1041,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var currentForegroundColor = Console.ForegroundColor;
 
         Output.WriteLine();
-        Output.WriteLine("Model Genome:");
+        Output.Write("Model Genome: ");
         _mostAccurateEverOrganism!.PrintCommandsInLine(_inputLabels, inputsArray, correctOutputs);
 
         for (var i = 0; i < verificationExperimentsCount; i++)
