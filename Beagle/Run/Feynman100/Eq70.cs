@@ -20,7 +20,7 @@ public class Eq70 : MLSetup
     }
     public override string[] GetInputLabels()
     {
-        return new[] { "p", "E", "theta" };
+        return new[] { "p", "E", "Theta" };
     }
     public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
     public override double SolutionFoundASRThreshold => 1.0;

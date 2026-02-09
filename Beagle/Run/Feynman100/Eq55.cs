@@ -22,7 +22,7 @@ public class Eq55 : FeynmanMLSetup
     }
     public override string[] GetInputLabels()
     {
-        return ["Eps", "p", "theta", "r"];
+        return ["Eps", "p", "Theta", "r"];
     }
     #endregion
 }
