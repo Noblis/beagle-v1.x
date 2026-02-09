@@ -1039,7 +1039,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(inputsArray, correctOutputs).ToArray();
         var error = false;
         var currentForegroundColor = Console.ForegroundColor;
+
         Output.WriteLine();
+        Output.WriteLine("Model Genome:");
+        _mostAccurateEverOrganism!.PrintCommandsInLine(_inputLabels, inputsArray, correctOutputs);
+
         for (var i = 0; i < verificationExperimentsCount; i++)
         {
             Output.Write("IN: ");
