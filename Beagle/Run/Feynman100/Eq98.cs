@@ -26,7 +26,7 @@ public class Eq98 : MLSetup
 
     public override string[] GetInputLabels()
     {
-        return new[] { "beta", "alpha", "Theta" };
+        return ["beta", "alpha", "Theta"];
     }
 
 

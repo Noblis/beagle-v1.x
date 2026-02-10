@@ -1,45 +1,26 @@
-﻿using BeagleLib.Engine;
-using BeagleLib.Util;
+﻿using BeagleLib.Util;
 
 namespace Run.Feynman100;
 
-public class Eq85 : MLSetup
+public class Eq85 : FeynmanMLSetup
 {
     #region Overrides
-
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
     {
-
-        var Y = 1 + Rnd.Random.NextSingle() * 4;
+        var y = 1 + Rnd.Random.NextSingle() * 4;
         var sigma = 1 + Rnd.Random.NextSingle() * 4;
 
-        inputs[0] = Y;
+        inputs[0] = y;
         inputs[1] = sigma;
 
-        var result = Y / (2f * (1f + sigma));
+        var result = y / (2f * (1f + sigma));
 
         return (inputs, result);
     }
-
     public override string[] GetInputLabels()
     {
-        return new[] { "Y", "sigma" };
+        return ["Y", "sigma"];
     }
-
-
-    public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
-
-
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
-
-    //public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Sin &&
-    //                                                                                          x != OpEnum.Add &&
-    //                                                                                          x != OpEnum.Sub &&
-    //                                                                                          x != OpEnum.Cbrt &&
-    //                                                                                          x != OpEnum.Cube &&
-    //                                                                                          x != OpEnum.Ln).ToArray();
-
     #endregion
 }
 

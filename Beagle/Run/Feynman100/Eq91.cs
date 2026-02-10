@@ -29,7 +29,7 @@ public class Eq91 : MLSetup
 
     public override string[] GetInputLabels()
     {
-        return new[] { "u", "Bx", "By", "Bz" };
+        return ["u", "Bx", "By", "Bz"];
     }
 
 

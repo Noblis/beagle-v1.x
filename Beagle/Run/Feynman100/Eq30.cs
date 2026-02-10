@@ -15,9 +15,9 @@ public class Eq30 : FeynmanMLSetup
 	    inputs[1] = n;
 	    inputs[2] = theta;
 
-        var enumerator = MathF.Sin(n * theta / 2);
+        var numerator = MathF.Sin(n * theta / 2);
         var denominator = MathF.Sin(theta / 2);
-        var result = l * enumerator * enumerator / (denominator * denominator);
+        var result = l * numerator * numerator / (denominator * denominator);
         
         return (inputs, result);
     }

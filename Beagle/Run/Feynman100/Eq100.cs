@@ -27,7 +27,7 @@ public class Eq100 : MLSetup
 
     public override string[] GetInputLabels()
     {
-        return new[] { "p", "q", "A", "m" };
+        return ["p", "q", "A", "m"];
     }
 
 
