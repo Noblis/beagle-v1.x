@@ -1,15 +1,13 @@
-﻿using BeagleLib.Engine;
-using BeagleLib.Util;
+﻿using BeagleLib.Util;
 
 namespace Run.Feynman100;
 
-public class Eq99 : MLSetup
+public class Eq99 : FeynmanMLSetup
 {
     #region Overrides
 
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
     {
-        
         var m = 1 + Rnd.Random.NextSingle() * 4;
         var q = 1 + Rnd.Random.NextSingle() * 4;
         var eps = 1 + Rnd.Random.NextSingle() * 4;
@@ -21,33 +19,16 @@ public class Eq99 : MLSetup
         inputs[2] = eps;
         inputs[3] = h;
         inputs[4] = n;
-
         
-        var numerator = -m * MathF.Pow(q, 4);
-        var denominator = 2 * MathF.Pow(4 * MathF.PI * eps, 2) * MathF.Pow(h, 2);
-        var result = numerator / denominator * (1 / MathF.Pow(n, 2));
+        var term = 4f * MathF.PI * eps;
+        var denominator = 2f * term*term * h*h;
+        var result = -m * q*q*q*q / denominator * (1f / (n*n));
 
         return (inputs, result);
     }
-
     public override string[] GetInputLabels()
     {
-        return ["m", "q", "epsilon", "h", "n"];
+        return ["m", "q", "Eps", "h", "n"];
     }
-
-
-    public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
-
-
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
-
-    //public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Sin &&
-    //                                                                                          x != OpEnum.Add &&
-    //                                                                                          x != OpEnum.Sub &&
-    //                                                                                          x != OpEnum.Cbrt &&
-    //                                                                                          x != OpEnum.Cube &&
-    //                                                                                          x != OpEnum.Ln).ToArray();
-
     #endregion
 }
