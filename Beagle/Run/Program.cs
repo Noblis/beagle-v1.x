@@ -126,7 +126,7 @@ public class Program
         #region RunFeynmen
         if (runFeynmanFormula > 0)
         {
-            using var mlEngine = FeynmanBenchmark.GetFeynmanMLEngineForFormula<StdFitFunc>(runFeynmanFormula);
+            using var mlEngine = FeynmanBenchmark.GetFeynmanMLEngineForFormula<CorrelationFitFunc>(runFeynmanFormula);
             mlEngine.Train(stopAfterMin, noEscMenu);
             return;
         }
