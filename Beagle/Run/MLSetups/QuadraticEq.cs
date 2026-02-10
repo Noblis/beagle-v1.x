@@ -22,16 +22,7 @@ public class QuadraticEq : MLSetup
         return ["a", "b", "c"];
     }
 
-    //public override int TargetColonySize(int generation)
-    //{
-    //    if (generation % 1500 < 15) return 1_000_000;
-    //    return 250_000;
-    //}
-
-    //public override uint ExperimentsPerGeneration => 1024;
-
     public override double SolutionFoundASRThreshold => 1.0;
-
     public override long TotalBirthsToResetColonyIfNoProgress => 600_000_000;
     public override bool KeepOptimizingAfterSolutionFound => true;
     #endregion
