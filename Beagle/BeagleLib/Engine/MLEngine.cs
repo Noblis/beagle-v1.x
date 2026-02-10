@@ -1083,12 +1083,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         if (error)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Output.WriteLine($"Model NOT Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
+            Output.WriteLine($"{MLSetup.Current.Name}-{typeof(TFitFunc).Name} Model NOT Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
         }
         else
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Output.WriteLine($"Model Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
+            Output.WriteLine($"{MLSetup.Current.Name}-{typeof(TFitFunc).Name} Model Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
         }
         Console.ForegroundColor = currentForegroundColor;
         Output.WriteLine();
