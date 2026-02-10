@@ -11,9 +11,11 @@ public class QuadraticEq : MLSetup
         var a = Rnd.Random.NextSingle()*20 - 10;
         var b = Rnd.Random.NextSingle()*20 - 10;
         var c = Rnd.Random.NextSingle()*20 - 10;
+
         inputs[0] = a;
         inputs[1] = b;
         inputs[2] = c;
+
         var output = (-b + MathF.Sqrt(b*b - 4*a*c)) / (2*a);
         return (inputs, output);
     }
