@@ -17,11 +17,9 @@ public class Eq57 : FeynmanMLSetup
         inputs[2] = r;
         inputs[3] = theta;
 
-        // f = (3/(4*pi*eps)) * p / ( r^3 * cos(theta) * sin(theta) )
-        var enumerator = 3f;
         var denominator1 = 4f * MathF.PI * eps;
-        var denominator2 = MathF.Pow(r, 3) * MathF.Cos(theta) * MathF.Sin(theta);
-        var result = (enumerator / denominator1) * (p / denominator2);
+        var denominator2 = r*r*r * MathF.Cos(theta) * MathF.Sin(theta);
+        var result = (3f / denominator1) * (p / denominator2);
         return (inputs, result);
     }
     public override string[] GetInputLabels()
