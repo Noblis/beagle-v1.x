@@ -269,6 +269,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         finally
         {
+            Output.FlushFileStream();
             Output.Dispose();
         }
     }
