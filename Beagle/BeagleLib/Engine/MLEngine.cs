@@ -226,7 +226,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 Output.WriteLine("Load & [C]ombine colonies");
                                 Output.WriteLine("[I]nject organism[s] as string");
                                 Output.WriteLine("[D]isplay best organism as LaTeX formula");
-                                Output.WriteLine("[V]erify best organism as 25% run");
+                                Output.WriteLine("[V]erify best organism as ~25% run");
                                 Output.Write("Please choose: ");
                                 Output.FlushFileStream();
 
