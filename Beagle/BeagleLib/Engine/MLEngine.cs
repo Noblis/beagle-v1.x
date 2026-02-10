@@ -228,6 +228,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 Output.WriteLine("[D]isplay best organism as LaTeX formula");
                                 Output.WriteLine("[V]erify best organism as 25% run");
                                 Output.Write("Please choose: ");
+                                Output.FlushFileStream();
 
                                 var input = Output.ReadLine();
                                 Output.WriteLine();
