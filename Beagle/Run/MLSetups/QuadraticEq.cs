@@ -16,7 +16,7 @@ public class QuadraticEq : MLSetup
         inputs[1] = b;
         inputs[2] = c;
 
-        var output = (-b + MathF.Sqrt(b*b - 4*a*c)) / (2*a);
+        var output = (-b + MathF.Sqrt(b*b - 4f*a*c)) / (2f*a);
         return (inputs, output);
     }
     public override string[] GetInputLabels()
