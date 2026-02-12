@@ -73,9 +73,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HTML2RazorSharpWM", "Frameworks\WebMonk\Tooling\HTML2RazorSharpWM\HTML2RazorSharpWM.csproj", "{63FC427F-A1FD-46F7-86CC-EF4EFD9647D9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Beagle", "Beagle", "{197D9953-9312-4149-91C5-1D48BFFBA5FF}"
-	ProjectSection(SolutionItems) = preProject
-		Beagle\Run\setup.txt = Beagle\Run\setup.txt
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeagleLib", "Beagle\BeagleLib\BeagleLib.csproj", "{4158A842-72E4-44CE-A61A-831EB868568C}"
 EndProject
