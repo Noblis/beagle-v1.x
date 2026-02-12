@@ -1,4 +1,4 @@
-dotnet build -c: release
+dotnet build -c release
 cd bin\Release\net10.0
 rem for /l %%i in (1, 1, 10) do Run.exe RunFeynman=5 StopAfterMin=10 NoEscMenu
 for /l %%i in (1, 1, 10) do Run.exe RunFeynman=%%i StopAfterMin=10 NoEscMenu
