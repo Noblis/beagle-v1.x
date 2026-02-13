@@ -257,6 +257,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     Output.WriteLine("Allotted time exceeded");
                     var modelVerified = VerifyModel();
                     if (modelVerified) Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
+                    else Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
                     break;
                 }
             }
