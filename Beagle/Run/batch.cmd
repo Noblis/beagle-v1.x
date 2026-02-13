@@ -1,5 +1,5 @@
-set %%r = 25
-set %%s = 10
+set %r = 25
+set %s = 10
 dotnet build -c release
 cd bin\Release\net10.0
 rem for /l %%i in (1, 1, %%r) do Run.exe RunFeynman=5 StopAfterMin=%%s NoEscMenu
