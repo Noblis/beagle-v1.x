@@ -255,7 +255,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 if (stopAfterMin > 0 && _totalTimeWatch.Elapsed.TotalMinutes > stopAfterMin)
                 {
                     Output.WriteLine("Allotted time exceeded");
-                    VerifyModel();
+                    var modelVerified = VerifyModel();
+                    if (modelVerified) Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
                     break;
                 }
             }
@@ -1020,7 +1021,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var url = $"https://arachnoid.com/latex/?equ={expr.AsLatexString()}";
         WebServer.OpenInBrowser(url);
     }
-    protected void VerifyModel()
+    protected bool VerifyModel()
     {
         var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 4;
         var inputsArray = new float[verificationExperimentsCount][];
@@ -1094,6 +1095,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         Console.ForegroundColor = currentForegroundColor;
         Output.WriteLine();
+
+        return !error;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
