@@ -1,9 +1,9 @@
-set %r = 25
-set %s = 10
+set r=25
+set s=10
 dotnet build -c release
 cd bin\Release\net10.0
 rem for /l %%i in (1, 1, %%r) do Run.exe RunFeynman=5 StopAfterMin=%%s NoEscMenu
-for /l %%i in (1, 1, %%r) do Run.exe RunFeynman=7 StopAfterMin=%%s NoEscMenu
+for /l %%i in (1, 1, %r%) do Run.exe RunFeynman=7 StopAfterMin=%s% NoEscMenu
 for /l %%i in (1, 1, %%r) do Run.exe RunFeynman=14 StopAfterMin=%%s NoEscMenu
 rem for /l %%i in (1, 1, %%r) do Run.exe RunFeynman=18 StopAfterMin=%%s NoEscMenu
 rem for /l %%i in (1, 1, %%r) do Run.exe RunFeynman=20 StopAfterMin=%%s NoEscMenu
