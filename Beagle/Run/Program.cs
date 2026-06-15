@@ -1,9 +1,8 @@
 ﻿using BeagleLib.Engine;
 using BeagleLib.Engine.FitFunc;
+using BeagleLib.Util;
 using Run.Feynman100;
 using Run.MLSetups;
-using WebMonk.RazorSharp.HtmlTags;
-using Output = BeagleLib.Util.Output;
 
 namespace Run;
 
@@ -126,7 +125,7 @@ public class Program
         #region RunFeynmen
         if (runFeynmanFormula > 0)
         {
-            using var mlEngine = FeynmanBenchmark.GetFeynmanMLEngineForFormula(runFeynmanFormula);
+            using var mlEngine = FeynmanBenchmark.GetFeynmanMLEngineForFormula<CorrelationFitFunc>(runFeynmanFormula);
             mlEngine.Train(stopAfterMin, noEscMenu);
             return;
         }
@@ -135,8 +134,8 @@ public class Program
         {
             //new CsvGen<RydbergFormula>().CreateAndSaveCsvFile(5000); return;
 
-            //using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(forceCPUAccelerator: false);
-            using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
+            using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<AreaOfCircle, StdFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<Eq58s, CorrelationFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<CosApproximation, CorrelationFitFunc>(forceCPUAccelerator: false);

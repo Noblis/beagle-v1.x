@@ -108,7 +108,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             var acceleratorCount = useSingleAccelerator ? 1 : devices.Length; //this is for benchmarking One vs Multiple GPUs
             if (firstDevice.AcceleratorType == AcceleratorType.CPU) Output.WriteLine($"Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} exclusively on a CPU using a GPU emulator");
-            else Output.WriteLine($"{Environment.MachineName}: Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} on {Environment.ProcessorCount} CPU(s) & {acceleratorCount} GPU(s) @ {MLSetup.Current.SolutionFoundASRThreshold:0.00000} target ASR");
+            else Output.WriteLine($"{Environment.MachineName}: Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} on {Environment.ProcessorCount} CPU(s) & {acceleratorCount} {devices.First().Name} GPU(s) @ {MLSetup.Current.SolutionFoundASRThreshold:0.00000} target ASR");
 
             _accelerators = new AcceleratorInfo<TFitFunc>[acceleratorCount];
             for (var i = 0; i < _accelerators.Length; i++)
@@ -226,8 +226,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 Output.WriteLine("Load & [C]ombine colonies");
                                 Output.WriteLine("[I]nject organism[s] as string");
                                 Output.WriteLine("[D]isplay best organism as LaTeX formula");
-                                Output.WriteLine("[V]erify best organism as 25% run");
+                                Output.WriteLine("[V]erify best organism as ~25% run");
                                 Output.Write("Please choose: ");
+                                Output.FlushFileStream();
 
                                 var input = Output.ReadLine();
                                 Output.WriteLine();
@@ -254,7 +255,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 if (stopAfterMin > 0 && _totalTimeWatch.Elapsed.TotalMinutes > stopAfterMin)
                 {
                     Output.WriteLine("Allotted time exceeded");
-                    VerifyModel();
+                    var modelVerified = VerifyModel();
+                    if (modelVerified) Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
+                    else Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
                     break;
                 }
             }
@@ -268,6 +271,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         finally
         {
+            Output.FlushFileStream();
             Output.Dispose();
         }
     }
@@ -1018,7 +1022,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var url = $"https://arachnoid.com/latex/?equ={expr.AsLatexString()}";
         WebServer.OpenInBrowser(url);
     }
-    protected void VerifyModel()
+    protected bool VerifyModel()
     {
         var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 4;
         var inputsArray = new float[verificationExperimentsCount][];
@@ -1039,7 +1043,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(inputsArray, correctOutputs).ToArray();
         var error = false;
         var currentForegroundColor = Console.ForegroundColor;
+
         Output.WriteLine();
+        Output.Write("Model Genome: ");
+        _mostAccurateEverOrganism!.PrintCommandsInLine(_inputLabels, inputsArray, correctOutputs);
+
         for (var i = 0; i < verificationExperimentsCount; i++)
         {
             Output.Write("IN: ");
@@ -1051,33 +1059,45 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             var output = new CodeMachine().RunCommands(inputsArray[i], fullCommands);
             Output.Write($"OUT: {output} (model) vs. {correctOutputs[i]} (target)");
 
-            if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
+            if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
             {
-                error = true;
-                Console.ForegroundColor = ConsoleColor.Red;
-                Output.WriteLine(" <- ERROR: Tolerance of 1/10 of 1% exceeded!");
-                Console.ForegroundColor = currentForegroundColor;
+                if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
+                {
+                    error = true;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Output.Write(" <- ERROR: Tolerance of 1/10 of 1% exceeded!");
+                    Console.ForegroundColor = currentForegroundColor;
+                }
             }
             else
             {
-                Output.WriteLine();
+                if (output.IsValidNumber() ^ correctOutputs[i].IsValidNumber())
+                {
+                    //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
+                    error = true;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Output.Write(" <- ERROR: Valid/Invalid mismatch!");
+                    Console.ForegroundColor = currentForegroundColor;
+                }
             }
-
+            Output.WriteLine();
         }
         Output.WriteLine();
 
         if (error)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Output.WriteLine($"Model NOT Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
+            Output.WriteLine($"{MLSetup.Current.Name}-{typeof(TFitFunc).Name} Model NOT Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
         }
         else
         {
             Console.ForegroundColor = ConsoleColor.Green;
-            Output.WriteLine($"Model Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
+            Output.WriteLine($"{MLSetup.Current.Name}-{typeof(TFitFunc).Name} Model Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
         }
         Console.ForegroundColor = currentForegroundColor;
         Output.WriteLine();
+
+        return !error;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

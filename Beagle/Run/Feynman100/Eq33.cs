@@ -27,7 +27,7 @@ public class Eq33 : FeynmanMLSetup
     }
     public override string[] GetInputLabels()
     {
-        return ["eps","c","E","r","w","w1"];
+        return ["Eps","c","E","r","w","w1"];
     }
     #endregion
 }

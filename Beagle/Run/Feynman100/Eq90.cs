@@ -1,15 +1,12 @@
-﻿using BeagleLib.Engine;
-using BeagleLib.Util;
+﻿using BeagleLib.Util;
 
 namespace Run.Feynman100;
 
-public class Eq90 : MLSetup
+public class Eq90 : FeynmanMLSetup
 {
     #region Overrides
-
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
     {
-        
         var p = 1 + Rnd.Random.NextSingle() * 2;
         var e = 1 + Rnd.Random.NextSingle() * 2;
         var t = 1 + Rnd.Random.NextSingle() * 2;
@@ -23,27 +20,17 @@ public class Eq90 : MLSetup
         inputs[3] = h;
         inputs[4] = w;
         inputs[5] = w0;
-
         
-        var term = ((w - w0) * t) / 2f;
-        
-        var result = ((p * e * t) / h) * (MathF.Pow(MathF.Sin(term), 2) / MathF.Pow(term, 2));
+        var term = (w - w0) * t / 2f;
+        var sinTerm = MathF.Sin(term);
 
+        var result = (p * e * t / h) * (sinTerm*sinTerm / (term*term));
         return (inputs, result);
     }
-
     public override string[] GetInputLabels()
     {
-        return new[] { "p", "E", "t", "h", "w", "w0" };
+        return ["p", "E", "t", "h", "w", "w0"];
     }
-
-
-    public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
-
-
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
-
     #endregion
 }
 

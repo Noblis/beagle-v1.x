@@ -47,7 +47,6 @@ public static class Output
         WriteLine(input, true);
         return input;
     }
-
     public static void WriteLineUnlessAtLineStart(bool toFileOnly = false)
     {
         if (Console.CursorLeft > 0) WriteLine(toFileOnly);
@@ -74,7 +73,12 @@ public static class Output
         FileStreamWriter = null;
         _fileName = null;
     }
-
+    public static void DisposeAndRename(string newFileName)
+    {
+        var oldFileName = FileName;
+        Dispose();
+        File.Move(oldFileName, newFileName);
+    }
     public static void FlushFileStream()
     {
         FileStreamWriter?.Flush();
