@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Supermodel.DataAnnotations.Exceptions;
@@ -18,7 +19,7 @@ public abstract class BinaryFileModelBase : IRMapperCustom, IComparable
     public void Empty()
     {
         FileName = "";
-        BinaryContent = Array.Empty<byte>();
+        BinaryContent = [];
     }
     #endregion
 
@@ -65,7 +66,7 @@ public abstract class BinaryFileModelBase : IRMapperCustom, IComparable
 
         var binaryFileOther = (BinaryFile?)(object?)other;
         FileName = binaryFileOther?.FileName ?? "";
-        BinaryContent = binaryFileOther?.BinaryContent ?? Array.Empty<byte>();
+        BinaryContent = binaryFileOther?.BinaryContent ?? [];
 
         return Task.CompletedTask;
     }
@@ -93,6 +94,6 @@ public abstract class BinaryFileModelBase : IRMapperCustom, IComparable
     public string FileName { get; set; } = "";
     
     //we copy shallow here for performance reasons
-    [RMCopyShallow] public byte[] BinaryContent { get; set; } = Array.Empty<byte>();
+    [RMCopyShallow] public byte[] BinaryContent { get; set; } = [];
     #endregion
 }

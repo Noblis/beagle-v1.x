@@ -22,8 +22,8 @@ public class HttpStatusLineParser
     public HttpStatusLineParser(HttpUnsortedResponse httpResponse, int maxStatusLineSize)
     {
         // The minimum length which would be an empty header terminated by CRLF
-        if (maxStatusLineSize < MinStatusLineSize) throw new ArgumentOutOfRangeException("maxStatusLineSize");
-        if (httpResponse == null) throw new ArgumentNullException("httpResponse");
+        if (maxStatusLineSize < MinStatusLineSize) throw new ArgumentOutOfRangeException(nameof(maxStatusLineSize));
+        if (httpResponse == null) throw new ArgumentNullException(nameof(httpResponse));
 
         _httpResponse = httpResponse;
         _maximumHeaderLength = maxStatusLineSize;
@@ -44,7 +44,7 @@ public class HttpStatusLineParser
         int bytesReady,
         ref int bytesConsumed)
     {
-        if (buffer == null) throw new ArgumentNullException("buffer");
+        if (buffer == null) throw new ArgumentNullException(nameof(buffer));
 
         var parseStatus = ParserState.NeedMoreData;
 

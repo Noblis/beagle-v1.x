@@ -105,7 +105,7 @@ public class DefaultStaticModelBinder : IStaticModelBinder
         catch (WebMonkInvalidFormatException)
         {
             var label = rootType.GetDisplayNameForProperty(name);
-            HttpContext.Current.ValidationResultList.Add(new ValidationResult($"Invalid format for {label}", new [] { name }));
+            HttpContext.Current.ValidationResultList.Add(new ValidationResult($"Invalid format for {label}", [name]));
             return Type.Missing;
         }
     }

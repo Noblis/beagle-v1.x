@@ -103,7 +103,7 @@ public class TextualRazorSharpGenerator : GeneratorOfIGenerateHtml<string, strin
 
     internal override void AddTxtTag(string text)
     {
-        Sb.Append("(Txt)");
+        //Sb.Append("(Txt)");
         if (text.Contains("\n")) Sb.Append("@");
         Sb.AppendLine($"\"{TranslatorBase.Decode(text)}\",");
     }

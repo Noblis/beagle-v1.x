@@ -34,7 +34,7 @@ public static class HttpContentMessageExtensions
 
     public static bool IsHttpResponseMessageContent(this HttpContent content)
     {
-        if (content == null) throw new ArgumentNullException("content");
+        if (content == null) throw new ArgumentNullException(nameof(content));
         try
         {
             return HttpMessageContent.ValidateHttpMessageContent(content, false, false);
@@ -77,11 +77,11 @@ public static class HttpContentMessageExtensions
 
     public static Task<HttpRequestMessage> ReadAsHttpRequestMessageAsync(this HttpContent content, string uriScheme, int bufferSize, int maxHeaderSize, CancellationToken cancellationToken)
     {
-        if (content == null) throw new ArgumentNullException("content");
-        if (uriScheme == null) throw new ArgumentNullException("uriScheme");
-        if (!Uri.CheckSchemeName(uriScheme)) throw new ArgumentException("HttpMessageParserInvalidUriScheme", "uriScheme");
-        if (bufferSize < MinBufferSize) throw new ArgumentOutOfRangeException("bufferSize");
-        if (maxHeaderSize < InternetMessageFormatHeaderParser.MinHeaderSize) throw new ArgumentOutOfRangeException("maxHeaderSize");
+        if (content == null) throw new ArgumentNullException(nameof(content));
+        if (uriScheme == null) throw new ArgumentNullException(nameof(uriScheme));
+        if (!Uri.CheckSchemeName(uriScheme)) throw new ArgumentException("HttpMessageParserInvalidUriScheme", nameof(uriScheme));
+        if (bufferSize < MinBufferSize) throw new ArgumentOutOfRangeException(nameof(bufferSize));
+        if (maxHeaderSize < InternetMessageFormatHeaderParser.MinHeaderSize) throw new ArgumentOutOfRangeException(nameof(maxHeaderSize));
 
         HttpMessageContent.ValidateHttpMessageContent(content, true, true);
 
@@ -155,9 +155,9 @@ public static class HttpContentMessageExtensions
 
     public static Task<HttpResponseMessage> ReadAsHttpResponseMessageAsync(this HttpContent content, int bufferSize, int maxHeaderSize, CancellationToken cancellationToken)
     {
-        if (content == null) throw new ArgumentNullException("content");
-        if (bufferSize < MinBufferSize) throw new ArgumentOutOfRangeException("bufferSize");
-        if (maxHeaderSize < InternetMessageFormatHeaderParser.MinHeaderSize) throw new ArgumentOutOfRangeException("maxHeaderSize");
+        if (content == null) throw new ArgumentNullException(nameof(content));
+        if (bufferSize < MinBufferSize) throw new ArgumentOutOfRangeException(nameof(bufferSize));
+        if (maxHeaderSize < InternetMessageFormatHeaderParser.MinHeaderSize) throw new ArgumentOutOfRangeException(nameof(maxHeaderSize));
         HttpMessageContent.ValidateHttpMessageContent(content, false, true);
 
         return content.ReadAsHttpResponseMessageAsyncCore(bufferSize, maxHeaderSize, cancellationToken);

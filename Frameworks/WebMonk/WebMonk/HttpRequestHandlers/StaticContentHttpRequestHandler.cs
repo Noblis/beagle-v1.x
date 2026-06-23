@@ -71,7 +71,8 @@ public class StaticContentHttpRequestHandler : IHttpRequestHandler
         if (CachedFiles.IsEmpty) return;
 
         //find the file in cache that was accessed the longest time ago and try to delete it
-        var fileToDelete = CachedFiles.SingleOrDefault(x => x.Value.LastAccessed == CachedFiles.Min(y => y.Value.LastAccessed));
+        //we say FirstOrDefault instead of SingleOrDefault because sometimes we end up with multiple files with identical timestamp
+        var fileToDelete = CachedFiles.FirstOrDefault(x => x.Value.LastAccessed == CachedFiles.Min(y => y.Value.LastAccessed));
         
         //if (!fileToDelete.Equals(default(KeyValuePair<string, CachedFile>))) //this is very inefficient, so we just check for key
         if (fileToDelete.Key != null)

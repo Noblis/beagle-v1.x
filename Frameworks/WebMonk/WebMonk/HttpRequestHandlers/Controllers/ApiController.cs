@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Namotion.Reflection;
+using Newtonsoft.Json;
+using Supermodel.DataAnnotations.Validations;
+using Supermodel.ReflectionMapper;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
@@ -8,12 +12,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Namotion.Reflection;
-using Newtonsoft.Json;
-using Supermodel.DataAnnotations.Validations;
 using WebMonk.Context;
 using WebMonk.Exceptions;
 using WebMonk.Extensions;
+using WebMonk.HttpRequestHandlers.Controllers.Modules;
 using WebMonk.Misc;
 using WebMonk.ModeBinding;
 using WebMonk.Rendering.Views;
@@ -41,44 +43,58 @@ public abstract class ApiController : ControllerBase
 
     public override async Task<IHttpRequestHandler.HttpRequestHandlerResult> TryExecuteHttpRequestAsync(CancellationToken cancellationToken)
     {
-        var localParts = HttpContext.Current.RouteManager.LocalPathParts;
-        if (localParts.Length < 2) return IHttpRequestHandler.HttpRequestHandlerResult.False;
-        if (!localParts[0].Equals("api", StringComparison.InvariantCultureIgnoreCase)) return IHttpRequestHandler.HttpRequestHandlerResult.False;
-        if (!ControllerPart.Equals(localParts[1], StringComparison.InvariantCultureIgnoreCase)) return IHttpRequestHandler.HttpRequestHandlerResult.False;
-
         var overridenHttpMethod = HttpContext.Current.RouteManager.OverridenHttpMethod;
 
-        string? action;
-        Dictionary<string, object> routeData;
-        var controller = localParts[1];
-        if (localParts.Length >= 3)
+        if (this is ApiModule)
         {
-            if (long.TryParse(localParts[2], out _)) 
+            //Handle EndPoint attribute routing
+            var localPath = HttpContext.Current.RouteManager.LocalPath;
+
+            var endPointMethodInfos = ActionMethodsParts.Where(x => x.Name.StartsWith(overridenHttpMethod, StringComparison.InvariantCultureIgnoreCase) && !x.Name.EndsWith("Async") && x.GetAttribute<EndPointAttribute>()?.Url.Equals(localPath, StringComparison.InvariantCultureIgnoreCase) == true).ToArray();
+            if (endPointMethodInfos.Length > 0) return await RunEndPointActionsAsync(endPointMethodInfos, cancellationToken).ConfigureAwait(false);
+
+            var asyncEndPointMethodInfos = ActionMethodsParts.Where(x => x.Name.StartsWith(overridenHttpMethod, StringComparison.InvariantCultureIgnoreCase) && x.Name.EndsWith("Async") && x.GetAttribute<EndPointAttribute>()?.Url.Equals(localPath, StringComparison.InvariantCultureIgnoreCase) == true).ToArray();
+            if (asyncEndPointMethodInfos.Length > 0) return await RunAsyncEndPointActionsAsync(endPointMethodInfos, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            //Handle standard controller/action routing
+            var localParts = HttpContext.Current.RouteManager.LocalPathParts;
+            if (localParts.Length < 2) return IHttpRequestHandler.HttpRequestHandlerResult.False;
+            if (!localParts[0].Equals("api", StringComparison.InvariantCultureIgnoreCase)) return IHttpRequestHandler.HttpRequestHandlerResult.False;
+            if (!ControllerPart.Equals(localParts[1], StringComparison.InvariantCultureIgnoreCase)) return IHttpRequestHandler.HttpRequestHandlerResult.False;
+
+            string? action;
+            Dictionary<string, object> routeData;
+            var controller = localParts[1];
+            if (localParts.Length >= 3)
             {
-                // /api/student/1
+                if (long.TryParse(localParts[2], out _))
+                {
+                    // /api/student/1
+                    action = null;
+                    routeData = new Dictionary<string, object> { { "__controller__", controller }, { "id", localParts[2] } };
+                }
+                else
+                {
+                    // /api/student/all or /api/student/detail/1
+                    action = localParts[2];
+                    if (localParts.Length >= 4) routeData = new Dictionary<string, object> { { "__controller__", controller }, { "__action__", action }, { "id", localParts[3] } };
+                    else routeData = new Dictionary<string, object> { { "__controller__", controller }, { "__action__", action } };
+                }
+            }
+            else //localParts.Length cannot be less than 2, we checked for that earlier
+            {
                 action = null;
-                routeData = new Dictionary<string, object> { {"__controller__", controller}, { "id", localParts[2]} };
+                routeData = new Dictionary<string, object> { { "__controller__", controller } };
             }
-            else 
-            {
-                // /api/student/all or /api/student/detail/1
-                action = localParts[2];
-                if (localParts.Length >= 4) routeData = new Dictionary<string, object> { {"__controller__", controller}, { "__action__", action }, { "id", localParts[3]} };
-                else routeData = new Dictionary<string, object> { {"__controller__", controller}, { "__action__", action } };
-            }
-        }
-        else //localParts.Length cannot be less than 2, we checked for that earlier
-        {
-            action = null;
-            routeData = new Dictionary<string, object> { {"__controller__", controller} };
-        }
-            
 
-        var actionMethodInfos = ActionMethodsParts.Where(x => $"{overridenHttpMethod}{action}".Equals(x.Name, StringComparison.InvariantCultureIgnoreCase)).ToArray();        
-        if (actionMethodInfos.Length > 0) return await RunActionsAsync(actionMethodInfos, routeData, cancellationToken).ConfigureAwait(false);
+            var actionMethodInfos = ActionMethodsParts.Where(x => $"{overridenHttpMethod}{action}".Equals(x.Name, StringComparison.InvariantCultureIgnoreCase) && !x.HasAttribute<EndPointAttribute>()).ToArray();
+            if (actionMethodInfos.Length > 0) return await RunActionsAsync(actionMethodInfos, routeData, cancellationToken).ConfigureAwait(false);
 
-        var asyncActionMethodInfos = ActionMethodsParts.Where(x => $"{overridenHttpMethod}{action}Async".Equals(x.Name, StringComparison.InvariantCultureIgnoreCase)).ToArray();        
-        if (asyncActionMethodInfos.Length > 0) return await RunAsyncActionsAsync(asyncActionMethodInfos, routeData, cancellationToken).ConfigureAwait(false);
+            var asyncActionMethodInfos = ActionMethodsParts.Where(x => $"{overridenHttpMethod}{action}Async".Equals(x.Name, StringComparison.InvariantCultureIgnoreCase) && !x.HasAttribute<EndPointAttribute>()).ToArray();
+            if (asyncActionMethodInfos.Length > 0) return await RunAsyncActionsAsync(asyncActionMethodInfos, routeData, cancellationToken).ConfigureAwait(false);
+        }
 
         return IHttpRequestHandler.HttpRequestHandlerResult.False;
     }
@@ -100,7 +116,7 @@ public abstract class ApiController : ControllerBase
             var parameterValue = Type.Missing;
                 
             //if class or a struct, we don't need an extra prefix 
-            if (parameterInfo.ParameterType.IsComplexType())
+            if (InternalTypeExt.IsComplexType(parameterInfo.ParameterType))
             {
                 //first try to bind to all value providers (query string)
                 using(HttpContext.Current.PrefixManager.NewPrefix(parameterInfo.Name, null))
@@ -127,7 +143,7 @@ public abstract class ApiController : ControllerBase
                     }
                     catch (WebMonkInvalidFormatException)
                     {
-                        return (false, Array.Empty<object?>());
+                        return (false, []);
                     }
                 }
             }
@@ -138,7 +154,7 @@ public abstract class ApiController : ControllerBase
             }
             else if (parameterValue == Type.Missing)
             {
-                if (!parameterInfo.IsOptional) return(false, Array.Empty<object?>());
+                if (!parameterInfo.IsOptional) return(false, []);
             }
             else
             {

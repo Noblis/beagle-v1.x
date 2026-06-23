@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -11,7 +10,7 @@ public class Range
     #region Constructors
     public Range()
     {
-        _simpleRanges = Array.Empty<SimpleRange>();
+        _simpleRanges = [];
     }
     public Range(params SimpleRange[] simpleRanges)
     {

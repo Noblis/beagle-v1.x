@@ -340,7 +340,7 @@ public class Tag : List<IGenerateHtml>, IGenerateAndContainHtml
         Clear();
         AddRange(childrenList);
 
-        return new List<Tag> { this };
+        return [this];
     }
     #endregion
 

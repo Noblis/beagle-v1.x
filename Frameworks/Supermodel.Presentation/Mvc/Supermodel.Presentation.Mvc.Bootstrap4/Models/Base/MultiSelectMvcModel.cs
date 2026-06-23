@@ -151,7 +151,7 @@ public abstract class MultiSelectMvcModel : IComparable, ISupermodelModelBinder,
                 bindingContext.ModelState.AddModelError(key, $"The {displayName} field is required");
                 success = false; 
             }
-            attemptedValues = Array.Empty<string>();
+            attemptedValues = [];
         }
         else
         {
@@ -179,7 +179,7 @@ public abstract class MultiSelectMvcModel : IComparable, ISupermodelModelBinder,
     #endregion
 
     #region Properties
-    public List<Option> Options { get; protected set; } = new();
+    public List<Option> Options { get; protected set; } = [];
     public string DisabledSuffix { get; set; } = " [DISABLED]";
     #endregion
 }

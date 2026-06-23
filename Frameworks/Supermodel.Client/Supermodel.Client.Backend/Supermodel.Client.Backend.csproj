@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+    <PackageReference Include="Validation" Version="2.6.68" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Supermodel.DataAnnotations\Supermodel.DataAnnotations.csproj" />
+    <ProjectReference Include="..\..\Supermodel.Encryptor\Supermodel.Encryptor.csproj" />
+    <ProjectReference Include="..\..\Supermodel.ReflectionMapper\Supermodel.ReflectionMapper.csproj" />
+  </ItemGroup>
+
+</Project>

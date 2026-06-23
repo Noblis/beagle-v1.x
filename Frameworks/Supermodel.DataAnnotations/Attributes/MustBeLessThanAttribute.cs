@@ -13,7 +13,7 @@ public class MustBeLessThanAttribute : ComparisonAttribute
     {
         var compResult = GetComparisonResult(value, validationContext);
         if (compResult < 0) return ValidationResult.Success!;
-        return new ValidationResult(ErrorMessage, new [] { validationContext.MemberName! });
+        return new ValidationResult(ErrorMessage, [validationContext.MemberName!]);
     }
     #endregion
 }

@@ -38,11 +38,11 @@ public class RMCopyAllPropsShallowFromAttribute : Attribute { }
 
 
 [AttributeUsage(AttributeTargets.Property)]
-public class RMapToAttribute : Attribute
+public class RMapsToAttribute : Attribute
 {
     #region Constructors
     //public RMapToAttribute() { }
-    public RMapToAttribute(string fullPath)
+    public RMapsToAttribute(string fullPath)
     {
         FullPath = fullPath;
     }

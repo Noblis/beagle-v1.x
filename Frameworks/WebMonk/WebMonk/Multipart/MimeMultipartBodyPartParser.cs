@@ -171,20 +171,20 @@ public class MimeMultipartBodyPartParser : IDisposable
         Contract.Assert(content != null, "content cannot be null.");
         if (maxMessageSize < MimeMultipartParser.MinMessageSize)
         {
-            if (throwOnError) throw new ArgumentOutOfRangeException("maxMessageSize");
+            if (throwOnError) throw new ArgumentOutOfRangeException(nameof(maxMessageSize));
             else return null;
         }
 
         MediaTypeHeaderValue contentType = content.Headers.ContentType;
         if (contentType == null)
         {
-            if (throwOnError) throw new ArgumentException("ReadAsMimeMultipartArgumentNoContentType", "content");
+            if (throwOnError) throw new ArgumentException("ReadAsMimeMultipartArgumentNoContentType", nameof(content));
             else return null;
         }
 
         if (!contentType.MediaType.StartsWith("multipart", StringComparison.OrdinalIgnoreCase))
         {
-            if (throwOnError) throw new ArgumentException("ReadAsMimeMultipartArgumentNoMultipart", "content");
+            if (throwOnError) throw new ArgumentException("ReadAsMimeMultipartArgumentNoMultipart", nameof(content));
             else return null;
         }
 
@@ -200,7 +200,7 @@ public class MimeMultipartBodyPartParser : IDisposable
 
         if (boundary == null)
         {
-            if (throwOnError) throw new ArgumentException("ReadAsMimeMultipartArgumentNoBoundary", "content"); 
+            if (throwOnError) throw new ArgumentException("ReadAsMimeMultipartArgumentNoBoundary", nameof(content)); 
             else return null;
         }
 

@@ -49,7 +49,7 @@ public static class QueryableExtensions
                           && method.GetGenericArguments().Length == 2
                           && method.GetParameters().Length == 2)
             .MakeGenericMethod(typeof(T), type)
-            .Invoke(null, new object[] { queryableSource, lambda });
+            .Invoke(null, [queryableSource, lambda]);
         if (result == null) throw new SupermodelException("result == null");
         return (IOrderedQueryable<T>)result;
     } 

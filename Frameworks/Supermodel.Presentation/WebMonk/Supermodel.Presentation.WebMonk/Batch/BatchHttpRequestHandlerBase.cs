@@ -34,7 +34,7 @@ public abstract class BatchHttpRequestHandlerBase<TDataContext> : IHttpRequestHa
             { 
                 var response = HttpContext.Current.HttpListenerContext.Response;
                 response.StatusCode = (int)HttpStatusCode.ExpectationFailed;
-                await response.OutputStream.WriteAsync(Array.Empty<byte>(), 0, 0, cancellationToken).ConfigureAwait(false);
+                await response.OutputStream.WriteAsync([], 0, 0, cancellationToken).ConfigureAwait(false);
             });
         }
 

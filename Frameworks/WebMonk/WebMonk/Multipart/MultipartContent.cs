@@ -38,12 +38,12 @@ public class MultipartContent : HttpContent, IEnumerable<HttpContent>
         {
             Parameters = { new NameValueHeaderValue("boundary", str) }
         };
-        _nestedContent = new List<HttpContent>();
+        _nestedContent = [];
     }
 
     public virtual void Add(HttpContent content)
     {
-        if (content == null) throw new ArgumentNullException("content");
+        if (content == null) throw new ArgumentNullException(nameof(content));
         _nestedContent.Add(content);
     }
 
@@ -94,7 +94,7 @@ public class MultipartContent : HttpContent, IEnumerable<HttpContent>
             // ReSharper disable once ConvertToConstant.Local
             var length1 = 0L;
             var methodInfo = httpContent.GetType().GetMethod("TryComputeLength", BindingFlags.Instance | BindingFlags.NonPublic);
-            var result = (bool)methodInfo!.Invoke(httpContent, new[] {/*out*/(object)length1}); 
+            var result = (bool)methodInfo!.Invoke(httpContent, [ /*out*/length1]); 
             if (result)
             {
                 length = 0L;
@@ -111,9 +111,9 @@ public class MultipartContent : HttpContent, IEnumerable<HttpContent>
     private static void ValidateBoundary(string boundary)
     {
         if (string.IsNullOrWhiteSpace(boundary)) throw new ArgumentException("boundary");
-        if (boundary.Length > 70) throw new ArgumentOutOfRangeException("boundary", "boundary is longer than 70 characters");
-        if (boundary.EndsWith(" ", StringComparison.Ordinal)) throw new ArgumentException("boundary ends with blank", "boundary");
-        if (boundary.Any(ch => (48 > ch || ch > 57) && (97 > ch || ch > 122) && ((65 > ch || ch > 90) && "'()+_,-./:=? ".IndexOf(ch) < 0))) throw new ArgumentException("boundary contains invalid characters", "boundary");
+        if (boundary.Length > 70) throw new ArgumentOutOfRangeException(nameof(boundary), "boundary is longer than 70 characters");
+        if (boundary.EndsWith(" ", StringComparison.Ordinal)) throw new ArgumentException("boundary ends with blank", nameof(boundary));
+        if (boundary.Any(ch => (48 > ch || ch > 57) && (97 > ch || ch > 122) && ((65 > ch || ch > 90) && "'()+_,-./:=? ".IndexOf(ch) < 0))) throw new ArgumentException("boundary contains invalid characters", nameof(boundary));
     }
 
     private static string GetDefaultBoundary()

@@ -8,7 +8,7 @@ public static class HttpUtilities
 {
     //internal static readonly Version DefaultVersion = HttpVersion.Version11;
     // ReSharper disable once InconsistentNaming
-    internal static readonly byte[] EmptyByteArray = Array.Empty<byte>();
+    internal static readonly byte[] EmptyByteArray = [];
 
     static HttpUtilities() { }
 

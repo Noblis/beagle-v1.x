@@ -11,7 +11,7 @@ public class AsyncSemaphore
     #region Methods
     public AsyncSemaphore(int initialCount)
     {
-        if (initialCount < 0) throw new ArgumentOutOfRangeException("initialCount");
+        if (initialCount < 0) throw new ArgumentOutOfRangeException(nameof(initialCount));
         _currentCount = initialCount;
     }
     public Task WaitAsync()

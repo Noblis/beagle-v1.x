@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
+using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Supermodel.Persistence.Entities.ValueTypes;
@@ -29,7 +30,7 @@ public class BinaryFile : ValueObject, IComparable
     public void Empty()
     {
         FileName = "";
-        BinaryContent = Array.Empty<byte>();
+        BinaryContent = [];
     }
     #endregion
 
@@ -59,6 +60,6 @@ public class BinaryFile : ValueObject, IComparable
     [JsonIgnore, NotMapped] public string FileNameWithoutExtension => Path.GetFileNameWithoutExtension(FileName);
 
     [MaxLength(100)] public string FileName { get; set; } = "";
-    public byte[] BinaryContent { get; set; } = Array.Empty<byte>();
+    public byte[] BinaryContent { get; set; } = [];
     #endregion
 }

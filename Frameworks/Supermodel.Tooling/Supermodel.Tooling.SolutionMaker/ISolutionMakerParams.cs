@@ -7,8 +7,6 @@ public interface ISolutionMakerParams
     string SolutionDirectory { get; }
 
     WebFrameworkEnum WebFramework { get; }
-    MobileApiEnum MobileApi { get; }
-
     DatabaseEnum Database { get; }
 
     string CalculateFullPath();

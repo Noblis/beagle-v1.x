@@ -1,2 +1,2 @@
-﻿Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ModelGeneratorWM", "XXYXX\Util\ModelGeneratorWM\ModelGeneratorWM.csproj", "{AD0DFA5F-8D59-4775-8A87-EA83F9A8437B}"
+﻿Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchApiClientWM", "XXYXX\Client\BatchApiClientWM\BatchApiClientWM.csproj", "{75BD2AD6-E020-4DFC-8101-A8E5D36AED2C}"
 EndProject

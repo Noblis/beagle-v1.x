@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Supermodel.DataAnnotations.Exceptions;
@@ -18,7 +19,7 @@ public abstract class BinaryFileModelBase : IRMapperCustom, IComparable
     public void Empty()
     {
         FileName = "";
-        BinaryContent = Array.Empty<byte>();
+        BinaryContent = [];
     }
     #endregion
 
@@ -29,7 +30,7 @@ public abstract class BinaryFileModelBase : IRMapperCustom, IComparable
         if (!(obj is BinaryFileModelBase typedObj)) throw new SupermodelException("obj is not BinaryFileApiModel");
         if (FileName == null) return 0; //if we are an empty object, we say it equals b/c then we do not override db value
         var result = string.CompareOrdinal(FileName, typedObj.FileName);
-        return result != 0 ? result : (BinaryContent ?? Array.Empty<byte>()).GetHashCode().CompareTo(typedObj.GetHashCode());
+        return result != 0 ? result : (BinaryContent ?? []).GetHashCode().CompareTo(typedObj.GetHashCode());
     }
     #endregion
 
@@ -69,7 +70,7 @@ public abstract class BinaryFileModelBase : IRMapperCustom, IComparable
 
         var binaryFileOther = (BinaryFile?)(object?)other;
         FileName = binaryFileOther?.FileName ?? "";
-        BinaryContent = binaryFileOther?.BinaryContent ?? Array.Empty<byte>();
+        BinaryContent = binaryFileOther?.BinaryContent ?? [];
 
         return Task.CompletedTask;
     }
@@ -88,7 +89,7 @@ public abstract class BinaryFileModelBase : IRMapperCustom, IComparable
         }
         if (binaryFileOther == null) throw new SupermodelException("binaryFileOther == null: this should never happen");
         binaryFileOther.FileName = FileName ?? "";
-        binaryFileOther.BinaryContent = BinaryContent ?? Array.Empty<byte>();
+        binaryFileOther.BinaryContent = BinaryContent ?? [];
         return Task.FromResult((T)(object)binaryFileOther);
     }
     #endregion
@@ -97,6 +98,6 @@ public abstract class BinaryFileModelBase : IRMapperCustom, IComparable
     public string? FileName { get; set; } = "";
 
     //we copy shallow here for performance reasons
-    [RMCopyShallow] public byte[]? BinaryContent { get; set; } = Array.Empty<byte>();
+    [RMCopyShallow] public byte[]? BinaryContent { get; set; } = [];
     #endregion
 }

@@ -15,7 +15,7 @@ public class HttpResponseHeaderParser
 
     public HttpResponseHeaderParser(HttpUnsortedResponse httpResponse, int maxResponseLineSize = DefaultMaxStatusLineSize, int maxHeaderSize = DefaultMaxHeaderSize)
     {
-        if (httpResponse == null) throw new ArgumentNullException("httpResponse");
+        if (httpResponse == null) throw new ArgumentNullException(nameof(httpResponse));
 
         HttpUnsortedResponse httpResponse1 = httpResponse;
 
@@ -34,7 +34,7 @@ public class HttpResponseHeaderParser
 
     public ParserState ParseBuffer(byte[] buffer, int bytesReady, ref int bytesConsumed)
     {
-        if (buffer == null) throw new ArgumentNullException("buffer");
+        if (buffer == null) throw new ArgumentNullException(nameof(buffer));
 
         var parseStatus = ParserState.NeedMoreData;
         ParserState subParseStatus;

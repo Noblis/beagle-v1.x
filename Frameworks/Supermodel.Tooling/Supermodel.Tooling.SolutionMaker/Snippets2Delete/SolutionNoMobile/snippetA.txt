@@ -1,4 +1,0 @@
-﻿Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Supermodel.Mobile.Runtime.Droid", "Frameworks\Supermodel.Mobile\Supermodel.Mobile.Runtime.Droid\Supermodel.Mobile.Runtime.Droid.csproj", "{C3AD6F65-9492-4617-96E4-7F11166D679A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Supermodel.Mobile.Runtime.iOS", "Frameworks\Supermodel.Mobile\Supermodel.Mobile.Runtime.iOS\Supermodel.Mobile.Runtime.iOS.csproj", "{9351032A-7B3E-4C7F-A66D-3B11655CB5FD}"
-EndProject

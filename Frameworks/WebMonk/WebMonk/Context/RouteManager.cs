@@ -21,7 +21,7 @@ public class RouteManager : IRouteManager
         if (localPath.EndsWith("/")) localPath = localPath[..^1];
             
         if (localPath.Length > 1) LocalPathParts = localPath[1..].Split('/');
-        else LocalPathParts = Array.Empty<string>();
+        else LocalPathParts = [];
     }
     #endregion
 

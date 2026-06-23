@@ -33,6 +33,6 @@ public class SuperBs4CRUDChildrenListTagHelper : TagHelperDerivedFromHtmlHelperB
     public bool SkipDelete { get; set; } = false;
     public bool ViewOnly { get; set; } = false;
 
-    public Type ChildControllerType { get; set; } = default!;
+    public Type ChildControllerType { get; set; } = null!;
     #endregion
 }

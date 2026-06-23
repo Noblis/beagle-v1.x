@@ -20,8 +20,8 @@ public class HttpRequestLineParser
     public HttpRequestLineParser(HttpUnsortedRequest httpRequest, int maxRequestLineSize)
     {
         // The minimum length which would be an empty header terminated by CRLF
-        if (maxRequestLineSize < MinRequestLineSize) throw new ArgumentOutOfRangeException("maxRequestLineSize");
-        if (httpRequest == null) throw new ArgumentNullException("httpRequest");
+        if (maxRequestLineSize < MinRequestLineSize) throw new ArgumentOutOfRangeException(nameof(maxRequestLineSize));
+        if (httpRequest == null) throw new ArgumentNullException(nameof(httpRequest));
 
         _httpRequest = httpRequest;
         _maximumHeaderLength = maxRequestLineSize;
@@ -42,7 +42,7 @@ public class HttpRequestLineParser
         int bytesReady,
         ref int bytesConsumed)
     {
-        if (buffer == null) throw new ArgumentNullException("buffer");
+        if (buffer == null) throw new ArgumentNullException(nameof(buffer));
 
         ParserState parseStatus = ParserState.NeedMoreData;
 

@@ -42,10 +42,6 @@ public abstract class WebSocketServer
     public virtual void Stop()
     {
         _stop = true;
-        foreach (var client in Clients.ToArray())
-        {
-            CloseConnection(client);
-        }
     }
 
     public virtual void WriteBytesToClient(TcpClient client, byte[] payload)
@@ -134,23 +130,19 @@ public abstract class WebSocketServer
         return WriteBytesToAllClientsAsync(Encoding.UTF8.GetBytes(message));
     }
 
-    protected abstract void ProcessTextRequest(TcpClient client, string textRequest);
-    protected abstract void ProcessBytesRequest(TcpClient client, byte[] byteRequest);
+    protected abstract void ProcessTextRequest(string textRequest);
+    protected abstract void ProcessBytesRequest(byte[] byteRequest);
     protected abstract bool ValidateNewConnection(TcpClient client, string requestData);
     protected abstract void ConnectionClosed(TcpClient client);
 
     protected virtual async Task ListenerLoop()
     {
         TcpListener.Start();
-        while (!_stop || Clients.Count != 0)
+        while (!_stop)
         {
             var clientTask = TcpListener.AcceptTcpClientAsync();
             while (!clientTask.IsCompleted && !Clients.Any(x => x.Connected && x.GetStream().DataAvailable))
             {
-                if (_stop)
-                {
-                    break;
-                }
                 await Task.Delay(250);
 
                 //Delete all disconnected clients
@@ -175,7 +167,6 @@ public abstract class WebSocketServer
             // ReSharper disable once EmptyGeneralCatchClause
             catch (Exception) { } // we ignore errors if Clients list gets modified in the middle of a loop
         }
-        Console.WriteLine("TCP Listener has been stopped");
         // ReSharper disable once FunctionNeverReturns
         TcpListener.Stop();
     }
@@ -275,32 +266,6 @@ public abstract class WebSocketServer
                 return;
             }
 
-            if (isFinBitSet && opCode == OpCodeEnum.ConnectionClose)
-            {
-                if (!ClientsCloseSentTo.Contains(client))
-                {
-                    byte[] closeFrame =
-                    [
-                        0x88, // FIN = 1, Opcode = 0x8 (Close Frame)
-                        0x02, // Payload length = 2 (status code only, no reason)
-                        0x00, 0x00 // Status code in big-endian format, we have to echo back the one we received.
-                    ];
-                    closeFrame[2] = request[2];
-                    closeFrame[3] = request[3];
-                    await WriteBytesToClientAsync(client, closeFrame);
-                    client.Close();
-                    Clients.Remove(client);
-                    ConnectionClosed(client);
-                }
-                else
-                {
-                    client.Close();
-                    Clients.Remove(client);
-                    ClientsCloseSentTo.Remove(client);
-                    ConnectionClosed(client);
-                }
-            }
-
             var len = ReadLength(request, out var lenOffset);
             var maskKey = new[] { request[2 + lenOffset], request[3 + lenOffset], request[4 + lenOffset], request[5 + lenOffset] };
 
@@ -320,26 +285,21 @@ public abstract class WebSocketServer
             //handle text or byte request
             if (opCode != OpCodeEnum.TextFrame)
             {
-                ProcessBytesRequest(client, payload);
+                ProcessBytesRequest(payload);
             }
             else
             {
                 var stringPayload = Encoding.UTF8.GetString(payload);
-                ProcessTextRequest(client,stringPayload);
+                ProcessTextRequest(stringPayload);
             }
         }
     }
     
     protected void CloseConnection(TcpClient client)
     {
-        byte[] closeFrame =
-        [
-            0x88, // FIN = 1, Opcode = 0x8 (Close Frame)
-            0x02, // Payload length = 2 (status code only, no reason)
-            0x03, 0xE8 // Status code in big-endian format, we have to echo back the one we received.
-        ];
-        ClientsCloseSentTo.Add(client);
-        client.GetStream().Write(closeFrame, 0, 4);
+        client.Close();
+        Clients.Remove(client);
+        ConnectionClosed(client);
     }
 
     protected static uint ReadLength(byte[] request, out int lenOffset)
@@ -384,15 +344,16 @@ public abstract class WebSocketServer
     protected static ushort ReadUShort(byte[] request, bool isLittleEndian = false)
     {
         byte[] buffer;
-        if (isLittleEndian) buffer = new[] { request[2], request[3] };
-        else buffer = new[] { request[3], request[2] };
+        if (isLittleEndian) buffer = [request[2], request[3]];
+        else buffer = [request[3], request[2]];
         return BitConverter.ToUInt16(buffer, 0);
     }
     protected static ulong ReadULong(byte[] request, bool isLittleEndian = false)
     {
         byte[] buffer;
-        if (isLittleEndian) buffer = new[] { request[2], request[4], request[5], request[6], request[7], request[8], request[9], request[10] };
-        else buffer = new[] { request[8], request[8], request[7], request[6], request[5], request[4], request[3], request[2] };
+        if (isLittleEndian) buffer = [request[2], request[4], request[5], request[6], request[7], request[8], request[9], request[10]
+        ];
+        else buffer = [request[8], request[8], request[7], request[6], request[5], request[4], request[3], request[2]];
         return BitConverter.ToUInt16(buffer, 0);
     }
     #endregion
@@ -405,11 +366,8 @@ public abstract class WebSocketServer
     public IPAddress IP { get; }
     public int Port { get; }
 
-    public List<TcpClient> Clients { get; set; } = new();
+    public List<TcpClient> Clients { get; set; } = [];
 
     private bool _stop;
-
-    private List<TcpClient> ClientsCloseSentTo { get; set; } = new();
-
     #endregion
 }

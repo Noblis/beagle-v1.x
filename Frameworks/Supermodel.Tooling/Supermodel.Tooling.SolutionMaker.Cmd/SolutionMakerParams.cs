@@ -16,7 +16,6 @@ public class SolutionMakerParams : ISolutionMakerParams
             solutionMakerParams.SolutionName = ReadSolutionName();
             solutionMakerParams.SolutionDirectory = ReadSolutionDirectory();
             solutionMakerParams.WebFramework = ReadWebFramework();
-            solutionMakerParams.MobileApi = ReadMobileApi();
             solutionMakerParams.Database = ReadDataSource();
                 
             Console.ForegroundColor = ConsoleColor.White;
@@ -33,11 +32,6 @@ public class SolutionMakerParams : ISolutionMakerParams
             Console.Write("Web Framework: ");
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine(solutionMakerParams.WebFramework.GetDescription());
-
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("Mobile API: ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine(solutionMakerParams.MobileApi.GetDescription());
 
             Console.ForegroundColor = ConsoleColor.White;
             Console.Write("Database: ");
@@ -78,26 +72,6 @@ public class SolutionMakerParams : ISolutionMakerParams
             }
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine($"'{input}' is not a valid option for a Database. Please re-enter.");
-        }
-    }
-
-    private static MobileApiEnum ReadMobileApi()
-    {
-        while(true)
-        {
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write("Select Mobile API (0 - No Mobile, 1 - Platform's Native API, 2 - Xamarin.Forms): ");
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            var input = Console.ReadLine();
-            if (input != null)
-            {
-                input = input.Trim();
-                if (input == "0") return MobileApiEnum.NoMobile;
-                if (input == "1") return MobileApiEnum.Native;
-                if (input == "2") return MobileApiEnum.XamarinForms;
-            }
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"'{input}' is not a valid option for a Mobile API. Please re-enter.");
         }
     }
 
@@ -172,7 +146,6 @@ public class SolutionMakerParams : ISolutionMakerParams
     public string SolutionDirectory { get; set; } = "";
 
     public WebFrameworkEnum WebFramework { get; set; }
-    public MobileApiEnum MobileApi { get; set; }
 
     public DatabaseEnum Database { get; set; }
     #endregion

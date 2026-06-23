@@ -25,9 +25,6 @@ public class MasterMvcLayout : IMvcLayout
                 new Script(new { src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js", integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6", crossorigin="anonymous" }),
                 new Script(new { type="text/javascript", src="/js/site.js" }),
                 new Script(new { type="text/javascript", src="/js/jquery-linenumbers.js" }),
-                new Script(new { type="text/javascript", src="/js/jquery.blockUI.js" }),
-                new Script(new { type="text/javascript", src="/js/spinner.js" }),
-                new Script(new { id = "MathJax-script", src = "/mathjax.js", }),
 
                 new Div(new { id="body", style="margin: 20px !important;" })
                 {

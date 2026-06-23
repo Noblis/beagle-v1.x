@@ -133,14 +133,30 @@ public abstract class ValueProvider : IValueProvider
             return new IValueProvider.Result(list);
         }
 
-        //special handing for list of booleans. If value is list but we ask for a boolean
-        if (result.Value is IList<string> stringList)
+        //special handing for list of booleans. If value is list, but we ask for a boolean (for checkboxes)
+        if (result.Value is IList<string> stringList1)
         {
             if (typeof(bool).IsAssignableFrom(type) || typeof(bool?).IsAssignableFrom(type))
             {
                 var @checked = false;
-                foreach (var val in stringList) @checked |= bool.Parse(val);
+                foreach (var val in stringList1) @checked |= bool.Parse(val);
                 return new IValueProvider.Result(@checked);
+            }
+        }
+
+        //special handing for list of 2 strings. If value is list, but we ask for a string (for radio selects)
+        if (result.Value is IList<string> stringList2)
+        {
+            if (typeof(bool).IsAssignableFrom(type) || typeof(string).IsAssignableFrom(type))
+            {
+                if (stringList2.Count != 2) throw new ArgumentException($"Unable to parse {result.Value.GetType().Name} into {type.Name}");
+
+                string strResult;
+                if (string.IsNullOrEmpty(stringList2[1])) strResult = stringList2[0];
+                else if (string.IsNullOrEmpty(stringList2[0])) strResult = stringList2[1];
+                else throw new ArgumentException($"Unable to parse {result.Value.GetType().Name} into {type.Name}");
+
+                return new IValueProvider.Result(strResult);
             }
         }
 
@@ -255,7 +271,7 @@ public abstract class ValueProvider : IValueProvider
         if (s == null) return null;
         return s.IndexOf(char.MinValue) > -1 ? s.Replace("\0", string.Empty) : s;
     }
-    private static char[] StartingChars { get; } =  { '<', '&' };
+    private static char[] StartingChars { get; } = ['<', '&'];
     #endregion
 
     #region Protected Helpers

@@ -2,7 +2,7 @@
     public class DataContext : EFCoreSQLServerDataContext
     {
         #region Constructors
-        public DataContext() : base(@"Data Source=.\SQL_DEVELOPER; Initial Catalog=XXYXXDb; Trusted_Connection=True", new CustomRepoFactory()) { }
+        public DataContext() : base(@"Data Source=.; Initial Catalog=XXYXXDb; Trusted_Connection=True; TrustServerCertificate=True", new CustomRepoFactory()) { }
         #endregion
 
         #region Overrides

@@ -87,5 +87,4 @@ public static class ObjectAttributeReaderExtensions
         return null;
     }
     private static readonly ConcurrentDictionary<Enum, string?> _enumMemberDict = new();
-
 }

@@ -14,7 +14,7 @@ public static class FormattingUtilities
 {
     // Supported date formats for input.
     private static readonly string[] _dateFormats =
-    {
+    [
         // "r", // RFC 1123, required output format but too strict for input
         "ddd, d MMM yyyy H:m:s 'GMT'", // RFC 1123 (r, except it allows both 1 and 01 for date and time)
         "ddd, d MMM yyyy H:m:s", // RFC 1123, no zone - assume GMT
@@ -33,7 +33,7 @@ public static class FormattingUtilities
         "ddd, d MMM yyyy H:m:s", // RFC 5322 no zone
         "d MMM yyyy H:m:s zzz", // RFC 5322 no day-of-week
         "d MMM yyyy H:m:s" // RFC 5322 no day-of-week, no zone
-    };
+    ];
 
     // Valid header token characters are within the range 0x20 < c < 0x7F excluding the following characters
     private const string NonTokenChars = "()<>@,;:\\\"/[]?={}";

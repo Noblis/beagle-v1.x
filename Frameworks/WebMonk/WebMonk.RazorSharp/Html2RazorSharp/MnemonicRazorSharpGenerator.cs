@@ -40,7 +40,7 @@ public class MnemonicRazorSharpGenerator : GeneratorOfIGenerateHtml<Action<Tag>,
         //not a logic check, just a pre-casting check for sanity
         if (!typeof(SelfClosingTag).IsAssignableFrom(tag)) throw new ArgumentException("Type passed as a self-closing tag is not a self-closing tag"); 
             
-        var tagToAdd = (SelfClosingTag)tag.GetConstructors()[0].Invoke(new object?[] { null });
+        var tagToAdd = (SelfClosingTag)tag.GetConstructors()[0].Invoke([null]);
             
         Hs.Append(tagToAdd);
 

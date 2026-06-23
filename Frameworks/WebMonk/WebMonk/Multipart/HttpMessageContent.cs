@@ -51,7 +51,7 @@ public class HttpMessageContent : HttpContent
 
     public HttpMessageContent(HttpRequestMessage httpRequest)
     {
-        if (httpRequest == null) throw new ArgumentNullException("httpRequest");
+        if (httpRequest == null) throw new ArgumentNullException(nameof(httpRequest));
 
         HttpRequestMessage = httpRequest;
         Headers.ContentType = new MediaTypeHeaderValue(DefaultMediaType);
@@ -62,7 +62,7 @@ public class HttpMessageContent : HttpContent
 
     public HttpMessageContent(HttpResponseMessage httpResponse)
     {
-        if (httpResponse == null) throw new ArgumentNullException("httpResponse");
+        if (httpResponse == null) throw new ArgumentNullException(nameof(httpResponse));
 
         HttpResponseMessage = httpResponse;
         Headers.ContentType = new MediaTypeHeaderValue(DefaultMediaType);
@@ -87,7 +87,7 @@ public class HttpMessageContent : HttpContent
 
     public static bool ValidateHttpMessageContent(HttpContent content, bool isRequest, bool throwOnError)
     {
-        if (content == null) throw new ArgumentNullException("content");
+        if (content == null) throw new ArgumentNullException(nameof(content));
 
         var contentType = content.Headers.ContentType;
         if (contentType != null)
@@ -120,7 +120,7 @@ public class HttpMessageContent : HttpContent
 
     protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
     {
-        if (stream == null) throw new ArgumentNullException("stream");
+        if (stream == null) throw new ArgumentNullException(nameof(stream));
 
         var header = SerializeHeader();
         await stream.WriteAsync(header, 0, header.Length);

@@ -129,7 +129,7 @@ public abstract class EFCoreDataContext : DbContext, IDataContext
     public IDataRepo CreateRepoForRuntimeType(Type modelType)
     {
         modelType = GetDbSetTypeOfPossibleProxy(modelType);
-        var repo = (IDataRepo?)this.ExecuteGenericMethod(nameof(CreateRepo), new[] { modelType });
+        var repo = (IDataRepo?)this.ExecuteGenericMethod(nameof(CreateRepo), [modelType]);
         if (repo == null) throw new SupermodelException("repo == null. This should never happen");
         return repo;
     }
@@ -142,7 +142,7 @@ public abstract class EFCoreDataContext : DbContext, IDataContext
         }
         return new EFCoreSimpleDataRepo<TEntity>();        
     }
-    protected List<IRepoFactory> CustomRepoFactoryList { get; } = new();
+    protected List<IRepoFactory> CustomRepoFactoryList { get; } = [];
 
     public IDataContextTransaction BeginTransaction()
     {

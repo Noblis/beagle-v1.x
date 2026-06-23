@@ -11,24 +11,24 @@ public class StringWithColor : ICmdOutput
     public StringWithColor(string content, ConsoleColor foregroundColor, ConsoleColor? backgroundColor = null)
     {
         Content = content;
-        ColorChanges = new [] { new ColorChange(0, foregroundColor, backgroundColor) }.ToImmutableArray();
+        ColorChanges = [..new [] { new ColorChange(0, foregroundColor, backgroundColor) }];
     }
     public StringWithColor(string content, FBColors? colors)
     {
         Content = content;
 
         if (colors == null) ColorChanges = ImmutableArray<ColorChange>.Empty;
-        else ColorChanges = new [] { new ColorChange(0, colors.Value) }.ToImmutableArray();
+        else ColorChanges = [..new [] { new ColorChange(0, colors.Value) }];
     }
     public StringWithColor(string content, params ColorChange[] colorChanges)
     {
         Content = content;
-        ColorChanges = colorChanges.ToImmutableArray();
+        ColorChanges = [..colorChanges];
     }
     protected StringWithColor(string content, List<ColorChange> colorChanges)
     {
         Content = content;
-        ColorChanges = colorChanges.ToImmutableArray();
+        ColorChanges = [..colorChanges];
     }
     #endregion
 

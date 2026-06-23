@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Threading.Tasks;
 using WebMonk.Context;
 
@@ -24,7 +23,7 @@ public class RedirectResult : ActionResult
 
         response.StatusCode = (int)HttpStatusCode.Redirect;
         response.RedirectLocation = RedirectLocation;
-        await response.OutputStream.WriteAsync(Array.Empty<byte>(), 0, 0).ConfigureAwait(false);
+        await response.OutputStream.WriteAsync([], 0, 0).ConfigureAwait(false);
     }
     #endregion
 

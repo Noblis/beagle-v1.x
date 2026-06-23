@@ -17,11 +17,11 @@ public class ValueProviderManager : IValueProviderManager
     #region Methods
     public virtual async Task<List<IValueProvider>> GetValueProvidersListAsync()
     { 
-        _valueProviders ??= new List<IValueProvider>
-        {
+        _valueProviders ??=
+        [
             await new MessageBodyValueProvider().InitAsync(HttpListenerContext.Request).ConfigureAwait(false),
-            await new QueryStringValueProvider().InitAsync(HttpListenerContext.Request).ConfigureAwait(false), 
-        };
+            await new QueryStringValueProvider().InitAsync(HttpListenerContext.Request).ConfigureAwait(false)
+        ];
         return _valueProviders;
     }
 

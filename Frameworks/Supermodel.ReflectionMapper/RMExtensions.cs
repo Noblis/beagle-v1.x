@@ -15,95 +15,97 @@ public static class RMExtensions
 {
     #region Methods
     #nullable disable
-    public static async Task<TMe> MapFromAsync<TMe, TOther>(this TMe me, TOther other, bool forceShallowForAllProps = false)
+    public static async Task<TMe> MapFromAsync<TMe, TPassive>(this TMe me, TPassive passive, bool forceShallowForAllProps = false)
     {
         var myType = me.GetType();
             
         if (me is IRMapperCustom customMe)
         {
-            var otherType = typeof(TOther);
-            if (other != null && !(otherType.IsGenericType && otherType.GetGenericTypeDefinition() == typeof(Nullable<>))) otherType = other.GetType();
+            var otherType = typeof(TPassive);
+            if (passive != null && !(otherType.IsGenericType && otherType.GetGenericTypeDefinition() == typeof(Nullable<>))) otherType = passive.GetType();
 
-            if (typeof(TOther) == otherType)
+            if (typeof(TPassive) == otherType)
             {
-                await customMe.MapFromCustomAsync(other);
+                await customMe.MapFromCustomAsync(passive);
             }
             else
             {
-                var otherObj = (object)other;
+                var otherObj = (object)passive;
                 me = (TMe)await me.MapFromAsync(otherObj, otherType, forceShallowForAllProps); //don't need myType.IsMarkedForShallowCopyFrom() because it is done inside 
             }
         }
         else
         {
-            me = await MapFromCustomBaseAsync(me, other, forceShallowForAllProps || myType.IsMarkedForShallowCopyFrom());
+            me = await MapFromCustomBaseAsync(me, passive, forceShallowForAllProps || myType.IsMarkedForShallowCopyFrom());
         }
         return me;
     }
-    public static async Task<TOther> MapToAsync<TMe, TOther>(this TMe me, TOther other, bool forceShallowForAllProps = false)
+    public static async Task<TPassive> MapToAsync<TMe, TPassive>(this TMe me, TPassive passive, bool forceShallowForAllProps = false)
     {
         var myType = me.GetType();
 
         if (me is IRMapperCustom customMe)
         {
-            var otherType = typeof(TOther);
-            if (other != null && !(otherType.IsGenericType && otherType.GetGenericTypeDefinition() == typeof(Nullable<>))) otherType = other.GetType();
+            var otherType = typeof(TPassive);
+            if (passive != null && !(otherType.IsGenericType && otherType.GetGenericTypeDefinition() == typeof(Nullable<>))) otherType = passive.GetType();
 
             // ReSharper disable once PossibleNullReferenceException
             if (otherType.FullName.StartsWith("Castle.Proxies.")) otherType = otherType.BaseType ?? throw new SupermodelException("Castle.Proxies does not have a base type.");
 
-            if (typeof(TOther) == otherType)
+            if (typeof(TPassive) == otherType)
             {
-                other = await customMe.MapToCustomAsync(other);
+                passive = await customMe.MapToCustomAsync(passive);
             }
             else
             {
-                var otherObj = (object)other;
-                other = (TOther)await me.MapToAsync(otherObj, otherType, forceShallowForAllProps); //don't need myType.IsMarkedForShallowCopyTo() because it is done inside
+                var otherObj = (object)passive;
+                passive = (TPassive)await me.MapToAsync(otherObj, otherType, forceShallowForAllProps); //don't need myType.IsMarkedForShallowCopyTo() because it is done inside
             }
         }
         else
         {
-            other = await MapToCustomBaseAsync(me, other, forceShallowForAllProps || myType.IsMarkedForShallowCopyTo());
+            passive = await MapToCustomBaseAsync(me, passive, forceShallowForAllProps || myType.IsMarkedForShallowCopyTo());
         }
-        return other;
+        return passive;
     }
 
-    public static Task<object> MapFromAsync(this object me, object other, Type otherType, bool forceShallowForAllProps = false)
+    public static Task<object> MapFromAsync(this object me, object passive, Type passiveType, bool forceShallowForAllProps = false)
     {
         var myType = me.GetType();
-        var task = ReflectionHelper.ExecuteStaticGenericMethod(typeof(RMExtensions), nameof(MapFromAsync), new[] { myType, otherType }, me, other, forceShallowForAllProps || myType.IsMarkedForShallowCopyFrom());
+        var task = ReflectionHelper.ExecuteStaticGenericMethod(typeof(RMExtensions), nameof(MapFromAsync), [myType, passiveType
+        ], me, passive, forceShallowForAllProps || myType.IsMarkedForShallowCopyFrom());
         if (task == null) throw new SystemException("MapFromAsync: task == null");
         return task.GetResultAsObjectAsync();
     }
-    public static Task<object> MapToAsync(this object me, object other, Type otherType, bool forceShallowForAllProps = false)
+    public static Task<object> MapToAsync(this object me, object passive, Type passiveType, bool forceShallowForAllProps = false)
     {
         var myType = me.GetType();
-        var task = ReflectionHelper.ExecuteStaticGenericMethod(typeof(RMExtensions), nameof(MapToAsync), new[] { myType, otherType }, me, other, forceShallowForAllProps || myType.IsMarkedForShallowCopyTo());
+        var task = ReflectionHelper.ExecuteStaticGenericMethod(typeof(RMExtensions), nameof(MapToAsync), [myType, passiveType
+        ], me, passive, forceShallowForAllProps || myType.IsMarkedForShallowCopyTo());
         if (task == null) throw new SystemException("MapToAsync: task == null");
         return task.GetResultAsObjectAsync();
     }
 
-    public static async Task<TMe> MapFromCustomBaseAsync<TMe, TOther>(this TMe me, TOther other, bool forceShallowForAllProps = false)
+    public static async Task<TMe> MapFromCustomBaseAsync<TMe, TPassive>(this TMe me, TPassive passive, bool forceShallowForAllProps = false)
     {
         if (me == null) throw new ReflectionMapperException($"{nameof(MapFromCustomBaseAsync)}: me is null");
-        if (other == null) throw new ReflectionMapperException($"{nameof(MapFromCustomBaseAsync)}: other is null");
+        if (passive == null) throw new ReflectionMapperException($"{nameof(MapFromCustomBaseAsync)}: passive is null");
 
         var myType = me.GetType();
-        var otherType = other.GetType();
+        var otherType = passive.GetType();
 
         //if primitive types
         if (myType.IsPrimitiveOrValueTypeOrNullable())
         {
             //if primitive type, it must match 100%
-            if (myType == otherType) return (TMe)(object)other;
+            if (myType == otherType) return (TMe)(object)passive;
             else throw new PropertyCantBeAutomappedException($"Cannot map {myType} to {otherType} because their types are incompatible.");
         }
 
         //Arrays with same element types of active element type that implements ICustomMapper
         if (AreCompatibleArrays(myType, otherType))
         {
-            var otherArray = (Array)(object)other;
+            var otherArray = (Array)(object)passive;
             var myArray = (Array)(object)me;
             var myArrayItemType = myArray.GetType().GetElementType();
             if (myArrayItemType == null) throw new SupermodelException("myArrayItemType == null");
@@ -140,7 +142,7 @@ public static class RMExtensions
         //WARNING: if we derive from a collection, we ignore all properties that could be on a collection object itself
         if (AreCompatibleCollections(myType, otherType))
         {
-            var otherICollection = (ICollection)other;
+            var otherICollection = (ICollection)passive;
             var myICollection = (ICollection)me;
             var myICollectionItemType = myType.GetInterfaces().Single(x => x.Name == typeof(IEnumerable<>).Name).GetGenericArguments()[0];
             var otherICollectionItemType = otherType.GetTypeInfo().ImplementedInterfaces.Single(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)).GetGenericArguments()[0];
@@ -179,10 +181,10 @@ public static class RMExtensions
             //If property is marked NotRMappedAttribute, don't worry about this one
             if (myPropertyMeta.IsMarkedNotRMappedForMappingFrom()) continue;
 
-            //Find matching other property
-            var otherPropertyMeta = GetMatchingProperty(me, myPropertyMeta.PropertyInfo, other);
+            //Find matching passive property
+            var otherPropertyMeta = GetMatchingProperty(me, myPropertyMeta.PropertyInfo, passive);
 
-            //Get other prop value 
+            //Get passive prop value 
             var otherProperty = otherPropertyMeta.Get();
 
             //Get my property value
@@ -203,8 +205,9 @@ public static class RMExtensions
 
                     if (myProperty is IRMapperCustom myPropertyRMCustom)
                     {
-                        //the below is equivalent of await myPropertyRMCustom.MapFromCustomAsync(otherProperty); but we need other property to go in as <T>
-                        var task = myPropertyRMCustom.ExecuteGenericMethod(nameof(IRMapperCustom.MapFromCustomAsync), new []{ otherPropertyMeta.PropertyInfo.PropertyType}, otherProperty);  
+                        //the below is equivalent of await myPropertyRMCustom.MapFromCustomAsync(otherProperty); but we need passive property to go in as <T>
+                        var task = myPropertyRMCustom.ExecuteGenericMethod(nameof(IRMapperCustom.MapFromCustomAsync),
+                            [otherPropertyMeta.PropertyInfo.PropertyType], otherProperty);  
                         if (task == null) throw new SystemException("MapFromCustomAsync: task == null");
                         await task.GetResultAsObjectAsync();
 
@@ -220,7 +223,8 @@ public static class RMExtensions
                     foreach (var validationResult in ex.ValidationResultList)
                     {
                         if (validationResult.MemberNames.Any(x => !string.IsNullOrWhiteSpace(x))) vr.Add(validationResult);
-                        else vr.Add(new ValidationResult(validationResult.ErrorMessage, new[] { myPropertyMeta.PropertyInfo.Name }));
+                        else vr.Add(new ValidationResult(validationResult.ErrorMessage, [myPropertyMeta.PropertyInfo.Name
+                        ]));
                     }
                     throw new ValidationResultException(vr);
                 }
@@ -230,7 +234,7 @@ public static class RMExtensions
                 }
             }
 
-            //If other prop value is null, set my prop to null and done
+            //If passive prop value is null, set my prop to null and done
             else if (otherProperty == null)
             {
                 myPropertyMeta.Set(null, true);
@@ -325,19 +329,19 @@ public static class RMExtensions
         }
         return me;
     }
-    public static async Task<TOther> MapToCustomBaseAsync<TMe, TOther>(this TMe me, TOther other, bool forceShallowForAllProps = false)
+    public static async Task<TPassive> MapToCustomBaseAsync<TMe, TPassive>(this TMe me, TPassive passive, bool forceShallowForAllProps = false)
     {
         if (me == null) throw new ReflectionMapperException($"{nameof(MapToCustomBaseAsync)}: me is null");
-        if (other == null) throw new ReflectionMapperException($"{nameof(MapToCustomBaseAsync)}: other is null");
+        if (passive == null) throw new ReflectionMapperException($"{nameof(MapToCustomBaseAsync)}: passive is null");
 
         var myType = me.GetType();
-        var otherType = other.GetType();
+        var otherType = passive.GetType();
 
         //if primitive types
         if (myType.IsPrimitiveOrValueTypeOrNullable())
         {
             //if primitive type, it must match 100%
-            if (myType == otherType) return (TOther)(object)me;
+            if (myType == otherType) return (TPassive)(object)me;
             else throw new PropertyCantBeAutomappedException($"Cannot map {myType} to {otherType} because their types are incompatible.");
         }
 
@@ -345,7 +349,7 @@ public static class RMExtensions
         if (AreCompatibleArrays(myType, otherType))
         {
             var myArray = (Array)(object)me;
-            var otherArray = (Array)(object)other;
+            var otherArray = (Array)(object)passive;
             var otherArrayItemType = otherArray.GetType().GetElementType();
             if (otherArrayItemType == null) throw new SupermodelException("otherArrayItemType == null");
 
@@ -373,7 +377,7 @@ public static class RMExtensions
                     }
                 }
             }
-            return (TOther)(object)otherArray;
+            return (TPassive)(object)otherArray;
         }
 
         //ICollection<ICustomMapper> (if main objects are compatible collections)
@@ -381,7 +385,7 @@ public static class RMExtensions
         if (AreCompatibleCollections(myType, otherType))
         {
             var myICollection = (ICollection)me;
-            var otherICollection = (ICollection)other;
+            var otherICollection = (ICollection)passive;
             var otherICollectionItemType = otherType.GetTypeInfo().ImplementedInterfaces.Single(x => x.GetTypeInfo().IsGenericType && x.GetGenericTypeDefinition() == typeof(IEnumerable<>)).GetGenericArguments()[0];
 
             otherICollection.ClearCollection();
@@ -407,7 +411,7 @@ public static class RMExtensions
                     }
                 }
             }
-            return other;
+            return passive;
         }
 
         foreach (var myPropertyInfo in myType.GetProperties())
@@ -418,13 +422,13 @@ public static class RMExtensions
             //If property is marked NotRMappedAttribute, don't worry about this one
             if (myPropertyMeta.IsMarkedNotRMappedForMappingTo()) continue;
 
-            //Find matching property on other
-            var otherPropertyMeta = GetMatchingProperty(me, myPropertyMeta.PropertyInfo, other);
+            //Find matching property on passive
+            var otherPropertyMeta = GetMatchingProperty(me, myPropertyMeta.PropertyInfo, passive);
 
             //Get my property value
             var myProperty = myPropertyMeta.Get();
 
-            //Get other property
+            //Get passive property
             var otherProperty = otherPropertyMeta.Get();
 
             //ICustomMapper. Here we use "is" because if myProperty is null we handle it in the next "else if"
@@ -432,8 +436,9 @@ public static class RMExtensions
             {
                 try
                 {
-                    //the below is equivalent of otherProperty = await myPropertyRMCustom.MapToCustomAsync(otherProperty); but we need other property to go in as <T>
-                    var task = myPropertyRMCustom.ExecuteGenericMethod(nameof(IRMapperCustom.MapToCustomAsync), new[] { otherPropertyMeta.PropertyInfo.PropertyType }, otherProperty);
+                    //the below is equivalent of otherProperty = await myPropertyRMCustom.MapToCustomAsync(otherProperty); but we need passive property to go in as <T>
+                    var task = myPropertyRMCustom.ExecuteGenericMethod(nameof(IRMapperCustom.MapToCustomAsync),
+                        [otherPropertyMeta.PropertyInfo.PropertyType], otherProperty);
                     if (task == null) throw new SystemException("MapToCustomAsync: task == null");
                     otherProperty = await task.GetResultAsObjectAsync();
                     otherPropertyMeta.Set(otherProperty, true);
@@ -444,7 +449,8 @@ public static class RMExtensions
                     foreach (var validationResult in ex.ValidationResultList)
                     {
                         if (validationResult.MemberNames.Any(x => !string.IsNullOrWhiteSpace(x))) vr.Add(validationResult);
-                        else vr.Add(new ValidationResult(validationResult.ErrorMessage, new[] { myPropertyMeta.PropertyInfo.Name }));
+                        else vr.Add(new ValidationResult(validationResult.ErrorMessage, [myPropertyMeta.PropertyInfo.Name
+                        ]));
                     }
                     throw new ValidationResultException(vr);
                 }
@@ -454,7 +460,7 @@ public static class RMExtensions
                 }
             }
 
-            //if my property is null, set other property to null and done
+            //if my property is null, set passive property to null and done
             else if (myProperty == null)
             {
                 otherPropertyMeta.Set(null, true);
@@ -547,7 +553,7 @@ public static class RMExtensions
             }
         }
 
-        return other;
+        return passive;
     }
     #nullable enable
 
@@ -682,13 +688,10 @@ public static class RMExtensions
         if (!activeType.GetTypeInfo().IsArray) return false;
         if (!passiveType.GetTypeInfo().IsArray) return false;
 
-        //get element types
-        var activeElementType = activeType.GetElementType();
-        var passiveElementType = passiveType.GetElementType();
-
-        //if element types match, we are good already
-        // ReSharper disable once DuplicatedStatements
-        if (activeElementType == passiveElementType) return true;
+        //element types match - don't need this
+        //var activeElementType = activeType.GetElementType();
+        //var passiveElementType = passiveType.GetElementType();
+        //if (activeElementType != passiveElementType) return false;
 
         return true;
     }
@@ -718,9 +721,14 @@ public static class RMExtensions
         if (activeICollectionInterface == null) return false;
         if (passiveICollectionInterface == null) return false;
 
-        //both are generic types (this might be generic but just in case)
+        //both are generic interfaces (this might be generic but just in case)
         if (!activeICollectionInterface.GetTypeInfo().IsGenericType) return false;
         if (!passiveICollectionInterface.GetTypeInfo().IsGenericType) return false;
+
+        //element types match - don't need this
+        //var activeElementType = activeICollectionInterface.GetGenericArguments()[0];
+        //var passiveElementType = passiveICollectionInterface.GetGenericArguments()[0];
+        //if (activeElementType != passiveElementType) return false;
 
         return true;
     }
@@ -732,22 +740,22 @@ public static class RMExtensions
         var myPropertyName = myProperty.Name;
         var parentObj = other;
 
-        var myReflectionMappedToAttribute = myProperty.GetCustomAttribute(typeof(RMapToAttribute), true);
+        var myReflectionMappedToAttribute = myProperty.GetCustomAttribute(typeof(RMapsToAttribute), true);
         if (myReflectionMappedToAttribute != null)
         {
-            var attrPropertyName = ((RMapToAttribute)myReflectionMappedToAttribute).PropertyName;
+            var attrPropertyName = ((RMapsToAttribute)myReflectionMappedToAttribute).PropertyName;
             if (!string.IsNullOrEmpty(attrPropertyName)) myPropertyName = attrPropertyName;
 
-            var attrObjectPath = ((RMapToAttribute)myReflectionMappedToAttribute).ObjectPath;
+            var attrObjectPath = ((RMapsToAttribute)myReflectionMappedToAttribute).ObjectPath;
             if (!string.IsNullOrEmpty(attrObjectPath))
             {
                 var mappedToNameComponents = attrObjectPath.Split('.');
-                if (mappedToNameComponents.Length < 1) throw new ReflectionMapperException($"Invalid path in {nameof(RMapToAttribute)}");
+                if (mappedToNameComponents.Length < 1) throw new ReflectionMapperException($"Invalid path in {nameof(RMapsToAttribute)}");
 
                 foreach (var subPropertyName in mappedToNameComponents)
                 {
                     var subObjProperties = parentObj.GetType().GetProperties().Where(x => x.Name == subPropertyName);
-                    if (subObjProperties.Count() != 1) throw new ReflectionMapperException($"Invalid path in {nameof(RMapToAttribute)}");
+                    if (subObjProperties.Count() != 1) throw new ReflectionMapperException($"Invalid path in {nameof(RMapsToAttribute)}");
                     parentObj = parentObj.PropertyGet(subObjProperties.Single().Name) ?? throw new SystemException("parentObj.PropertyGet(subObjProperties.Single().Name) == null");
                     //if (parentObj == null) throw new ReflectionMapperException($"{subPropertyName} in {nameof(RMapToAttribute)} Attribute path is null");
                 }

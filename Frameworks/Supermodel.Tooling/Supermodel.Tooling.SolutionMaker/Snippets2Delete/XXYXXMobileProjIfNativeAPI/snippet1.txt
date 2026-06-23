@@ -1,4 +1,0 @@
-﻿  <ItemGroup>
-    <EmbeddedResource Include="EmbeddedResources\Logo.png" />
-  </ItemGroup>
-

@@ -137,7 +137,7 @@ public static class ObjectMultiColumnListExtensions
                             {
                                 if (tag is Input input &&
                                     input.Attributes.ContainsKey("type") &&
-                                    input.Attributes["type"] == "checkbox" &&
+                                    (input.Attributes["type"] == "checkbox" || input.Attributes["type"] == "radio") &&
                                     input.Attributes.ContainsKey("checked") &&
                                     input.Attributes["checked"] == "checked")
                                 {

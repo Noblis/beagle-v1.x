@@ -148,7 +148,8 @@ public abstract class MultiSelectMvcModel : IComparable, ISelfModelBinder, IEdit
             if (propertyInfo.GetAttribute<RequiredAttribute>() != null)
             {
                 var label = rootType.GetDisplayNameForProperty(prefix);
-                HttpContext.Current.ValidationResultList.Add(new ValidationResult($"The {label} field is required", new[] { name }));
+                HttpContext.Current.ValidationResultList.Add(new ValidationResult($"The {label} field is required",
+                    [name]));
             }
         }
 
@@ -163,7 +164,7 @@ public abstract class MultiSelectMvcModel : IComparable, ISelfModelBinder, IEdit
     #endregion
 
     #region Properties
-    public List<Option> Options { get; protected set; } = new();
+    public List<Option> Options { get; protected set; } = [];
     public string DisabledSuffix { get; set; } = " [DISABLED]";
     #endregion
 }

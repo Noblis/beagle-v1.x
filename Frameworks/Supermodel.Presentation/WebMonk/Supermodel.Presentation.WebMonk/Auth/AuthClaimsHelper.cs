@@ -9,11 +9,11 @@ public static class AuthClaimsHelper
 {
     public static List<Claim> CreateNewClaimsListWithIdAndLabel(long id, string label)
     {
-        return new List<Claim> 
-        { 
+        return
+        [
             new(ClaimTypes.NameIdentifier, id.ToString(), ClaimValueTypes.Integer64),
-            new(ClaimTypes.Name, label, ClaimValueTypes.String) 
-        };
+            new(ClaimTypes.Name, label, ClaimValueTypes.String)
+        ];
     }
 
     public static bool IsInRole(this ImmutableList<Claim> me, string role)

@@ -66,7 +66,7 @@ public static class ConsoleExt
         var result = EditDropdownList(valueStr, BoolOptions);
         return result == "Yes";
     }
-    private static SelectListItem[] BoolOptions { get; } = new []{ new SelectListItem("Yes"), new SelectListItem("No")};
+    private static SelectListItem[] BoolOptions { get; } = [new("Yes"), new("No")];
     #endregion
 
     #region Edit Floating Point

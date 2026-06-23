@@ -10,9 +10,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Namotion.Reflection;
 using Supermodel.DataAnnotations.Validations;
+using Supermodel.ReflectionMapper;
 using WebMonk.Context;
 using WebMonk.Exceptions;
 using WebMonk.Extensions;
+using WebMonk.HttpRequestHandlers.Controllers.Modules;
 using WebMonk.Misc;
 using WebMonk.ModeBinding;
 using WebMonk.Rendering.Views;
@@ -40,43 +42,58 @@ public abstract class MvcController : ControllerBase
 
     public override async Task<IHttpRequestHandler.HttpRequestHandlerResult> TryExecuteHttpRequestAsync(CancellationToken cancellationToken)
     {
-        var localParts = HttpContext.Current.RouteManager.LocalPathParts;
-        if (localParts.Length < 1) return IHttpRequestHandler.HttpRequestHandlerResult.False;
-        if (!ControllerPart.Equals(localParts[0], StringComparison.InvariantCultureIgnoreCase)) return IHttpRequestHandler.HttpRequestHandlerResult.False;
-
         var overridenHttpMethod = HttpContext.Current.RouteManager.OverridenHttpMethod;
-            
-        string? action;
-        Dictionary<string, object> routeData;
-        var controller = localParts[0];
-        if (localParts.Length >= 2)
+
+        if (this is MvcModule)
         {
-            if (long.TryParse(localParts[1], out _)) 
+            //Handle EndPoint attribute routing
+            var localPath = HttpContext.Current.RouteManager.LocalPath;
+
+            var endPointMethodInfos = ActionMethodsParts.Where(x => x.Name.StartsWith(overridenHttpMethod, StringComparison.InvariantCultureIgnoreCase) && !x.Name.EndsWith("Async") && x.GetAttribute<EndPointAttribute>()?.Url.Equals(localPath, StringComparison.InvariantCultureIgnoreCase) == true).ToArray();
+            if (endPointMethodInfos.Length > 0) return await RunEndPointActionsAsync(endPointMethodInfos, cancellationToken).ConfigureAwait(false);
+
+            var asyncEndpointMethodInfos = ActionMethodsParts.Where(x => x.Name.StartsWith(overridenHttpMethod, StringComparison.InvariantCultureIgnoreCase) && x.Name.EndsWith("Async") && x.GetAttribute<EndPointAttribute>()?.Url.Equals(localPath, StringComparison.InvariantCultureIgnoreCase) == true).ToArray();
+            if (asyncEndpointMethodInfos.Length > 0) return await RunAsyncEndPointActionsAsync(endPointMethodInfos, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            //Handle standard controller/action routing
+            var localParts = HttpContext.Current.RouteManager.LocalPathParts;
+            if (localParts.Length < 1) return IHttpRequestHandler.HttpRequestHandlerResult.False;
+            if (!ControllerPart.Equals(localParts[0], StringComparison.InvariantCultureIgnoreCase)) return IHttpRequestHandler.HttpRequestHandlerResult.False;
+
+            string? action;
+            Dictionary<string, object> routeData;
+            var controller = localParts[0];
+            if (localParts.Length >= 2)
             {
-                // /student/1
+                if (long.TryParse(localParts[1], out _))
+                {
+                    // /student/1
+                    action = null;
+                    var id = localParts[1];
+                    routeData = new Dictionary<string, object> { { "__controller__", controller }, { "id", id } };
+                }
+                else
+                {
+                    // /student/list or /student/detail/1
+                    action = localParts[1];
+                    if (localParts.Length >= 3) routeData = new Dictionary<string, object> { { "__controller__", controller }, { "__action__", action }, { "id", localParts[2] } };
+                    else routeData = new Dictionary<string, object> { { "__controller__", controller }, { "__action__", action } };
+                }
+            }
+            else //localParts.Length cannot be less than 1, we checked for that earlier
+            {
                 action = null;
-                var id = localParts[1];
-                routeData = new Dictionary<string, object> { { "__controller__", controller }, {"id", id } };
+                routeData = new Dictionary<string, object> { { "__controller__", controller } };
             }
-            else 
-            {
-                // /student/list or /student/detail/1
-                action = localParts[1];
-                if (localParts.Length >= 3) routeData = new Dictionary<string, object> { {"__controller__", controller}, { "__action__", action }, {"id", localParts[2]} };
-                else routeData = new Dictionary<string, object> { {"__controller__", controller}, { "__action__", action } };
-            }
-        }
-        else //localParts.Length cannot be less than 1, we checked for that earlier
-        {
-            action =null;
-            routeData = new Dictionary<string, object> { {"__controller__", controller} };
-        }
 
-        var actionMethodInfos = ActionMethodsParts.Where(x => $"{overridenHttpMethod}{action}".Equals(x.Name, StringComparison.InvariantCultureIgnoreCase)).ToArray();
-        if (actionMethodInfos.Length > 0) return await RunActionsAsync(actionMethodInfos, routeData, cancellationToken).ConfigureAwait(false);
+            var actionMethodInfos = ActionMethodsParts.Where(x => $"{overridenHttpMethod}{action}".Equals(x.Name, StringComparison.InvariantCultureIgnoreCase) && !x.HasAttribute<EndPointAttribute>()).ToArray();
+            if (actionMethodInfos.Length > 0) return await RunActionsAsync(actionMethodInfos, routeData, cancellationToken).ConfigureAwait(false);
 
-        var asyncActionMethodInfos = ActionMethodsParts.Where(x => $"{overridenHttpMethod}{action}Async".Equals(x.Name, StringComparison.InvariantCultureIgnoreCase)).ToArray();        
-        if (asyncActionMethodInfos.Length > 0) return await RunAsyncActionsAsync(asyncActionMethodInfos, routeData, cancellationToken).ConfigureAwait(false);
+            var asyncActionMethodInfos = ActionMethodsParts.Where(x => $"{overridenHttpMethod}{action}Async".Equals(x.Name, StringComparison.InvariantCultureIgnoreCase) && !x.HasAttribute<EndPointAttribute>()).ToArray();
+            if (asyncActionMethodInfos.Length > 0) return await RunAsyncActionsAsync(asyncActionMethodInfos, routeData, cancellationToken).ConfigureAwait(false);
+        }
 
         return IHttpRequestHandler.HttpRequestHandlerResult.False;
     }
@@ -98,7 +115,7 @@ public abstract class MvcController : ControllerBase
             object? parameterValue;
                 
             //if class or a struct, we don't need an extra prefix 
-            if (parameterInfo.ParameterType.IsComplexType())
+            if (InternalTypeExt.IsComplexType(parameterInfo.ParameterType))
             {
                 parameterValue = await modelBinder.BindNewModelAsync(parametersType, parametersType, valueProviders).ConfigureAwait(false);
             }
@@ -112,7 +129,7 @@ public abstract class MvcController : ControllerBase
                     }
                     catch (WebMonkInvalidFormatException)
                     {
-                        return (false, Array.Empty<object?>());
+                        return (false, []);
                     }
                 }
             }
@@ -123,7 +140,7 @@ public abstract class MvcController : ControllerBase
             }
             else if (parameterValue == Type.Missing)
             {
-                if (!parameterInfo.IsOptional) return(false, Array.Empty<object?>());
+                if (!parameterInfo.IsOptional) return(false, []);
             }
             else
             {

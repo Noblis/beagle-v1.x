@@ -1,2 +1,2 @@
-﻿Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BatchApiClientMVC", "XXYXX\Server\BatchApiClientMVC\BatchApiClientMVC.csproj", "{0EBAAD4F-173C-41E3-86DC-7ACEF76FC571}"
+﻿Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BatchApiClientMVC", "XXYXX\Client\BatchApiClientMVC\BatchApiClientMVC.csproj", "{AF40EEB6-FADC-5F3A-7280-EEDDF7B41BBA}"
 EndProject

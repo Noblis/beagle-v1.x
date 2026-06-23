@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Supermodel.Persistence.Repository;
@@ -13,37 +12,24 @@ public abstract class EFCoreSQLiteDataContext : EFCoreDataContext
     {
         if (_dbFilePath == null)
         {
-            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string appSpecificPath = Path.Combine(appDataPath, "Voyage\\VoyageData");
-            if (!Directory.Exists(appSpecificPath))
-            {
-                Directory.CreateDirectory(appSpecificPath);
-                Console.WriteLine($"Created directory: {appSpecificPath}");
-            }
-            else
-            {
-                Console.WriteLine($"Directory already exists: {appSpecificPath}");
-            }
-            Directory.SetCurrentDirectory(appSpecificPath);
             //this is to make Cmd project point to the same db as web projects
             var workingPath = Directory.GetCurrentDirectory();
+
             string relativePath;
-            //if (workingPath.Contains("\\bin\\Debug\\")) relativePath = "../../../../";
-            //else if (workingPath.Contains("\\bin\\Release\\")) relativePath = "../../../../";
-            //else relativePath = "../";
-            relativePath = "";
-            //_dbFilePath = appSpecificPath;
+            if (workingPath.Contains("\\bin\\Debug\\")) relativePath = "../../../../";
+            else if (workingPath.Contains("\\bin\\Release\\")) relativePath = "../../../../";
+            else relativePath = "../";
 
             _dbFilePath = Path.Combine(workingPath, relativePath);
         }
     }
     protected EFCoreSQLiteDataContext(string connectionString, IRepoFactory? customRepoFactory = null)
-        : base(connectionString, customRepoFactory) 
-    { 
+        : base(connectionString, customRepoFactory)
+    {
         // ReSharper disable once StringLiteralTypo
         //if in-memory db, we need to retain the connection
-        if (connectionString.Trim().ToLower() != "datasource=:memory:") 
-        { 
+        if (connectionString.Trim().ToLower() != "datasource=:memory:")
+        {
             Connection = new SqliteConnection(connectionString);
         }
         else
@@ -54,7 +40,7 @@ public abstract class EFCoreSQLiteDataContext : EFCoreDataContext
             }
             else
             {
-                MemoryConnectionStringRetainer = connectionString;                    
+                MemoryConnectionStringRetainer = connectionString;
                 MemoryConnectionRetainer = Connection = new SqliteConnection(connectionString);
                 Connection.Open();
             }
@@ -75,7 +61,7 @@ public abstract class EFCoreSQLiteDataContext : EFCoreDataContext
     #region Methods
     public static string DbFilePath
     {
-        get 
+        get
         {
             //_dbFilePath should get calculated in the static constructor for this class
             //this is just in case this is called from a static constructor of some class

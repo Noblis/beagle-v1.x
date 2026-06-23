@@ -178,9 +178,8 @@ public class WebServer
             StartListener(autoregisterWithNetsh);
             if (localPathUrl != null) 
             {
-                // ReSharper disable once RedundantAssignment
                 if (localPathUrl.Trim().StartsWith("/")) localPathUrl = localPathUrl.Trim()[1..];
-                //OpenInBrowser($"{NavigatingBaseUrl}{localPathUrl}");
+                OpenInBrowser($"{NavigatingBaseUrl}{localPathUrl}");
             }
             await RunListenerLoopAsync(cancellationToken).ConfigureAwait(false);
         }

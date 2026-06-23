@@ -41,7 +41,7 @@ public static partial class Bs4
                 if (originalValue.IsEmpty)
                 {
                     file.FileName = "";
-                    file.BinaryContent = Array.Empty<byte>();
+                    file.BinaryContent = [];
 
                     if (bindingContext.IsPropertyRequired())
                     {

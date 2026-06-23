@@ -8,7 +8,7 @@ public class ValidationResultException : Exception
     #region Constructors
     public ValidationResultException(string errorMessage, IEnumerable<string> memberNames)
     {
-        ValidationResultList = new ValidationResultList { new(errorMessage, memberNames) };
+        ValidationResultList = [new(errorMessage, memberNames)];
     }
     public ValidationResultException(ValidationResultList validationResultList)
     {

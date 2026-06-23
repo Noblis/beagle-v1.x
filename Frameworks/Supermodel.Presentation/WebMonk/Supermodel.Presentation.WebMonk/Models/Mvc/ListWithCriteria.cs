@@ -32,7 +32,7 @@ public class ListWithCriteria<TListItem, TCriteria> : List<TListItem>, IRMapperC
             if (otherItemObj != null)
             {
                 item = (TListItem?)ReflectionHelper.CreateType(myIEnumerableGenericArg);
-                await item!.ExecuteGenericMethod("MapFromCustomAsync", new[] { otherItemObj.GetType() }, otherItemObj)!.GetResultAsObjectAsync().ConfigureAwait(false);
+                await item!.ExecuteGenericMethod("MapFromCustomAsync", [otherItemObj.GetType()], otherItemObj)!.GetResultAsObjectAsync().ConfigureAwait(false);
             }
 
             if (item is IAsyncInit iAsyncInit && !iAsyncInit.AsyncInitialized) await iAsyncInit.InitAsync();
@@ -57,7 +57,8 @@ public class ListWithCriteria<TListItem, TCriteria> : List<TListItem>, IRMapperC
         foreach (var myItemObj in myICollection)
         {
             // ReSharper disable once MergeConditionalExpression
-            var item = myItemObj != null ? await myItemObj.ExecuteGenericMethod("MapToCustomAsync", new [] { otherICollectionGenericArg }, ReflectionHelper.CreateType(otherICollectionGenericArg))!.GetResultAsObjectAsync().ConfigureAwait(false) : null;
+            var item = myItemObj != null ? await myItemObj.ExecuteGenericMethod("MapToCustomAsync",
+                [otherICollectionGenericArg], ReflectionHelper.CreateType(otherICollectionGenericArg))!.GetResultAsObjectAsync().ConfigureAwait(false) : null;
             if (item is IAsyncInit iAsyncInit && !iAsyncInit.AsyncInitialized) await iAsyncInit.InitAsync();
             otherICollection.AddToCollection(item);
         }

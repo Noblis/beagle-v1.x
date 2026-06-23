@@ -50,6 +50,6 @@ public static class RequestHttpContext
     #endregion
 
     #region Fields
-    private static Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor = default!;
+    private static Microsoft.AspNetCore.Http.IHttpContextAccessor _httpContextAccessor = null!;
     #endregion
 }

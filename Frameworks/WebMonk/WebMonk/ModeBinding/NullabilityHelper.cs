@@ -105,7 +105,7 @@ public static class NullabilityHelper
             {
                 var prefix = HttpContext.Current.PrefixManager.CurrentPrefix;
                 var label = rootObj.GetType().GetDisplayNameForProperty(prefix);
-                vrl.AddValidationResult(new ValidationResult($"The {label} field is required.", new[] { prefix }));
+                vrl.AddValidationResult(new ValidationResult($"The {label} field is required.", [prefix]));
             }
         }
     }

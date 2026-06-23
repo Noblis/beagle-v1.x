@@ -53,7 +53,8 @@ public static partial class Bs4
                 if (propertyInfo.GetAttribute<RequiredAttribute>() != null)
                 {
                     var label = rootType.GetDisplayNameForProperty(prefix);
-                    HttpContext.Current.ValidationResultList.Add(new ValidationResult($"The {label} field is required", new[] { name }));
+                    HttpContext.Current.ValidationResultList.Add(new ValidationResult($"The {label} field is required",
+                        [name]));
                 }
             }
 

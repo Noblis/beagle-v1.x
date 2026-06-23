@@ -109,8 +109,14 @@ public static class Render
                 var argumentExpression = methodExpression.Arguments[i];
                 var argument = Expression.Lambda(argumentExpression).Compile().DynamicInvoke();
 
-                if (param.Name.ToLower() == "id") id = argument.ToString();
-                else queryStringDict.Add(param.Name, argument?.ToString());
+                if (param.Name.ToLower() == "id")
+                {
+                    id = argument.ToString();
+                }
+                else
+                {
+                    if (argument != null) queryStringDict.Add(param.Name, argument.ToString());
+                }
             }
 
             return (controllerName, actionName, id, queryStringDict);
@@ -886,7 +892,7 @@ public static class Render
         if (@checked) tag.Attributes.Add("checked", "on");
         tag.AddOrUpdateAttr(attributes);
 
-        return new Tags { tag, new Input(new { type="hidden", name, value="false" }) };
+        return [tag, new Input(new { type = "hidden", name, value = "false" })];
     }
 
     public static Input FilePickerForModel(byte[]? model, object? attributes = null)
