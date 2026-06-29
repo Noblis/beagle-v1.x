@@ -57,7 +57,7 @@ public class Program
                 Output.WriteLine("Available Command Line Parameters (not case sensitive):");
                 Output.WriteLine("NoEscMenu - directs Beagle to not watch keyboard. Useful for batch runs");
                 Output.WriteLine("StopAfterMin={minutes} - directs Beagle to stop after number of minutes specified");
-                Output.WriteLine("RunFeynman={1-100} - directs Beagle to run on of the formulas from Feynman 100 benchmark");
+                Output.WriteLine("RunFeynman={1-100} - directs Beagle to run one of the formulas from Feynman 100 benchmark");
                 Output.WriteLine("For example: RunFeynman=1 NoEscMenu StopAfterMin=10");
                 return;
             }
@@ -65,50 +65,50 @@ public class Program
         #endregion
 
         #region Custom settings per machine (not used)
-        //LG Gram
-        if (Environment.MachineName == "LG-GRAM")
-        {
-            //This is supported only on Windows and Linux, so we are ok since we do not run on Mac
-            #pragma warning disable CA1416
-            //Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1111_1111_1111); //MAX Performance
-            #pragma warning restore CA1416
-        }
+        ////LG Gram
+        //if (Environment.MachineName == "LG-GRAM")
+        //{
+        //    //This is supported only on Windows and Linux, so we are ok since we do not run on Mac
+        //    #pragma warning disable CA1416
+        //    //Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1111_1111_1111); //MAX Performance
+        //    #pragma warning restore CA1416
+        //}
 
-        //Alienware
-        if (Environment.MachineName == "NB20527-M29598") 
-        {
-            //This is supported only on Windows and Linux, so we are ok since we do not run on Mac
-            #pragma warning disable CA1416
-            //Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1111_1111_1111); //MAX Performance
-            #pragma warning restore CA1416
-        }
+        ////Alienware
+        //if (Environment.MachineName == "NB20527-M29598") 
+        //{
+        //    //This is supported only on Windows and Linux, so we are ok since we do not run on Mac
+        //    #pragma warning disable CA1416
+        //    //Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1111_1111_1111); //MAX Performance
+        //    #pragma warning restore CA1416
+        //}
 
-        //Workstation
-        if (Environment.MachineName == "NB12466-M29598")
-        {
-            //This is supported only on Windows and Linux, so we are ok since we do not run on Mac
-            #pragma warning disable CA1416
-            //Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1111_1111_1111_1111); //MAX Performance
-            #pragma warning restore CA1416
-        }
+        ////Workstation
+        //if (Environment.MachineName == "NB12466-M29598")
+        //{
+        //    //This is supported only on Windows and Linux, so we are ok since we do not run on Mac
+        //    #pragma warning disable CA1416
+        //    //Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1111_1111_1111_1111); //MAX Performance
+        //    #pragma warning restore CA1416
+        //}
 
-        //Server
-        if (Environment.MachineName == "KILIMANJARO")
-        {
-            //This is supported only on Windows and Linux, so we are ok since we do not run on Mac
-            #pragma warning disable CA1416
-            //Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1111_1111_1111_1111); //MAX Performance
-            #pragma warning restore CA1416
-        }
+        ////Server
+        //if (Environment.MachineName == "KILIMANJARO")
+        //{
+        //    //This is supported only on Windows and Linux, so we are ok since we do not run on Mac
+        //    #pragma warning disable CA1416
+        //    //Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(0b0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_0000_1111_1111_1111_1111); //MAX Performance
+        //    #pragma warning restore CA1416
+        //}
 
-        //H100 Server
-        if (Environment.MachineName == "blackcomb")
-        {
-            //This is supported only on Windows and Linux, so we are ok since we do not run on Mac
-            #pragma warning disable CA1416
-            //Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(0b0000_0000_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111); //MAX Performance
-            #pragma warning restore CA1416
-        }
+        ////H100 Server
+        //if (Environment.MachineName == "blackcomb")
+        //{
+        //    //This is supported only on Windows and Linux, so we are ok since we do not run on Mac
+        //    #pragma warning disable CA1416
+        //    //Process.GetCurrentProcess().ProcessorAffinity = new IntPtr(0b0000_0000_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111_1111); //MAX Performance
+        //    #pragma warning restore CA1416
+        //}
         #endregion
 
         #region Benchmarking
