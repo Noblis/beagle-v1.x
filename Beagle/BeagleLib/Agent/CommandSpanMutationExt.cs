@@ -33,7 +33,7 @@ public static class CommandSpanMutationExt
             me.MutateOnce(ref mutationCommandsLength, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
         }
 
-        //me.RemoveRedundantCommands(ref mutationCommandsLength);
+        if (MLSetup.Current.RemoveRedundantCommandsAfterMutation) me.RemoveRedundantCommands(ref mutationCommandsLength);
     }
     public static void MutateOnce(this Span<Command> me, ref int length, byte inputsCount, OpEnum[] allowedOperations, int allowedAdjunctOperationsCount)
     {

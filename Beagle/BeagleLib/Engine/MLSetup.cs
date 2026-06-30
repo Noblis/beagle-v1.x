@@ -84,6 +84,8 @@ public abstract class MLSetup
     protected virtual int ScriptLengthTaxRateInternal => BConfig.MaxScore * (int)ExperimentsPerGeneration / 85;
 
     public virtual bool KeepOptimizingAfterSolutionFound => false;
+
+    public virtual bool RemoveRedundantCommandsAfterMutation => true;
     #endregion
 
     #region Settings Proprties
