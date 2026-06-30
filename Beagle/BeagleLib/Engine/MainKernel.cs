@@ -10,7 +10,6 @@ public static class MainKernel
 {
     #region Kernel
     public static void Kernel<TFitFunc>(
-        byte useLibDevice,
         uint numberOfExperiments,
         ArrayView<int> scriptStarts,
         ArrayView<Command> allCommands,
@@ -39,7 +38,7 @@ public static class MainKernel
         //execute commands
         var inputs = allInputs.SubView((uint)((groupStart + experimentIdx) * inputsCount), inputsCount);
         var commands = allCommands.SubView(myScriptStart, myScriptLength);
-        var output = new CodeMachine().RunCommands(inputs, commands, useLibDevice != 0);
+        var output = new CodeMachine().RunCommands(inputs, commands);
 
         //get correct output
         var correctOutput = correctOutputs[groupStart + experimentIdx];

@@ -21,13 +21,13 @@ public struct CodeMachine
         {
             //we do special handling for Load command because we do not have ArrayView setup. Otherwise, we run normal Execute with no LibDevice
             if (commands[i].Operation == OpEnum.Load) ExecuteLoadFromArray(inputsArr, commands[i].Idx);
-            else Execute(commands[i], false);
+            else Execute(commands[i]);
         }
         Debug.Assert(StackPointer == 1);
         return StackPop();
     }
 
-    public float RunCommands(ArrayView<float> inputs, ArrayView<Command> commands, bool useLibDevice)
+    public float RunCommands(ArrayView<float> inputs, ArrayView<Command> commands)
     {
         Stack = new float[BConfig.StackSize];
         StackPointer = 0;
@@ -37,7 +37,7 @@ public struct CodeMachine
 
         for (var i = 0; i < commands.Length; i++)
         {
-            Execute(commands[i], useLibDevice);
+            Execute(commands[i]);
         }
         Debug.Assert(StackPointer == 1);
         return StackPop();
@@ -46,64 +46,51 @@ public struct CodeMachine
 
     #region Private Methods
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void Execute(Command command, bool useLibDevice)
+    private void Execute(Command command)
     {
-        switch (command.Operation, useLibDevice)
+        switch (command.Operation)
         {
-            case (OpEnum.Add, _): ExecuteAdd(); return;
-            case (OpEnum.Const, _): ExecuteConst(command.ConstValue); return;
-            case (OpEnum.Div, _): ExecuteDiv(); return;
-            case (OpEnum.Dup, _): ExecuteDup(); return;
-            case (OpEnum.Del, _): ExecuteDel(); return;
-            case (OpEnum.Load, _): ExecuteLoad(command.Idx); return;
-            case (OpEnum.Mul, _): ExecuteMul(); return;
-            case (OpEnum.Sign, _): ExecuteSign(); return;
+            case OpEnum.Add: ExecuteAdd(); return;
+            case OpEnum.Const: ExecuteConst(command.ConstValue); return;
+            case OpEnum.Div: ExecuteDiv(); return;
+            case OpEnum.Dup: ExecuteDup(); return;
+            case OpEnum.Del: ExecuteDel(); return;
+            case OpEnum.Load: ExecuteLoad(command.Idx); return;
+            case OpEnum.Mul: ExecuteMul(); return;
+            case OpEnum.Sign: ExecuteSign(); return;
 
-            case (OpEnum.Sqrt, false): ExecuteSqrt(); return;
-            case (OpEnum.Sqrt, true): ExecuteSqrtWithLibDevice(); return;
+            case OpEnum.Sqrt: ExecuteSqrt(); return;
 
-            case (OpEnum.Cbrt, false): ExecuteCbrt(); return;
-            case (OpEnum.Cbrt, true): ExecuteCbrtWithLibDevice(); return;
+            case OpEnum.Cbrt: ExecuteCbrt(); return;
             
-            case (OpEnum.Sub, _): ExecuteSub(); return;
-            case (OpEnum.Swap, _): ExecuteSwap(); return;
-            case (OpEnum.Copy, _): ExecuteCopy(command.Idx); return;
-            case (OpEnum.Paste, _): ExecutePaste(command.Idx); return;
-            case (OpEnum.Square, _): ExecuteSquare(); return;
-            case (OpEnum.Cube, _): ExecuteCube(); return;
+            case OpEnum.Sub: ExecuteSub(); return;
+            case OpEnum.Swap: ExecuteSwap(); return;
+            case OpEnum.Copy: ExecuteCopy(command.Idx); return;
+            case OpEnum.Paste: ExecutePaste(command.Idx); return;
+            case OpEnum.Square: ExecuteSquare(); return;
+            case OpEnum.Cube: ExecuteCube(); return;
 
-            case (OpEnum.Ln, false): ExecuteLn(); return;
-            case (OpEnum.Ln, true): ExecuteLnWithLibDevice(); return;
+            case OpEnum.Ln: ExecuteLn(); return;
 
-            case (OpEnum.Sin, false): ExecuteSin(); return;
-            case (OpEnum.Sin, true): ExecuteSinWithLibDevice(); return;
+            case OpEnum.Sin: ExecuteSin(); return;
 
-            case (OpEnum.Cos, false): ExecuteCos(); return;
-            case (OpEnum.Cos, true): ExecuteCosWithLibDevice(); return;
+            case OpEnum.Cos: ExecuteCos(); return;
 
-            case (OpEnum.Tan, false): ExecuteTan(); return;
-            case (OpEnum.Tan, true): ExecuteTanWithLibDevice(); return;
+            case OpEnum.Tan: ExecuteTan(); return;
 
-            case (OpEnum.Arccos, false): ExecuteArccos(); return;
-            case (OpEnum.Arccos, true): ExecuteArccosWithLibDevice(); return;
+            case OpEnum.Arccos: ExecuteArccos(); return;
 
-            case (OpEnum.Arcsin, false): ExecuteArcsin(); return;
-            case (OpEnum.Arcsin, true): ExecuteArcsinWithLibDevice(); return;
+            case OpEnum.Arcsin: ExecuteArcsin(); return;
 
-            case (OpEnum.Arctan, false): ExecuteArctan(); return;
-            case (OpEnum.Arctan, true): ExecuteArctanWithLibDevice(); return;
+            case OpEnum.Arctan: ExecuteArctan(); return;
 
-            case (OpEnum.Tanh, false): ExecuteTanh(); return;
-            case (OpEnum.Tanh, true): ExecuteTanhWithLibDevice(); return;
+            case OpEnum.Tanh: ExecuteTanh(); return;
 
-            case (OpEnum.Exp, false): ExecuteExp(); return;
-            case (OpEnum.Exp, true): ExecuteExpWithLibDevice(); return;
+            case OpEnum.Exp: ExecuteExp(); return;
 
-            case (OpEnum.Pow, false): ExecutePow(); return;
-            case (OpEnum.Pow, true): ExecutePowWithLibDevice(); return;
+            case OpEnum.Pow: ExecutePow(); return;
 
             //case (OpEnum.Abs, false): ExecuteAbs(); return;
-            //case (OpEnum.Abs, true): ExecuteAbsWithLibDevice(); return;
 
             //case OpEnum.Round: ExecuteRound(); return;
 
@@ -174,13 +161,6 @@ public struct CodeMachine
         x = XMath.Sqrt(x);
         StackPush(x);
     }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteSqrtWithLibDevice()
-    {
-        var x = StackPop();
-        x = LibDevice.Sqrt(x);
-        StackPush(x);
-    }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ExecuteCbrt()
@@ -189,13 +169,7 @@ public struct CodeMachine
         x = (float)Cbrt(x);
         StackPush(x);
     }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteCbrtWithLibDevice()
-    {
-        var x = StackPop();
-        x = LibDevice.Cbrt(x);
-        StackPush(x);
-    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ExecuteSub()
     {
@@ -299,13 +273,6 @@ public struct CodeMachine
         x = XMath.Log(x);
         StackPush(x);
     }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteLnWithLibDevice()
-    {
-        var x = StackPop();
-        x = LibDevice.Log(x);
-        StackPush(x);
-    }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ExecuteSin()
@@ -314,25 +281,12 @@ public struct CodeMachine
         x = XMath.Sin(x);
         StackPush(x);
     }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteSinWithLibDevice()
-    {
-        var x = StackPop();
-        x = LibDevice.Sin(x);
-        StackPush(x);
-    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ExecuteCos()
     {
         var x = StackPop();
         x = XMath.Cos(x);
-        StackPush(x);
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteCosWithLibDevice()
-    {
-        var x = StackPop();
-        x = LibDevice.Cos(x);
         StackPush(x);
     }
 
@@ -343,26 +297,12 @@ public struct CodeMachine
         x = XMath.Tan(x);
         StackPush(x);
     }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteTanWithLibDevice()
-    {
-        var x = StackPop();
-        x = LibDevice.Tan(x);
-        StackPush(x);
-    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ExecuteArccos()
     {
         var x = StackPop();
         x = XMath.Acos(x);
-        StackPush(x);
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteArccosWithLibDevice()
-    {
-        var x = StackPop();
-        x = LibDevice.Acos(x);
         StackPush(x);
     }
 
@@ -373,26 +313,12 @@ public struct CodeMachine
         x = XMath.Asin(x);
         StackPush(x);
     }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteArcsinWithLibDevice()
-    {
-        var x = StackPop();
-        x = LibDevice.Asin(x);
-        StackPush(x);
-    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ExecuteArctan()
     {
         var x = StackPop();
         x = XMath.Atan(x);
-        StackPush(x);
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteArctanWithLibDevice()
-    {
-        var x = StackPop();
-        x = LibDevice.Atan(x);
         StackPush(x);
     }
 
@@ -403,26 +329,12 @@ public struct CodeMachine
         x = XMath.Tanh(x);
         StackPush(x);
     }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteTanhWithLibDevice()
-    {
-        var x = StackPop();
-        x = LibDevice.Tanh(x);
-        StackPush(x);
-    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ExecuteExp()
     {
         var x = StackPop();
         x = XMath.Exp(x);
-        StackPush(x);
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteExpWithLibDevice()
-    {
-        var x = StackPop();
-        x = LibDevice.Exp(x);
         StackPush(x);
     }
 
@@ -433,13 +345,6 @@ public struct CodeMachine
         var y = StackPop();
         StackPush(XMath.Pow(y, x));
     }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecutePowWithLibDevice()
-    {
-        var x = StackPop();
-        var y = StackPop();
-        StackPush(LibDevice.Pow(y, x));
-    }
 
 
     //[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -447,13 +352,6 @@ public struct CodeMachine
     //{
     //    var x = StackPop();
     //    x = XMath.Abs(x);
-    //    StackPush(x);
-    //}
-    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
-    //private void ExecuteAbsWithLibDevice()
-    //{
-    //    var x = StackPop();
-    //    x = LibDevice.Abs(x);
     //    StackPush(x);
     //}
     //[MethodImpl(MethodImplOptions.AggressiveInlining)]

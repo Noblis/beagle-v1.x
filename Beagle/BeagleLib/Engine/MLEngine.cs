@@ -87,16 +87,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             #endregion
 
             #region Construct GPU-related stuff
-            //Lib Device is only available on CUDA devices
-            if (Environment.GetEnvironmentVariable("CUDA_PATH") != null && !forceCPUAccelerator)
-            {
-                //https://github.com/m4rs-mt/ILGPU/pull/707
-                _context = Context.Create(builder => builder.Default().LibDevice().EnableAlgorithms()); 
-            }
-            else
-            {
-                _context = Context.Create(builder => builder.Default().EnableAlgorithms());
-            }
+            _context = Context.Create(builder => builder.Default().EnableAlgorithms());
 
             //Get CUDA devices. If CUDA device does not exist, OpenCL devices, otherwise CPU device
             var firstDevice =
@@ -140,7 +131,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _accelerators[i].CorrectOutputs = _accelerators[i].Accelerator.Allocate1D<float>(MLSetup.Current.ExperimentsPerGeneration);
 
                 //_accelerators[i].Kernel = _accelerators[i].Accelerator.LoadStreamKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
-                _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
+                _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
             }
             #endregion
 
@@ -808,7 +799,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration - groupStart);
                                 var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
 
-                                accelerator.Kernel(stream, launchDimension, useLibDevice, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, acceleratorGrossRewards.View, FitFunc);
+                                accelerator.Kernel(stream, launchDimension, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, acceleratorGrossRewards.View, FitFunc);
                                 if (flashFileStream) Output.FlushFileStream();
                                 stream.Synchronize();
 
