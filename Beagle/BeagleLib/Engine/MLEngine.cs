@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Runtime;
 using System.Runtime.CompilerServices;
+using ILGPU.Runtime.Cuda;
 using WebMonk;
 
 namespace BeagleLib.Engine;
@@ -91,7 +92,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (Environment.GetEnvironmentVariable("CUDA_PATH") != null && !forceCPUAccelerator)
             {
                 //https://github.com/m4rs-mt/ILGPU/pull/707
-                _context = Context.Create(builder => builder.Default().LibDevice().EnableAlgorithms());
+                _context = Context.Create(builder => builder.Cuda().LibDevice().EnableAlgorithms());
             }
             else
             {
