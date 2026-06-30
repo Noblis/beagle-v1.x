@@ -143,7 +143,8 @@ public static class MainKernel
         else
         {
             int score;
-            if (isOutputValid && isCorrectOutputValid) score = fitFunc.FitFunction(allInputs, (uint)(groupStart + experimentIdx * inputsCount), inputsCount, output, correctOutput);
+            //if (isOutputValid && isCorrectOutputValid) score = fitFunc.FitFunction(allInputs, (uint)(groupStart + experimentIdx * inputsCount), inputsCount, output, correctOutput);
+            if (isOutputValid && isCorrectOutputValid) score = fitFunc.FitFunction(output, correctOutput);
             else score = fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid);
 
             //accumulate results
