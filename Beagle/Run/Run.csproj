@@ -9,10 +9,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="NumSharp" Version="0.30.0" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <ProjectReference Include="..\..\Frameworks\CsvMaker\CsvMaker.csproj" />
 	  <ProjectReference Include="..\BeagleLib\BeagleLib.csproj" />
 	</ItemGroup>
