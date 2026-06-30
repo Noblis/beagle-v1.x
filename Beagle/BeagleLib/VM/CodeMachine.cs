@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using BeagleLib.Util;
 using ILGPU;
-using ILGPU.Algorithms;
 
 namespace BeagleLib.VM;
 
