@@ -87,8 +87,17 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             #endregion
 
             #region Construct GPU-related stuff
-            _context = Context.Create(builder => builder.Default().EnableAlgorithms());
-
+            //Lib Device is only available on CUDA devices
+            if (Environment.GetEnvironmentVariable("CUDA_PATH") != null && !forceCPUAccelerator)
+            {
+                //https://github.com/m4rs-mt/ILGPU/pull/707
+                _context = Context.Create(builder => builder.Default().LibDevice().EnableAlgorithms());
+            }
+            else
+            {
+                _context = Context.Create(builder => builder.Default().EnableAlgorithms());
+            }
+            
             //Get CUDA devices. If CUDA device does not exist, OpenCL devices, otherwise CPU device
             var firstDevice =
                 _context.Devices.FirstOrDefault(x => x.AcceleratorType == AcceleratorType.Cuda) ??

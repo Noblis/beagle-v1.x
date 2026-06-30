@@ -157,7 +157,7 @@ public struct CodeMachine
     private void ExecuteSqrt()
     {
         var x = StackPop();
-        x = XMath.Sqrt(x);
+        x = MathF.Sqrt(x);
         StackPush(x);
     }
     
@@ -269,7 +269,7 @@ public struct CodeMachine
     private void ExecuteLn()
     {
         var x = StackPop();
-        x = XMath.Log(x);
+        x = MathF.Log(x);
         StackPush(x);
     }
     
@@ -277,7 +277,7 @@ public struct CodeMachine
     private void ExecuteSin()
     {
         var x = StackPop();
-        x = XMath.Sin(x);
+        x = MathF.Sin(x);
         StackPush(x);
     }
 
@@ -285,7 +285,7 @@ public struct CodeMachine
     private void ExecuteCos()
     {
         var x = StackPop();
-        x = XMath.Cos(x);
+        x = MathF.Cos(x);
         StackPush(x);
     }
 
@@ -293,7 +293,7 @@ public struct CodeMachine
     private void ExecuteTan()
     {
         var x = StackPop();
-        x = XMath.Tan(x);
+        x = MathF.Tan(x);
         StackPush(x);
     }
 
@@ -301,7 +301,7 @@ public struct CodeMachine
     private void ExecuteArccos()
     {
         var x = StackPop();
-        x = XMath.Acos(x);
+        x = MathF.Acos(x);
         StackPush(x);
     }
 
@@ -309,7 +309,7 @@ public struct CodeMachine
     private void ExecuteArcsin()
     {
         var x = StackPop();
-        x = XMath.Asin(x);
+        x = MathF.Asin(x);
         StackPush(x);
     }
 
@@ -317,7 +317,7 @@ public struct CodeMachine
     private void ExecuteArctan()
     {
         var x = StackPop();
-        x = XMath.Atan(x);
+        x = MathF.Atan(x);
         StackPush(x);
     }
 
@@ -325,7 +325,7 @@ public struct CodeMachine
     private void ExecuteTanh()
     {
         var x = StackPop();
-        x = XMath.Tanh(x);
+        x = MathF.Tanh(x);
         StackPush(x);
     }
 
@@ -333,7 +333,7 @@ public struct CodeMachine
     private void ExecuteExp()
     {
         var x = StackPop();
-        x = XMath.Exp(x);
+        x = MathF.Exp(x);
         StackPush(x);
     }
 
@@ -342,7 +342,7 @@ public struct CodeMachine
     {
         var x = StackPop();
         var y = StackPop();
-        StackPush(XMath.Pow(y, x));
+        StackPush(MathF.Pow(y, x));
     }
 
 
@@ -350,7 +350,7 @@ public struct CodeMachine
     //private void ExecuteAbs()
     //{
     //    var x = StackPop();
-    //    x = XMath.Abs(x);
+    //    x = MathF.Abs(x);
     //    StackPush(x);
     //}
     //[MethodImpl(MethodImplOptions.AggressiveInlining)]
