@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using BeagleLib.Util;
 using ILGPU;
 using ILGPU.Algorithms;
-using ILGPU.Runtime.Cuda;
 
 namespace BeagleLib.VM;
 

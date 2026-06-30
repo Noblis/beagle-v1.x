@@ -725,7 +725,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected void ScoreNewbornOrganismsOnSingleAccelerator(AcceleratorInfo<TFitFunc> accelerator, Span<Organism?> organisms, Span<int> grossRewardsThisAccelerator, bool flashFileStream)
     {
         #region Declare scores logical length and figure out if we use LibDevice, create stream
-        var useLibDevice = accelerator.Accelerator.AcceleratorType == AcceleratorType.Cuda ? (byte)1 : (byte)0;
+        //var useLibDevice = accelerator.Accelerator.AcceleratorType == AcceleratorType.Cuda ? (byte)1 : (byte)0;
         var scoresLogicalLength = 0;
         #endregion
 
