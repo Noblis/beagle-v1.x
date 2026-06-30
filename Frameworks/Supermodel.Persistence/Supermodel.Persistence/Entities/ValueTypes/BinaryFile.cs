@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.IO;
-using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Supermodel.Persistence.Entities.ValueTypes;

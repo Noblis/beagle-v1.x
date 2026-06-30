@@ -25,17 +25,6 @@ public class StringBuilderWithIndents
         return Text;
     }
         
-    //public void AppendNoIndent(string str)
-    //{
-    //    _output.Append(str);
-    //    LineStart = false;
-    //}
-    //public void AppendLineNoIndent(string str)
-    //{
-    //    AppendNoIndent(str + Environment.NewLine);
-    //    LineStart = true;
-    //}
-
     public void Append(string str)
     {
         _output.Append(StrIndent + str);

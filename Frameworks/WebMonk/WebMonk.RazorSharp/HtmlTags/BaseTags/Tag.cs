@@ -128,7 +128,7 @@ public class Tag : List<IGenerateHtml>, IGenerateAndContainHtml
         {
             if (iGenerateHtml is Tag tag)
             {
-                if (predicate(tag) && removalCount == 0) removalCount++;
+                if (removalCount == 0 && predicate(tag)) removalCount++;
                 else remainingChildren.Add(iGenerateHtml);
             }
             else

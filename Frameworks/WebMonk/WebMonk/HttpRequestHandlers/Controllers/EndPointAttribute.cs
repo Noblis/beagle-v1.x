@@ -6,15 +6,13 @@ namespace WebMonk.HttpRequestHandlers.Controllers;
 public class EndPointAttribute : Attribute
 {
     #region Constructors
-    public EndPointAttribute(string url, bool exclusive = true)
+    public EndPointAttribute(string url)
     {
         Url = url;
-        Exclusive = exclusive;
     }
     #endregion
 
     #region Properties
     public string Url { get; }
-    public bool Exclusive { get; }
     #endregion
 }

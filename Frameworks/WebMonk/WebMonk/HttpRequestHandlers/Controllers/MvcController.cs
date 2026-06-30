@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -25,23 +24,15 @@ namespace WebMonk.HttpRequestHandlers.Controllers;
 
 public abstract class MvcController : ControllerBase
 {
-    #region Constructors
-    protected MvcController()
-    {
-        var myType = GetType();
-        ControllerPart = myType.GetMvcControllerName();
-
-        // ReSharper disable once VirtualMemberCallInConstructor
-        ActionMethodsParts = GetActionMethodsParts(myType);
-    }
-    #endregion
-        
     #region IHttpRequestHandler implementation
     public override int Priority => 300;
     public override bool SaveSessionState => true;
 
     public override async Task<IHttpRequestHandler.HttpRequestHandlerResult> TryExecuteHttpRequestAsync(CancellationToken cancellationToken)
     {
+        var myType = GetType();
+        var actionMethodsParts = GetActionMethodsParts(myType);
+
         var overridenHttpMethod = HttpContext.Current.RouteManager.OverridenHttpMethod;
 
         if (this is MvcModule)
@@ -49,18 +40,20 @@ public abstract class MvcController : ControllerBase
             //Handle EndPoint attribute routing
             var localPath = HttpContext.Current.RouteManager.LocalPath;
 
-            var endPointMethodInfos = ActionMethodsParts.Where(x => x.Name.StartsWith(overridenHttpMethod, StringComparison.InvariantCultureIgnoreCase) && !x.Name.EndsWith("Async") && x.GetAttribute<EndPointAttribute>()?.Url.Equals(localPath, StringComparison.InvariantCultureIgnoreCase) == true).ToArray();
+            var endPointMethodInfos = actionMethodsParts.Where(x => x.Name.StartsWith(overridenHttpMethod, StringComparison.InvariantCultureIgnoreCase) && !x.Name.EndsWith("Async") && x.GetAttribute<EndPointAttribute>()?.Url.Equals(localPath, StringComparison.InvariantCultureIgnoreCase) == true).ToArray();
             if (endPointMethodInfos.Length > 0) return await RunEndPointActionsAsync(endPointMethodInfos, cancellationToken).ConfigureAwait(false);
 
-            var asyncEndpointMethodInfos = ActionMethodsParts.Where(x => x.Name.StartsWith(overridenHttpMethod, StringComparison.InvariantCultureIgnoreCase) && x.Name.EndsWith("Async") && x.GetAttribute<EndPointAttribute>()?.Url.Equals(localPath, StringComparison.InvariantCultureIgnoreCase) == true).ToArray();
+            var asyncEndpointMethodInfos = actionMethodsParts.Where(x => x.Name.StartsWith(overridenHttpMethod, StringComparison.InvariantCultureIgnoreCase) && x.Name.EndsWith("Async") && x.GetAttribute<EndPointAttribute>()?.Url.Equals(localPath, StringComparison.InvariantCultureIgnoreCase) == true).ToArray();
             if (asyncEndpointMethodInfos.Length > 0) return await RunAsyncEndPointActionsAsync(endPointMethodInfos, cancellationToken).ConfigureAwait(false);
         }
         else
         {
             //Handle standard controller/action routing
+            var controllerPart = myType.GetMvcControllerName();
+
             var localParts = HttpContext.Current.RouteManager.LocalPathParts;
             if (localParts.Length < 1) return IHttpRequestHandler.HttpRequestHandlerResult.False;
-            if (!ControllerPart.Equals(localParts[0], StringComparison.InvariantCultureIgnoreCase)) return IHttpRequestHandler.HttpRequestHandlerResult.False;
+            if (!controllerPart.Equals(localParts[0], StringComparison.InvariantCultureIgnoreCase)) return IHttpRequestHandler.HttpRequestHandlerResult.False;
 
             string? action;
             Dictionary<string, object> routeData;
@@ -88,10 +81,10 @@ public abstract class MvcController : ControllerBase
                 routeData = new Dictionary<string, object> { { "__controller__", controller } };
             }
 
-            var actionMethodInfos = ActionMethodsParts.Where(x => $"{overridenHttpMethod}{action}".Equals(x.Name, StringComparison.InvariantCultureIgnoreCase) && !x.HasAttribute<EndPointAttribute>()).ToArray();
+            var actionMethodInfos = actionMethodsParts.Where(x => $"{overridenHttpMethod}{action}".Equals(x.Name, StringComparison.InvariantCultureIgnoreCase) && !x.HasAttribute<EndPointAttribute>()).ToArray();
             if (actionMethodInfos.Length > 0) return await RunActionsAsync(actionMethodInfos, routeData, cancellationToken).ConfigureAwait(false);
 
-            var asyncActionMethodInfos = ActionMethodsParts.Where(x => $"{overridenHttpMethod}{action}Async".Equals(x.Name, StringComparison.InvariantCultureIgnoreCase) && !x.HasAttribute<EndPointAttribute>()).ToArray();
+            var asyncActionMethodInfos = actionMethodsParts.Where(x => $"{overridenHttpMethod}{action}Async".Equals(x.Name, StringComparison.InvariantCultureIgnoreCase) && !x.HasAttribute<EndPointAttribute>()).ToArray();
             if (asyncActionMethodInfos.Length > 0) return await RunAsyncActionsAsync(asyncActionMethodInfos, routeData, cancellationToken).ConfigureAwait(false);
         }
 
@@ -232,10 +225,5 @@ public abstract class MvcController : ControllerBase
     {
         return new LocalRedirectResult(Render.Helper.UrlForMvcAction(controller, action, id, queryStringDict));
     }
-    #endregion
-
-    #region Properties
-    protected internal string ControllerPart { get; set; }
-    protected internal ImmutableList<MethodInfo> ActionMethodsParts { get; set; }
     #endregion
 }

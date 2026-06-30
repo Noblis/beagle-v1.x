@@ -71,7 +71,8 @@ public class MessageBodyValueProvider : ValueProvider
                 {
                     var name = httpContent.Headers.ContentDisposition.Name.Replace("\"", "");
                     var fileName = httpContent.Headers.ContentDisposition.FileName;
-                    if (string.IsNullOrWhiteSpace(fileName))
+                    //if (string.IsNullOrWhiteSpace(fileName)) //for .net 9.0 or below
+                    if (fileName == null) //for .net10
                     {
                         //if field is not a file
                         using (var streamReader = new StreamReader(stream, request.ContentEncoding))
