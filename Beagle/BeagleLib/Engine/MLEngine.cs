@@ -257,7 +257,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 {
                     Output.WriteLine("Allotted time exceeded");
                     var modelVerified = VerifyModel();
-                    if (!noEscMenu) DisplayModelAsLatex();
+                    if (!noEscMenu)
+                    {
+                        DisplayModelAsLatex();
+                        Thread.Sleep(3000); //sleep for three seconds to let Browser open request complete
+                    }
 
                     if (modelVerified) Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
                     else Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
@@ -600,7 +604,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
             Console.ResetColor();
 
-#if DEBUG
+            #if DEBUG
             int score = 0;
             var fitFunc = new TFitFunc();
             float[] outputs = new float[MLSetup.Current.ExperimentsPerGeneration];
@@ -698,12 +702,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid));
                 }
             }
-            if (_shortestEverSatisfactoryOrganism.Score - score != 0)
+            if (Math.Abs(_shortestEverSatisfactoryOrganism.Score - score) > 20) //math on GPU is not always the same as on CPU therefore we have a tolerance
             {
                 Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: Invalid shortest satisfactory organism score on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                 Debugger.Break();
             }
-#endif
+            #endif
 
             Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Found Satisfactory Solution on {Environment.MachineName}", $"Beagle {BConfig.Version}: {MLSetup.Current.Name} completed in {_totalTimeWatch.Elapsed:c} on {Environment.MachineName}\n\n{_shortestEverSatisfactoryOrganism.ToString(_inputLabels)}");
             if (!MLSetup.Current.KeepOptimizingAfterSolutionFound)
