@@ -69,7 +69,7 @@ public abstract class MLSetup
     }
     protected int? _organismArraySize;
 
-    public virtual uint ExperimentsPerGeneration => 512;
+    public virtual uint ExperimentsPerGeneration => 1024;
     public virtual long TotalBirthsToResetColonyIfNoProgress => 25_000_000_000;
 
     protected int ScriptLengthTaxRate
