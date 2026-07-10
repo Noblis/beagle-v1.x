@@ -134,7 +134,7 @@ public class Program
         {
             //new CsvGen<RydbergFormula>().CreateAndSaveCsvFile(5000); return;
 
-            using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(forceCPUAccelerator: false);
+            //using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<AreaOfCircle, StdFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<Eq58s, CorrelationFitFunc>(forceCPUAccelerator: false);
@@ -154,6 +154,7 @@ public class Program
             //using var mlEngine = new MLEngine<RydbergFormula, CorrelationFitFunc>(forceCPUAccelerator: false);
             //using var mlEngine = new MLEngine<ThrustData, StdFitFunc>(forceCPUAccelerator: false);
 
+            using var mlEngine = new MLEngine<GECCODemo, StdFitFunc>(forceCPUAccelerator: false);
             mlEngine.Train(stopAfterMin, noEscMenu);
         }
     }
