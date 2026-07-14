@@ -25,7 +25,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     where TFitFunc : struct, IFitFunc
 {
     #region Constructors & Dispose
-    public MLEngine(bool forceCPUAccelerator = false, bool useSingleAccelerator = false, IMLEngineNotificationsHandler? mlEngineNotificationsHandler = null)
+    public MLEngine(bool forceCPUAccelerator = false, bool useSingleAccelerator = false, bool useLibDevice = false, IMLEngineNotificationsHandler? mlEngineNotificationsHandler = null)
     {
         //This is to not show ^[ on Linux when escape is pressed early
         //if (Console.KeyAvailable) Console.ReadKey(true);
@@ -92,7 +92,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (Environment.GetEnvironmentVariable("CUDA_PATH") != null && !forceCPUAccelerator)
             {
                 //https://github.com/m4rs-mt/ILGPU/pull/707
-                _context = Context.Create(builder => builder.Cuda().LibDevice().EnableAlgorithms());
+                if (useLibDevice) _context = Context.Create(builder => builder.Cuda().LibDevice().EnableAlgorithms());
+                else _context = Context.Create(builder => builder.Cuda().EnableAlgorithms());
             }
             else
             {
