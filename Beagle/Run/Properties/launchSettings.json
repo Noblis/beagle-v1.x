@@ -2,7 +2,7 @@
   "profiles": {
     "Run": {
       "commandName": "Project",
-      "commandLineArgs": "StopAfterMin=30 #RunFeynman=1 #NoEscMenu #useLibDevice"
+      "commandLineArgs": "StopAfterMin=5 #useLibDevice #RunFeynman=1 #NoEscMenu "
     }
   }
 }
