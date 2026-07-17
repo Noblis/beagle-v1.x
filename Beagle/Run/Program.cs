@@ -28,7 +28,7 @@ public class Program
                 {
                     noEscMenu = true;
                 }
-                if (arg.ToLower() == "uselibdevice")
+                else if (arg.ToLower() == "uselibdevice")
                 {
                     useLibDevice = true;
                 }
