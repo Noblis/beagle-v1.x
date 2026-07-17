@@ -48,14 +48,16 @@ public static class Program
                         if (exitCode == 0)
                         {
                             equationsValidatedCount[eq - 1]++;
+                            // ReSharper disable RedundantLogicalConditionalExpressionOperand
                             if (equationsValidatedCount[eq - 1] >= MathF.Ceiling(numberOfRunsPerEq / 2f) &&
                                 equationsValidatedCount[eq - 1] == equationsRanCount[eq - 1] && 
                                 stopAfterTypicalAchievedStraight)
                             {
-                                GenerateAndDisplayResults(eq, equationsValidatedCount, equationsRanCount, numberOfRunsPerEq);
+                                GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, numberOfRunsPerEq);
                                 Console.WriteLine("Typical is achieved straight, skipping the remaining runs...");
                                 break;
                             }
+                            // ReSharper restore RedundantLogicalConditionalExpressionOperand
                         }
                         else if (exitCode != 1)
                         {
@@ -63,7 +65,7 @@ public static class Program
                             Environment.Exit(exitCode);
                         }
                         
-                        GenerateAndDisplayResults(eq, equationsValidatedCount, equationsRanCount, numberOfRunsPerEq);
+                        GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, numberOfRunsPerEq);
                     }
                 }
             }
@@ -76,10 +78,10 @@ public static class Program
         Directory.Move("AppOutput", $"FeynmanAppOutput_{now.Year}-{now.Month:D2}-{now.Day:D2}-{now.Hour:D2}-{now.Minute:D2}-{now.Second:D2}");
     }
 
-    private static void GenerateAndDisplayResults(int eq, int[] equationsValidatedCount, int[] equationsRanCount, int numberOfRunsPerEq)
+    private static void GenerateAndDisplayResults(int[] equationsValidatedCount, int[] equationsRanCount, int numberOfRunsPerEq)
     {
         var resultsSb = new StringBuilder();
-        for (var eqi = 1; eqi <= eq; eqi++)
+        for (var eqi = 1; eqi <= numberOfRunsPerEq; eqi++)
         {
             resultsSb.AppendLine($"Equation {eqi}: {equationsValidatedCount[eqi-1]}/{equationsRanCount[eqi - 1]}");
         }
