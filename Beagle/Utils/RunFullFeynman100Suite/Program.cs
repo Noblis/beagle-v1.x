@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Reflection.Metadata;
+using System.Text;
 
 namespace RunFullFeynman100Suite;
 
@@ -14,7 +16,7 @@ public static class Program
         
         var equationsValidatedCount = new int[feynmanEqCount];
         Environment.CurrentDirectory = "..\\..\\..\\..\\..\\Run";
-        Directory.Delete("AppOutput", true);
+        if (Directory.Exists("AppOutput")) Directory.Delete("AppOutput", true);
 
         ProcessStartInfo startInfo = new ProcessStartInfo
         {
@@ -28,7 +30,7 @@ public static class Program
             for (var eq = 1; eq <= feynmanEqCount; eq++)
             {
                 startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={stopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
-                for (var i = 0; i < numberOfRunsPerEq; i++)
+                for (var i = 1; i <= numberOfRunsPerEq; i++)
                 {
                     using (var process = Process.Start(startInfo) ?? throw new Exception())
                     {
@@ -44,17 +46,24 @@ public static class Program
                             Environment.Exit(exitCode);
                         }
                         
-                        //print results
+                        //print and save results
+                        var resultsSb = new StringBuilder();
+                        for (var eqi = 1; eqi <= eq - 1; eqi++)
+                        {
+                            resultsSb.AppendLine($"Equation {eqi}: {equationsValidatedCount[eqi]}/{numberOfRunsPerEq}");
+                        }
+                        resultsSb.AppendLine($"Equation {eq}: {equationsValidatedCount[eq]}/{i}");
+                        var results = resultsSb.ToString();
+
                         var fgColor = Console.ForegroundColor;
                         Console.ForegroundColor = ConsoleColor.DarkCyan;
-                        for (var eqi = 1; eqi <= eq-1; eqi++)
-                        {
-                            Console.WriteLine($"Equation {eqi}: {equationsValidatedCount[eqi]}/numberOfRunsPerEq");
-                        }
-                        Console.WriteLine($"Equation {eq}: {equationsValidatedCount[eq]}/{i}");
+                        Console.Write(results);
                         Console.ForegroundColor = fgColor;
-                        Console.WriteLine("Waiting for 10 seconds before starting next...");
-                        Thread.Sleep(10_000);
+
+                        File.WriteAllText("AppOutput/results.txt", results);
+
+                        Console.WriteLine("Waiting for 5 seconds before starting next...");
+                        Thread.Sleep(5_000);
                     }
                 }
             }

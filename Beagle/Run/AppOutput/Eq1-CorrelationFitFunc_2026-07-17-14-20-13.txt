@@ -1,0 +1,51 @@
+KILIMANJARO: Running Eq1-CorrelationFitFunc on 64 CPU(s) & 8 NVIDIA A16 GPU(s) @ 1.00000 target ASR
+create initial colony of 5,000,000 organisms... Done in 00:00:01.1201003.
+
+00:00:08.7480174: Generation 1 took 00:00:06.4254875/00:00:08.7453972
+Colony size: 4,972,486: (target: 5,000,000). Total births: 9,972,486
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Satisfactory (ASR >= 1.00000) Solution found. ASR = 1.00000 (5,120,000/5,120,000)
+1: LOAD Theta:0
+2: SQUARE
+3: SIGN
+4: EXP
+5: SQRT
+6: CONST 0.3989
+7: MUL
+
+00:00:17.3425292: Generation 2 took 00:00:06.9293379/00:00:08.5623463
+Colony size: 4,293,657: (target: 5,000,000). Total births: 14,266,143
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+00:00:24.6658454: Generation 3 took 00:00:06.0794548/00:00:07.3200982
+Colony size: 3,678,242: (target: 5,000,000). Total births: 17,944,385
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+00:00:31.3179061: Generation 4 took 00:00:05.2003409/00:00:06.6489815
+Colony size: 3,784,379: (target: 5,000,000). Total births: 21,728,764
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+00:00:37.7366463: Generation 5 took 00:00:05.3870978/00:00:06.4156683
+Colony size: 2,965,593: (target: 3,000,000). Total births: 24,694,357
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+00:00:42.8801196: Generation 6 took 00:00:04.2911864/00:00:05.1402836
+Colony size: 2,411,998: (target: 3,000,000). Total births: 27,106,355
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
