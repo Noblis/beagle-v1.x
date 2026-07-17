@@ -6,9 +6,13 @@ public static class Program
 {
     static void Main()
     {
+        const int stopAfterMin = 1;
+        const int feynmanEqCount = 5;
+        const int numberOfRunsPerEq = 3;
+        
         DateTime now = DateTime.Now;
         
-        var equationsValidatedCount = new int[100];
+        var equationsValidatedCount = new int[feynmanEqCount];
         Environment.CurrentDirectory = "..\\..\\..\\..\\..\\Run";
         Directory.Delete("AppOutput", true);
 
@@ -21,10 +25,10 @@ public static class Program
 
         try
         {
-            for (var eq = 1; eq <= 100; eq++)
+            for (var eq = 1; eq <= feynmanEqCount; eq++)
             {
-                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin=1 RunFeynman={eq} NoEscMenu #useLibDevice";
-                for (var i = 0; i < 10; i++)
+                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={stopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                for (var i = 0; i < numberOfRunsPerEq; i++)
                 {
                     using (var process = Process.Start(startInfo) ?? throw new Exception())
                     {
@@ -41,11 +45,14 @@ public static class Program
                         }
                         
                         //print results
+                        var fgColor = Console.ForegroundColor;
+                        Console.ForegroundColor = ConsoleColor.DarkCyan;
                         for (var eqi = 1; eqi <= eq-1; eqi++)
                         {
-                            Console.WriteLine($"Equation {eqi}: {equationsValidatedCount[eqi]}/10");
+                            Console.WriteLine($"Equation {eqi}: {equationsValidatedCount[eqi]}/numberOfRunsPerEq");
                         }
                         Console.WriteLine($"Equation {eq}: {equationsValidatedCount[eq]}/{i}");
+                        Console.ForegroundColor = fgColor;
                         Console.WriteLine("Waiting for 10 seconds before starting next...");
                         Thread.Sleep(10_000);
                     }
