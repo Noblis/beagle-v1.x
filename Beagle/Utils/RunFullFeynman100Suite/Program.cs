@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Reflection.Metadata;
 using System.Text;
 
 namespace RunFullFeynman100Suite;
@@ -8,9 +7,9 @@ public static class Program
 {
     static void Main()
     {
-        const int stopAfterMin = 1;
-        const int feynmanEqCount = 5;
-        const int numberOfRunsPerEq = 3;
+        const int stopAfterMin = 10;
+        const int feynmanEqCount = 100;
+        const int numberOfRunsPerEq = 10;
         
         DateTime now = DateTime.Now;
         
@@ -38,7 +37,7 @@ public static class Program
                         var exitCode = process.ExitCode;
                         if (exitCode == 0)
                         {
-                            equationsValidatedCount[eq]++;
+                            equationsValidatedCount[eq-1]++;
                         }
                         else if (exitCode != 1)
                         {
@@ -50,9 +49,13 @@ public static class Program
                         var resultsSb = new StringBuilder();
                         for (var eqi = 1; eqi <= eq - 1; eqi++)
                         {
-                            resultsSb.AppendLine($"Equation {eqi}: {equationsValidatedCount[eqi]}/{numberOfRunsPerEq}");
+                            resultsSb.AppendLine($"Equation {eqi}: {equationsValidatedCount[eqi-1]}/{numberOfRunsPerEq}");
                         }
-                        resultsSb.AppendLine($"Equation {eq}: {equationsValidatedCount[eq]}/{i}");
+                        resultsSb.AppendLine($"Equation {eq}: {equationsValidatedCount[eq-1]}/{i}");
+                        resultsSb.AppendLine("------------------------------------------------------------------");
+                        resultsSb.AppendLine($"Typical Solved: {equationsValidatedCount.Count(x => x >= MathF.Ceiling(numberOfRunsPerEq/2f))}/{eq}");
+                        resultsSb.AppendLine($"Best Solved: {equationsValidatedCount.Count(x => x > 0)}/{eq}");
+
                         var results = resultsSb.ToString();
 
                         var fgColor = Console.ForegroundColor;
@@ -70,9 +73,9 @@ public static class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to start process: {ex.Message}");
+            Console.WriteLine($"Fatal error: {ex.Message}");
         }
 
-        Directory.Move("AppOutput", $"FeynmanAppOutput-_{now.Year}-{now.Month:D2}-{now.Day:D2}-{now.Hour:D2}-{now.Minute:D2}-{now.Second:D2}");
+        Directory.Move("AppOutput", $"FeynmanAppOutput_{now.Year}-{now.Month:D2}-{now.Day:D2}-{now.Hour:D2}-{now.Minute:D2}-{now.Second:D2}");
     }
 }
