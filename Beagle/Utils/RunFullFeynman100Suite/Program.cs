@@ -54,7 +54,7 @@ public static class Program
                                 stopAfterTypicalAchievedStraight)
                             {
                                 GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, numberOfRunsPerEq);
-                                Console.WriteLine("Typical is achieved straight, skipping the remaining runs...");
+                                Console.WriteLine($"Typical is achieved straight ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
                                 break;
                             }
                             // ReSharper restore RedundantLogicalConditionalExpressionOperand
