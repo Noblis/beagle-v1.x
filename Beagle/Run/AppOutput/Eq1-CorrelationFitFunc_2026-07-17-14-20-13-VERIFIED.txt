@@ -1,0 +1,213 @@
+KILIMANJARO: Running Eq1-CorrelationFitFunc on 64 CPU(s) & 8 NVIDIA A16 GPU(s) @ 1.00000 target ASR
+create initial colony of 5,000,000 organisms... Done in 00:00:01.1201003.
+
+00:00:08.7480174: Generation 1 took 00:00:06.4254875/00:00:08.7453972
+Colony size: 4,972,486: (target: 5,000,000). Total births: 9,972,486
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Satisfactory (ASR >= 1.00000) Solution found. ASR = 1.00000 (5,120,000/5,120,000)
+1: LOAD Theta:0
+2: SQUARE
+3: SIGN
+4: EXP
+5: SQRT
+6: CONST 0.3989
+7: MUL
+
+00:00:17.3425292: Generation 2 took 00:00:06.9293379/00:00:08.5623463
+Colony size: 4,293,657: (target: 5,000,000). Total births: 14,266,143
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+00:00:24.6658454: Generation 3 took 00:00:06.0794548/00:00:07.3200982
+Colony size: 3,678,242: (target: 5,000,000). Total births: 17,944,385
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+00:00:31.3179061: Generation 4 took 00:00:05.2003409/00:00:06.6489815
+Colony size: 3,784,379: (target: 5,000,000). Total births: 21,728,764
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+00:00:37.7366463: Generation 5 took 00:00:05.3870978/00:00:06.4156683
+Colony size: 2,965,593: (target: 3,000,000). Total births: 24,694,357
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+00:00:42.8801196: Generation 6 took 00:00:04.2911864/00:00:05.1402836
+Colony size: 2,411,998: (target: 3,000,000). Total births: 27,106,355
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+00:00:47.2636876: Generation 7 took 00:00:03.4619809/00:00:04.3805592
+Colony size: 2,773,215: (target: 3,000,000). Total births: 29,879,570
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+00:00:52.1181638: Generation 8 took 00:00:03.9898550/00:00:04.8513484
+Colony size: 2,582,663: (target: 3,000,000). Total births: 32,462,233
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+00:00:56.7721189: Generation 9 took 00:00:03.7249008/00:00:04.6506979
+Colony size: 3,191,747: (target: 3,000,000). Total births: 35,653,980
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+00:01:02.2876594: Generation 10 took 00:00:04.6046093/00:00:05.5124594
+Colony size: 2,159,197: (target: 1,000,000). Total births: 37,813,177
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 7 from 00:00:06.6362716 at 5,000,000 total births
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 7
+LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+
+Allotted time exceeded
+
+Model Genome: LOAD Theta:0; SQUARE; SIGN; EXP; SQRT; CONST 0.3989; MUL; 
+IN: Theta=1.8930581; OUT: 0.06647836 (model) vs. 0.0664854 (target)
+IN: Theta=2.1639438; OUT: 0.038374167 (model) vs. 0.038378235 (target)
+IN: Theta=2.4101954; OUT: 0.021849763 (model) vs. 0.021852078 (target)
+IN: Theta=1.5551596; OUT: 0.11903887 (model) vs. 0.1190515 (target)
+IN: Theta=2.0352397; OUT: 0.05028016 (model) vs. 0.05028549 (target)
+IN: Theta=2.0587814; OUT: 0.047914606 (model) vs. 0.047919683 (target)
+IN: Theta=2.7418072; OUT: 0.009299468 (model) vs. 0.009300454 (target)
+IN: Theta=2.7254705; OUT: 0.009724184 (model) vs. 0.009725213 (target)
+IN: Theta=2.174345; OUT: 0.037518073 (model) vs. 0.037522048 (target)
+IN: Theta=2.1814356; OUT: 0.036943145 (model) vs. 0.03694706 (target)
+IN: Theta=1.935674; OUT: 0.061270222 (model) vs. 0.061276715 (target)
+IN: Theta=2.8319402; OUT: 0.0072338274 (model) vs. 0.007234594 (target)
+IN: Theta=1.6589727; OUT: 0.10074731 (model) vs. 0.10075799 (target)
+IN: Theta=1.4862103; OUT: 0.13219792 (model) vs. 0.13221192 (target)
+IN: Theta=2.0389872; OUT: 0.04989777 (model) vs. 0.04990306 (target)
+IN: Theta=2.7788503; OUT: 0.008395586 (model) vs. 0.0083964765 (target)
+IN: Theta=1.271172; OUT: 0.17781997 (model) vs. 0.1778388 (target)
+IN: Theta=2.248427; OUT: 0.031848777 (model) vs. 0.031852152 (target)
+IN: Theta=1.7109823; OUT: 0.09229413 (model) vs. 0.09230391 (target)
+IN: Theta=2.7335854; OUT: 0.009511165 (model) vs. 0.009512172 (target)
+IN: Theta=2.666996; OUT: 0.011384774 (model) vs. 0.011385981 (target)
+IN: Theta=1.8187438; OUT: 0.076309405 (model) vs. 0.0763175 (target)
+IN: Theta=1.2297962; OUT: 0.1872625 (model) vs. 0.18728235 (target)
+IN: Theta=1.8935148; OUT: 0.06642089 (model) vs. 0.06642793 (target)
+IN: Theta=1.2706091; OUT: 0.17794722 (model) vs. 0.17796609 (target)
+IN: Theta=1.5657141; OUT: 0.117094405 (model) vs. 0.11710681 (target)
+IN: Theta=2.781518; OUT: 0.008333552 (model) vs. 0.008334435 (target)
+IN: Theta=1.6548024; OUT: 0.10144585 (model) vs. 0.10145661 (target)
+IN: Theta=2.5128946; OUT: 0.016969047 (model) vs. 0.016970847 (target)
+IN: Theta=2.0089962; OUT: 0.05302045 (model) vs. 0.05302607 (target)
+IN: Theta=1.1212057; OUT: 0.2127589 (model) vs. 0.21278144 (target)
+IN: Theta=1.6116084; OUT: 0.10886079 (model) vs. 0.10887233 (target)
+IN: Theta=2.1702533; OUT: 0.03785304 (model) vs. 0.037857052 (target)
+IN: Theta=1.8821284; OUT: 0.0678641 (model) vs. 0.06787129 (target)
+IN: Theta=1.8619665; OUT: 0.07047452 (model) vs. 0.070481986 (target)
+IN: Theta=2.2287993; OUT: 0.033279367 (model) vs. 0.03328289 (target)
+IN: Theta=2.7334342; OUT: 0.0095150955 (model) vs. 0.009516103 (target)
+IN: Theta=1.1425296; OUT: 0.20768528 (model) vs. 0.20770729 (target)
+IN: Theta=2.2462742; OUT: 0.03200323 (model) vs. 0.032006625 (target)
+IN: Theta=1.375686; OUT: 0.15484966 (model) vs. 0.15486607 (target)
+IN: Theta=1.4133738; OUT: 0.14692144 (model) vs. 0.146937 (target)
+IN: Theta=2.1956928; OUT: 0.035808213 (model) vs. 0.03581201 (target)
+IN: Theta=2.0704713; OUT: 0.046772014 (model) vs. 0.046776973 (target)
+IN: Theta=2.9888315; OUT: 0.0045820833 (model) vs. 0.004582569 (target)
+IN: Theta=1.3888324; OUT: 0.15206118 (model) vs. 0.1520773 (target)
+IN: Theta=1.8847923; OUT: 0.06752445 (model) vs. 0.0675316 (target)
+IN: Theta=2.3417559; OUT: 0.025707956 (model) vs. 0.025710681 (target)
+IN: Theta=2.0024118; OUT: 0.05372531 (model) vs. 0.053731006 (target)
+IN: Theta=2.919413; OUT: 0.0056250184 (model) vs. 0.0056256144 (target)
+IN: Theta=1.8513203; OUT: 0.07188138 (model) vs. 0.071889006 (target)
+IN: Theta=1.0210236; OUT: 0.23685926 (model) vs. 0.23688437 (target)
+IN: Theta=2.8599522; OUT: 0.0066795275 (model) vs. 0.0066802353 (target)
+IN: Theta=2.8422413; OUT: 0.0070254756 (model) vs. 0.00702622 (target)
+IN: Theta=1.5935081; OUT: 0.11206473 (model) vs. 0.11207661 (target)
+IN: Theta=2.863542; OUT: 0.0066112606 (model) vs. 0.0066119605 (target)
+IN: Theta=2.5204973; OUT: 0.016647456 (model) vs. 0.01664922 (target)
+IN: Theta=1.5018178; OUT: 0.12915102 (model) vs. 0.12916471 (target)
+IN: Theta=1.8135314; OUT: 0.07703522 (model) vs. 0.077043384 (target)
+IN: Theta=2.9365058; OUT: 0.0053504347 (model) vs. 0.0053510014 (target)
+IN: Theta=2.0404675; OUT: 0.049747344 (model) vs. 0.049752615 (target)
+IN: Theta=2.238048; OUT: 0.032598987 (model) vs. 0.03260244 (target)
+IN: Theta=2.7331638; OUT: 0.009522131 (model) vs. 0.009523139 (target)
+IN: Theta=2.1985936; OUT: 0.03558072 (model) vs. 0.03558449 (target)
+IN: Theta=2.2143583; OUT: 0.03436434 (model) vs. 0.034367982 (target)
+IN: Theta=1.7089286; OUT: 0.09261882 (model) vs. 0.092628635 (target)
+IN: Theta=2.8174992; OUT: 0.0075350087 (model) vs. 0.0075358073 (target)
+IN: Theta=1.8528509; OUT: 0.07167789 (model) vs. 0.07168549 (target)
+IN: Theta=1.4033605; OUT: 0.14900807 (model) vs. 0.14902386 (target)
+IN: Theta=2.7226806; OUT: 0.009798368 (model) vs. 0.009799408 (target)
+IN: Theta=2.619635; OUT: 0.012903087 (model) vs. 0.012904456 (target)
+IN: Theta=1.1814276; OUT: 0.19850716 (model) vs. 0.1985282 (target)
+IN: Theta=1.9241685; OUT: 0.06264593 (model) vs. 0.062652566 (target)
+IN: Theta=1.7353516; OUT: 0.088498734 (model) vs. 0.088508114 (target)
+IN: Theta=1.1034708; OUT: 0.21699774 (model) vs. 0.2170207 (target)
+IN: Theta=2.1157098; OUT: 0.04254647 (model) vs. 0.042550977 (target)
+IN: Theta=2.6771562; OUT: 0.01107985 (model) vs. 0.011081024 (target)
+IN: Theta=1.5265032; OUT: 0.12441276 (model) vs. 0.12442594 (target)
+IN: Theta=1.981357; OUT: 0.056026395 (model) vs. 0.056032334 (target)
+IN: Theta=2.9425018; OUT: 0.005256958 (model) vs. 0.005257515 (target)
+IN: Theta=1.827406; OUT: 0.075113796 (model) vs. 0.07512177 (target)
+IN: Theta=1.9867548; OUT: 0.05542958 (model) vs. 0.055435456 (target)
+IN: Theta=2.1528792; OUT: 0.039301638 (model) vs. 0.039305802 (target)
+IN: Theta=1.3050375; OUT: 0.17022981 (model) vs. 0.17024785 (target)
+IN: Theta=2.5875044; OUT: 0.014028925 (model) vs. 0.014030412 (target)
+IN: Theta=2.5998056; OUT: 0.013588395 (model) vs. 0.013589836 (target)
+IN: Theta=2.877366; OUT: 0.006354052 (model) vs. 0.0063547264 (target)
+IN: Theta=2.5500755; OUT: 0.015444733 (model) vs. 0.0154463705 (target)
+IN: Theta=1.2132876; OUT: 0.19107717 (model) vs. 0.19109742 (target)
+IN: Theta=1.774711; OUT: 0.08259187 (model) vs. 0.08260062 (target)
+IN: Theta=2.645011; OUT: 0.012069352 (model) vs. 0.012070632 (target)
+IN: Theta=1.1955434; OUT: 0.19520469 (model) vs. 0.19522539 (target)
+IN: Theta=1.3177543; OUT: 0.16741447 (model) vs. 0.16743222 (target)
+IN: Theta=1.1339705; OUT: 0.20971851 (model) vs. 0.20974073 (target)
+IN: Theta=1.0559175; OUT: 0.22843002 (model) vs. 0.22845423 (target)
+IN: Theta=2.5168781; OUT: 0.016799904 (model) vs. 0.016801683 (target)
+IN: Theta=2.1659367; OUT: 0.03820895 (model) vs. 0.038213003 (target)
+IN: Theta=2.90545; OUT: 0.0058584837 (model) vs. 0.005859105 (target)
+IN: Theta=2.5057006; OUT: 0.017278157 (model) vs. 0.017279988 (target)
+IN: Theta=1.1006298; OUT: 0.21767819 (model) vs. 0.21770126 (target)
+IN: Theta=1.546709; OUT: 0.12060931 (model) vs. 0.12062209 (target)
+IN: Theta=2.5599513; OUT: 0.0150599 (model) vs. 0.015061496 (target)
+IN: Theta=2.1405454; OUT: 0.040356137 (model) vs. 0.040360413 (target)
+IN: Theta=2.4633663; OUT: 0.019194504 (model) vs. 0.019196538 (target)
+IN: Theta=1.1427057; OUT: 0.20764351 (model) vs. 0.2076655 (target)
+IN: Theta=1.1599087; OUT: 0.20357138 (model) vs. 0.20359296 (target)
+IN: Theta=2.674296; OUT: 0.011164972 (model) vs. 0.011166155 (target)
+IN: Theta=2.096993; OUT: 0.04425733 (model) vs. 0.04426202 (target)
+IN: Theta=2.6304302; OUT: 0.012542578 (model) vs. 0.012543908 (target)
+IN: Theta=1.3495239; OUT: 0.16046941 (model) vs. 0.16048642 (target)
+IN: Theta=2.6485376; OUT: 0.011957217 (model) vs. 0.011958485 (target)
+IN: Theta=1.9588224; OUT: 0.05856974 (model) vs. 0.05857595 (target)
+IN: Theta=1.706557; OUT: 0.09299469 (model) vs. 0.09300454 (target)
+IN: Theta=1.012916; OUT: 0.23882031 (model) vs. 0.23884562 (target)
+IN: Theta=2.7640119; OUT: 0.008748043 (model) vs. 0.008748971 (target)
+IN: Theta=2.887831; OUT: 0.0061652376 (model) vs. 0.006165891 (target)
+IN: Theta=1.0092653; OUT: 0.23970346 (model) vs. 0.23972887 (target)
+IN: Theta=1.107295; OUT: 0.21608235 (model) vs. 0.21610525 (target)
+IN: Theta=1.7731652; OUT: 0.08281865 (model) vs. 0.08282743 (target)
+IN: Theta=2.0213919; OUT: 0.051712427 (model) vs. 0.051717907 (target)
+IN: Theta=1.789184; OUT: 0.08048905 (model) vs. 0.08049758 (target)
+IN: Theta=1.9634157; OUT: 0.058044504 (model) vs. 0.05805066 (target)
+IN: Theta=1.1480713; OUT: 0.2063713 (model) vs. 0.20639315 (target)
+IN: Theta=2.2070937; OUT: 0.03492069 (model) vs. 0.03492439 (target)
+IN: Theta=2.7013655; OUT: 0.010381477 (model) vs. 0.010382577 (target)
+IN: Theta=1.1139618; OUT: 0.21448831 (model) vs. 0.21451105 (target)
+IN: Theta=2.951665; OUT: 0.0051168944 (model) vs. 0.005117437 (target)
+IN: Theta=1.9941769; OUT: 0.054616723 (model) vs. 0.054622512 (target)
+IN: Theta=1.2815232; OUT: 0.1754861 (model) vs. 0.1755047 (target)
+
+Eq1-CorrelationFitFunc Model Validated to Tolerance of 1/10 of 1% using 128 new data points (~25% of 512 experiments)
+
