@@ -264,8 +264,16 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         Thread.Sleep(3000); //sleep for three seconds to let Browser open request complete
                     }
 
-                    if (modelVerified) Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
-                    else Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
+                    if (modelVerified)
+                    {
+                        Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
+                        Environment.ExitCode = 0;
+                    }
+                    else
+                    {
+                        Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
+                        Environment.ExitCode = 1;
+                    }
 
                     break;
                 }
@@ -276,6 +284,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         {
             Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Run Error on {Environment.MachineName}", $"Beagle {BConfig.Version}: Error occurred on {Environment.MachineName} while running {MLSetup.Current.Name}\n\n{ex}");
             Output.WriteLine(ex.ToString());
+            
             throw;
         }
         finally
