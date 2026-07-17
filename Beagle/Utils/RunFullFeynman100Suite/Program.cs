@@ -52,7 +52,7 @@ public static class Program
                                 equationsValidatedCount[eq - 1] == equationsRanCount[eq - 1] && 
                                 stopAfterTypicalAchievedStraight)
                             {
-                                GenerateAndDisplayResults(eq, equationsValidatedCount, equationsRanCount, numberOfRunsPerEq, i);
+                                GenerateAndDisplayResults(eq, equationsValidatedCount, equationsRanCount, numberOfRunsPerEq);
                                 Console.WriteLine("Typical is achieved straight, skipping the remaining runs...");
                                 break;
                             }
@@ -63,7 +63,7 @@ public static class Program
                             Environment.Exit(exitCode);
                         }
                         
-                        GenerateAndDisplayResults(eq, equationsValidatedCount, equationsRanCount, numberOfRunsPerEq, i);
+                        GenerateAndDisplayResults(eq, equationsValidatedCount, equationsRanCount, numberOfRunsPerEq);
                     }
                 }
             }
@@ -76,16 +76,18 @@ public static class Program
         Directory.Move("AppOutput", $"FeynmanAppOutput_{now.Year}-{now.Month:D2}-{now.Day:D2}-{now.Hour:D2}-{now.Minute:D2}-{now.Second:D2}");
     }
 
-    private static void GenerateAndDisplayResults(int eq, int[] equationsValidatedCount, int[] equationsRanCount, int numberOfRunsPerEq, int i)
+    private static void GenerateAndDisplayResults(int eq, int[] equationsValidatedCount, int[] equationsRanCount, int numberOfRunsPerEq)
     {
         var resultsSb = new StringBuilder();
         for (var eqi = 1; eqi <= eq; eqi++)
         {
             resultsSb.AppendLine($"Equation {eqi}: {equationsValidatedCount[eqi-1]}/{equationsRanCount[eqi - 1]}");
         }
+
+        var eqRan = equationsRanCount.Count(x => x > 0);
         resultsSb.AppendLine("------------------------------------------------------------------");
-        resultsSb.AppendLine($"Typical Solved: {equationsValidatedCount.Count(x => x >= MathF.Ceiling(numberOfRunsPerEq/2f))}/{eq}");
-        resultsSb.AppendLine($"Best Solved: {equationsValidatedCount.Count(x => x > 0)}/{eq}");
+        resultsSb.AppendLine($"Typical Solved: {equationsValidatedCount.Count(x => x >= MathF.Ceiling(numberOfRunsPerEq/2f))}/{eqRan}");
+        resultsSb.AppendLine($"Best Solved: {equationsValidatedCount.Count(x => x > 0)}/{eqRan}");
 
         var results = resultsSb.ToString();
 
