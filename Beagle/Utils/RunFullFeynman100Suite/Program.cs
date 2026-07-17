@@ -10,10 +10,18 @@ public static class Program
         const int stopAfterMin = 10;
         const int feynmanEqCount = 100;
         const int numberOfRunsPerEq = 10;
-        
+        const bool stopAfterTypicalAchievedStraight = true;
+
+        //const int stopAfterMin = 1;
+        //const int feynmanEqCount = 3;
+        //const int numberOfRunsPerEq = 3;
+        //const bool stopAfterTypicalAchievedStraight = true;
+
+
         DateTime now = DateTime.Now;
         
         var equationsValidatedCount = new int[feynmanEqCount];
+        var equationsRanCount = new int[feynmanEqCount];
         Environment.CurrentDirectory = "..\\..\\..\\..\\..\\Run";
         if (Directory.Exists("AppOutput")) Directory.Delete("AppOutput", true);
 
@@ -35,9 +43,19 @@ public static class Program
                     {
                         process.WaitForExit();
                         var exitCode = process.ExitCode;
+                        
+                        equationsRanCount[eq - 1]++;
                         if (exitCode == 0)
                         {
-                            equationsValidatedCount[eq-1]++;
+                            equationsValidatedCount[eq - 1]++;
+                            if (equationsValidatedCount[eq - 1] >= MathF.Ceiling(numberOfRunsPerEq / 2f) &&
+                                equationsValidatedCount[eq - 1] == equationsRanCount[eq - 1] && 
+                                stopAfterTypicalAchievedStraight)
+                            {
+                                GenerateAndDisplayResults(eq, equationsValidatedCount, equationsRanCount, numberOfRunsPerEq, i);
+                                Console.WriteLine("Typical is achieved straight, skipping the remaining runs...");
+                                break;
+                            }
                         }
                         else if (exitCode != 1)
                         {
@@ -45,28 +63,7 @@ public static class Program
                             Environment.Exit(exitCode);
                         }
                         
-                        //print and save results
-                        var resultsSb = new StringBuilder();
-                        for (var eqi = 1; eqi <= eq - 1; eqi++)
-                        {
-                            resultsSb.AppendLine($"Equation {eqi}: {equationsValidatedCount[eqi-1]}/{numberOfRunsPerEq}");
-                        }
-                        resultsSb.AppendLine($"Equation {eq}: {equationsValidatedCount[eq-1]}/{i}");
-                        resultsSb.AppendLine("------------------------------------------------------------------");
-                        resultsSb.AppendLine($"Typical Solved: {equationsValidatedCount.Count(x => x >= MathF.Ceiling(numberOfRunsPerEq/2f))}/{eq}");
-                        resultsSb.AppendLine($"Best Solved: {equationsValidatedCount.Count(x => x > 0)}/{eq}");
-
-                        var results = resultsSb.ToString();
-
-                        var fgColor = Console.ForegroundColor;
-                        Console.ForegroundColor = ConsoleColor.DarkCyan;
-                        Console.Write(results);
-                        Console.ForegroundColor = fgColor;
-
-                        File.WriteAllText("AppOutput/results.txt", results);
-
-                        Console.WriteLine("Waiting for 5 seconds before starting next...");
-                        Thread.Sleep(5_000);
+                        GenerateAndDisplayResults(eq, equationsValidatedCount, equationsRanCount, numberOfRunsPerEq, i);
                     }
                 }
             }
@@ -77,5 +74,29 @@ public static class Program
         }
 
         Directory.Move("AppOutput", $"FeynmanAppOutput_{now.Year}-{now.Month:D2}-{now.Day:D2}-{now.Hour:D2}-{now.Minute:D2}-{now.Second:D2}");
+    }
+
+    private static void GenerateAndDisplayResults(int eq, int[] equationsValidatedCount, int[] equationsRanCount, int numberOfRunsPerEq, int i)
+    {
+        var resultsSb = new StringBuilder();
+        for (var eqi = 1; eqi <= eq; eqi++)
+        {
+            resultsSb.AppendLine($"Equation {eqi}: {equationsValidatedCount[eqi-1]}/{equationsRanCount[eqi - 1]}");
+        }
+        resultsSb.AppendLine("------------------------------------------------------------------");
+        resultsSb.AppendLine($"Typical Solved: {equationsValidatedCount.Count(x => x >= MathF.Ceiling(numberOfRunsPerEq/2f))}/{eq}");
+        resultsSb.AppendLine($"Best Solved: {equationsValidatedCount.Count(x => x > 0)}/{eq}");
+
+        var results = resultsSb.ToString();
+
+        var fgColor = Console.ForegroundColor;
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.Write(results);
+        Console.ForegroundColor = fgColor;
+
+        File.WriteAllText("AppOutput/results.txt", results);
+
+        Console.WriteLine("Waiting for 5 seconds before starting next...");
+        Thread.Sleep(5_000);
     }
 }
