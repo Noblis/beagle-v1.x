@@ -5,6 +5,7 @@ namespace RunFullFeynman100Suite;
 
 public static class Program
 {
+    private const int FirstTryStopAfterMin = 4;
     private const int StopAfterMin = 10;
     private const int FeynmanEqCount = 100;
     private const int NumberOfRunsPerEq = 10;
@@ -16,7 +17,6 @@ public static class Program
         //const int feynmanEqCount = 3;
         //const int numberOfRunsPerEq = 3;
         //const bool stopAfterTypicalAchievedStraight = true;
-
 
         DateTime now = DateTime.Now;
         
@@ -36,7 +36,7 @@ public static class Program
         {
             for (var eq = 1; eq <= FeynmanEqCount; eq++)
             {
-                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={StopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={FirstTryStopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
                 for (var i = 1; i <= NumberOfRunsPerEq; i++)
                 {
                     using (var process = Process.Start(startInfo) ?? throw new Exception())
@@ -59,7 +59,14 @@ public static class Program
                             }
                             // ReSharper restore RedundantLogicalConditionalExpressionOperand
                         }
-                        else if (exitCode != 1)
+                        else if (exitCode == 1)
+                        {
+                            //if we could not solve in FirstTryStopAfterMin time once
+                            equationsRanCount[eq - 1] = equationsValidatedCount[eq - 1] = 0;
+                            startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={StopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                            i = 0;
+                        }
+                        else
                         {
                             Console.WriteLine($"Beagle crashed while executing equation {eq}");
                             Environment.Exit(exitCode);
