@@ -110,7 +110,24 @@ public static class Program
             Console.WriteLine($"Fatal error: {ex.Message}");
         }
 
-        Directory.Move("AppOutput", $"FeynmanAppOutput_{now.Year}-{now.Month:D2}-{now.Day:D2}-{now.Hour:D2}-{now.Minute:D2}-{now.Second:D2}");
+        while (true)
+        {
+            try
+            {
+                Directory.Move("AppOutput", $"FeynmanAppOutput_{now.Year}-{now.Month:D2}-{now.Day:D2}-{now.Hour:D2}-{now.Minute:D2}-{now.Second:D2}");
+                break;
+            }
+            catch (Exception)
+            {
+                var fgColor = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine();
+                Console.WriteLine("The AppOutput directory appears to be locked or in use by another application.");
+                Console.WriteLine("Please close any applications using it and press Enter to retry...");
+                Console.ReadLine();
+                Console.ForegroundColor = fgColor;
+            }
+        }
     }
 
     private static void GenerateAndDisplayResults(int[] equationsValidatedCount, int[] equationsRanCount)
