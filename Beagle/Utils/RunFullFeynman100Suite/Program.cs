@@ -6,7 +6,7 @@ namespace RunFullFeynman100Suite;
 public static class Program
 {
     private const int StopAfterMin = 10;
-    private const int ExpressTryStopAfterMin = 4;
+    private const int ExpressStopAfterMin = 4;
     private const int FeynmanEqCount = 100;
     private const int NumberOfRunsPerEq = 10;
 
@@ -17,7 +17,6 @@ public static class Program
         //2) If we get a failure while doing #1, we start over using full timing
         //3) As soon as we get half successes, we are done
         //4) As soon as we have at least one solution (for best) and can no longer achieve typical anymore, we are done 
-
 
         DateTime now = DateTime.Now;
         
@@ -38,7 +37,7 @@ public static class Program
             for (var eq = 1; eq <= FeynmanEqCount; eq++)
             {
                 var runningExpress = true;
-                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={ExpressTryStopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={ExpressStopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
                 for (var i = 1; i <= NumberOfRunsPerEq; i++)
                 {
                     using (var process = Process.Start(startInfo) ?? throw new Exception())
