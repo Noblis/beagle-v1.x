@@ -70,8 +70,8 @@ public static class Program
                             {
                                 //if no hope for typical but we already have best
                                 if (equationsValidatedCount[eq - 1] > 0 &&
-                                    equationsRanCount[eq - 1] - equationsValidatedCount[eq - 1] <
-                                    equationsValidatedCount[eq - 1] + MathF.Ceiling(NumberOfRunsPerEq / 2f))
+                                    NumberOfRunsPerEq - equationsRanCount[eq - 1] <
+                                    MathF.Ceiling(NumberOfRunsPerEq / 2f) - equationsValidatedCount[eq - 1])
                                 {
                                     GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount);
                                     Console.WriteLine($"Best is achieved, typical out of reach ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
