@@ -9,14 +9,15 @@ public static class Program
     private const int StopAfterMin = 10;
     private const int FeynmanEqCount = 100;
     private const int NumberOfRunsPerEq = 10;
-    private const bool StopAfterTypicalAchievedStraight = true;
 
     private static void Main()
     {
-        //const int stopAfterMin = 1;
-        //const int feynmanEqCount = 3;
-        //const int numberOfRunsPerEq = 3;
-        //const bool stopAfterTypicalAchievedStraight = true;
+        //Here is the logic for each formula
+        //1) If we get typical by: half successes in exactly half runs using express timing, we are done
+        //2) If we get a failure while doing #1, we start over using full timing
+        //3) As soon as we get half successes, we are done
+        //4) As soon as we have at least one solution (for best) and can no longer achieve typical anymore, we are done 
+
 
         DateTime now = DateTime.Now;
         
@@ -36,6 +37,7 @@ public static class Program
         {
             for (var eq = 1; eq <= FeynmanEqCount; eq++)
             {
+                var runningExpress = true;
                 startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={ExpressTryStopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
                 for (var i = 1; i <= NumberOfRunsPerEq; i++)
                 {
@@ -48,23 +50,35 @@ public static class Program
                         if (exitCode == 0)
                         {
                             equationsValidatedCount[eq - 1]++;
-                            // ReSharper disable RedundantLogicalConditionalExpressionOperand
-                            if (equationsValidatedCount[eq - 1] >= MathF.Ceiling(NumberOfRunsPerEq / 2f) &&
-                                equationsValidatedCount[eq - 1] == equationsRanCount[eq - 1] && 
-                                StopAfterTypicalAchievedStraight)
+                            if (equationsValidatedCount[eq - 1] >= MathF.Ceiling(NumberOfRunsPerEq / 2f))
+                                //&& equationsValidatedCount[eq - 1] == equationsRanCount[eq - 1])
                             {
                                 GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount);
-                                Console.WriteLine($"Typical is achieved in express run ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
+                                Console.WriteLine($"Typical is achieved ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
                                 break;
                             }
-                            // ReSharper restore RedundantLogicalConditionalExpressionOperand
                         }
                         else if (exitCode == 1)
                         {
-                            //if we could not solve in ExpressTryStopAfterMin time once
-                            equationsRanCount[eq - 1] = equationsValidatedCount[eq - 1] = 0;
-                            startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={StopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
-                            i = 0;
+                            if (runningExpress)
+                            {
+                                runningExpress = false;
+                                equationsRanCount[eq - 1] = equationsValidatedCount[eq - 1] = 0;
+                                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={StopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                                i = 0;
+                            }
+                            else
+                            {
+                                //if no hope for typical but we already have best
+                                if (equationsValidatedCount[eq - 1] > 0 &&
+                                    equationsRanCount[eq - 1] - equationsValidatedCount[eq - 1] <
+                                    equationsValidatedCount[eq - 1] + MathF.Ceiling(NumberOfRunsPerEq / 2f))
+                                {
+                                    GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount);
+                                    Console.WriteLine($"Best is achieved, typical out of reach ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
+                                    break;
+                                }
+                            }
                         }
                         else
                         {
