@@ -81,8 +81,10 @@ public static class Program
                         }
                         else
                         {
-                            Console.WriteLine($"Beagle crashed while executing equation {eq}");
-                            Environment.Exit(exitCode);
+                            Console.WriteLine($"Beagle crashed while executing equation {eq}. Retrying...");
+                            equationsRanCount[eq - 1]--;
+                            i--;
+                            continue;
                         }
                         
                         GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount);
