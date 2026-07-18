@@ -5,8 +5,8 @@ namespace RunFullFeynman100Suite;
 
 public static class Program
 {
-    private const int ExpressTryStopAfterMin = 4;
     private const int StopAfterMin = 10;
+    private const int ExpressTryStopAfterMin = 4;
     private const int FeynmanEqCount = 100;
     private const int NumberOfRunsPerEq = 10;
 
