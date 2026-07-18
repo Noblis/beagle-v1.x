@@ -5,7 +5,7 @@ namespace RunFullFeynman100Suite;
 
 public static class Program
 {
-    private const int FirstTryStopAfterMin = 4;
+    private const int ExpressTryStopAfterMin = 4;
     private const int StopAfterMin = 10;
     private const int FeynmanEqCount = 100;
     private const int NumberOfRunsPerEq = 10;
@@ -36,7 +36,7 @@ public static class Program
         {
             for (var eq = 1; eq <= FeynmanEqCount; eq++)
             {
-                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={FirstTryStopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={ExpressTryStopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
                 for (var i = 1; i <= NumberOfRunsPerEq; i++)
                 {
                     using (var process = Process.Start(startInfo) ?? throw new Exception())
@@ -54,14 +54,14 @@ public static class Program
                                 StopAfterTypicalAchievedStraight)
                             {
                                 GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount);
-                                Console.WriteLine($"Typical is achieved straight ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
+                                Console.WriteLine($"Typical is achieved in express run ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
                                 break;
                             }
                             // ReSharper restore RedundantLogicalConditionalExpressionOperand
                         }
                         else if (exitCode == 1)
                         {
-                            //if we could not solve in FirstTryStopAfterMin time once
+                            //if we could not solve in ExpressTryStopAfterMin time once
                             equationsRanCount[eq - 1] = equationsValidatedCount[eq - 1] = 0;
                             startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={StopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
                             i = 0;
