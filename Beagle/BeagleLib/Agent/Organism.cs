@@ -560,6 +560,7 @@ public class Organism
                 }
             }
             Debug.Assert(dblOutputs.Count == dblCorrectOutputs.Count);
+            Debug.Assert(dblOutputs.Count >= 2);
             float mean = total / dblOutputs.Count;
 
             (double, double) lineRegression = Fit.Line(dblOutputs.ToArray(), dblCorrectOutputs.ToArray());
