@@ -10,7 +10,7 @@ public static class Program
     private const int FeynmanEqCount = 100;
     private const int NumberOfRunsPerEq = 10;
     // ReSharper disable once InconsistentNaming
-    private static readonly int[] DifficultProblems = [5, 6, 7, 14, 18, 20, 21, 26, 29, 30, 31, 36, 38, 43, 44, 50, 56, 57, 72, 86, 87, 90, 91, 95];
+    private static readonly int[] DifficultProblems = 5, 6, 7, 14, 18, 20, 21, 26, 29, 30, 31, 36, 38, 43, 44, 50, 56, 57, 72, 86, 87, 90, 91, 95];
 
     private static void Main()
     {
@@ -32,7 +32,7 @@ public static class Program
         {
             FileName = "dotnet",
             CreateNoWindow = false,
-            UseShellExecute = false
+            UseShellExecute = false,
         };
 
         try
@@ -53,6 +53,12 @@ public static class Program
 
                 for (var i = 1; i <= NumberOfRunsPerEq; i++)
                 {
+                    var fgColor = Console.ForegroundColor;
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine();
+                    Console.WriteLine($"{startInfo.FileName} {startInfo.Arguments}");
+                    Console.WriteLine();
+                    Console.ForegroundColor = fgColor;
                     using (var process = Process.Start(startInfo) ?? throw new Exception())
                     {
                         process.WaitForExit();
