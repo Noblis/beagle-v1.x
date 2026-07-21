@@ -5,8 +5,8 @@ namespace RunFullFeynman100Suite;
 
 public static class Program
 {
-    private const string RelativePathToRunProject = "..\\..\\..\\..\\..\\Run"; //if running from Windows Visual Studio 
-    //private const string RelativePathToRunProject = "..\\..\\Run"; //if running from command line in Windows or Linux
+    private const string RelativePathToRunProject = "../../../../../Run"; //if running from Windows Visual Studio 
+    //private const string RelativePathToRunProject = "../../Run"; //if running from command line in Windows or Linux
 
     private const int StopAfterMin = 10;
     private const int ExpressStopAfterMin = 4;
