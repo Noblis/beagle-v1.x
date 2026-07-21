@@ -5,6 +5,9 @@ namespace RunFullFeynman100Suite;
 
 public static class Program
 {
+    private const string RelativePathToRunProject = "..\\..\\..\\..\\..\\Run"; //if running from Windows Visual Studio 
+    //private const string RelativePathToRunProject = "..\\..\\Run"; //if running from command line in Windows or Linux
+
     private const int StopAfterMin = 10;
     private const int ExpressStopAfterMin = 4;
     private const int FeynmanEqCount = 100;
@@ -25,7 +28,9 @@ public static class Program
         
         var equationsValidatedCount = new int[FeynmanEqCount];
         var equationsRanCount = new int[FeynmanEqCount];
-        Environment.CurrentDirectory = "..\\..\\..\\..\\..\\Run";
+
+        Environment.CurrentDirectory = RelativePathToRunProject;
+
         if (Directory.Exists("AppOutput")) Directory.Delete("AppOutput", true);
 
         ProcessStartInfo startInfo = new ProcessStartInfo
