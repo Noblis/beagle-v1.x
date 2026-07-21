@@ -25,7 +25,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     where TFitFunc : struct, IFitFunc
 {
     #region Constructors & Dispose
-    public MLEngine(bool forceCPUAccelerator = false, bool useSingleAccelerator = false, IMLEngineNotificationsHandler? mlEngineNotificationsHandler = null)
+    public MLEngine(bool forceCPUAccelerator = false, bool useSingleAccelerator = false, bool useLibDevice = false, IMLEngineNotificationsHandler? mlEngineNotificationsHandler = null)
     {
         //This is to not show ^[ on Linux when escape is pressed early
         //if (Console.KeyAvailable) Console.ReadKey(true);
@@ -92,7 +92,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (Environment.GetEnvironmentVariable("CUDA_PATH") != null && !forceCPUAccelerator)
             {
                 //https://github.com/m4rs-mt/ILGPU/pull/707
-                _context = Context.Create(builder => builder.Cuda().LibDevice().EnableAlgorithms());
+                if (useLibDevice) _context = Context.Create(builder => builder.Cuda().LibDevice().EnableAlgorithms());
+                else _context = Context.Create(builder => builder.Cuda().EnableAlgorithms());
             }
             else
             {
@@ -263,8 +264,16 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         Thread.Sleep(3000); //sleep for three seconds to let Browser open request complete
                     }
 
-                    if (modelVerified) Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
-                    else Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
+                    if (modelVerified)
+                    {
+                        Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
+                        Environment.ExitCode = 0;
+                    }
+                    else
+                    {
+                        Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
+                        Environment.ExitCode = 1;
+                    }
 
                     break;
                 }
@@ -275,6 +284,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         {
             Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Run Error on {Environment.MachineName}", $"Beagle {BConfig.Version}: Error occurred on {Environment.MachineName} while running {MLSetup.Current.Name}\n\n{ex}");
             Output.WriteLine(ex.ToString());
+            
             throw;
         }
         finally

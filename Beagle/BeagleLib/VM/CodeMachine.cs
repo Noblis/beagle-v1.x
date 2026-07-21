@@ -292,7 +292,8 @@ public struct CodeMachine
     private void ExecuteTan()
     {
         var x = StackPop();
-        x = MathF.Tan(x);
+        //x = MathF.Tan(x);
+        x = MathF.Sin(x) / MathF.Cos(x);
         StackPush(x);
     }
 
