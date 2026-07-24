@@ -17,6 +17,7 @@ public class Program
         #region Read Command-line parameters
         // ReSharper disable once RedundantAssignment
         var stopAfterMin = -1;
+        long stopAfterBirths = -1;
         var noEscMenu = false;
         var runFeynmanFormula = -1;
         var useLibDevice = false;
@@ -38,6 +39,13 @@ public class Program
                     if (argParts.Length != 2 && argParts[0] != "stopaftermin") throw new ArgumentException();
                     stopAfterMin = int.Parse(argParts[1]);
                     if (stopAfterMin <= 0) throw new ArgumentException();
+                }
+                else if (arg.ToLower().StartsWith("stopafterbirths"))
+                {
+                    var argParts = arg.Split('=');
+                    if (argParts.Length != 2 && argParts[0] != "stopafterbirths") throw new ArgumentException();
+                    stopAfterBirths = int.Parse(argParts[1]);
+                    if (stopAfterBirths <= 0) throw new ArgumentException();
                 }
                 else if (arg.ToLower().StartsWith("runfeynman"))
                 {
@@ -62,7 +70,10 @@ public class Program
                 Output.WriteLine("Available Command Line Parameters (not case sensitive):");
                 Output.WriteLine("NoEscMenu - directs Beagle to not watch keyboard. Useful for batch runs");
                 Output.WriteLine("StopAfterMin={minutes} - directs Beagle to stop after number of minutes specified");
+                Output.WriteLine("StopAfterBirths={births} - directs Beagle to stop after number of births specified");
                 Output.WriteLine("RunFeynman={1-100} - directs Beagle to run one of the formulas from Feynman 100 benchmark");
+                Output.WriteLine("UseLibDevice - directs Beagle to use NVIDIA hardware-accelerated math lib. Not recommended for most users.");
+
                 Output.WriteLine("For example: RunFeynman=1 NoEscMenu StopAfterMin=10");
                 return;
             }
@@ -131,7 +142,7 @@ public class Program
         if (runFeynmanFormula > 0)
         {
             using var mlEngine = FeynmanBenchmark.GetFeynmanMLEngineForFormula<CorrelationFitFunc>(runFeynmanFormula);
-            mlEngine.Train(stopAfterMin, noEscMenu);
+            mlEngine.Train(stopAfterMin, stopAfterBirths, noEscMenu);
             return;
         }
         #endregion
@@ -159,7 +170,7 @@ public class Program
             //using var mlEngine = new MLEngine<RydbergFormula, CorrelationFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<ThrustData, StdFitFunc>(useLibDevice: useLibDevice);
 
-            mlEngine.Train(stopAfterMin, noEscMenu);
+            mlEngine.Train(stopAfterMin, stopAfterBirths, noEscMenu);
         }
     }
 }
