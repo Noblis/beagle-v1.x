@@ -44,7 +44,7 @@ public class Program
                 {
                     var argParts = arg.Split('=');
                     if (argParts.Length != 2 && argParts[0] != "stopafterbirths") throw new ArgumentException();
-                    stopAfterBirths = int.Parse(argParts[1]);
+                    stopAfterBirths = int.Parse(argParts[1].Replace("_", ""));
                     if (stopAfterBirths <= 0) throw new ArgumentException();
                 }
                 else if (arg.ToLower().StartsWith("runfeynman"))

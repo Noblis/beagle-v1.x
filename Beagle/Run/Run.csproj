@@ -9,6 +9,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="FeynmanAppOutput_2026-07-18-14-32-48\**" />
+	  <EmbeddedResource Remove="FeynmanAppOutput_2026-07-18-14-32-48\**" />
+	  <None Remove="FeynmanAppOutput_2026-07-18-14-32-48\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <ProjectReference Include="..\..\Frameworks\CsvMaker\CsvMaker.csproj" />
 	  <ProjectReference Include="..\BeagleLib\BeagleLib.csproj" />
 	</ItemGroup>
