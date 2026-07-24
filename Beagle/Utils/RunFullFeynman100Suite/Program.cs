@@ -91,7 +91,7 @@ public static class Program
                             {
                                 runningExpress = false;
                                 equationsRanCount[eq - 1] = equationsValidatedCount[eq - 1] = 0;
-                                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={StopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={StopAfterMin} StopAfterBirths={StopAfterBirths} RunFeynman={eq} NoEscMenu #useLibDevice";
                                 i = 0;
                             }
                             else
