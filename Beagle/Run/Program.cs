@@ -38,21 +38,21 @@ public class Program
                     var argParts = arg.Split('=');
                     if (argParts.Length != 2 && argParts[0] != "stopaftermin") throw new ArgumentException();
                     stopAfterMin = int.Parse(argParts[1]);
-                    if (stopAfterMin <= 0) throw new ArgumentException();
+                    if (stopAfterMin < -1) throw new ArgumentException();
                 }
                 else if (arg.ToLower().StartsWith("stopafterbirths"))
                 {
                     var argParts = arg.Split('=');
                     if (argParts.Length != 2 && argParts[0] != "stopafterbirths") throw new ArgumentException();
                     stopAfterBirths = int.Parse(argParts[1].Replace("_", ""));
-                    if (stopAfterBirths <= 0) throw new ArgumentException();
+                    if (stopAfterBirths < -1) throw new ArgumentException();
                 }
                 else if (arg.ToLower().StartsWith("runfeynman"))
                 {
                     var argParts = arg.Split('=');
                     if (argParts.Length != 2 && argParts[0] != "runfeynman") throw new ArgumentException();
                     runFeynmanFormula = int.Parse(argParts[1]);
-                    if (runFeynmanFormula <= 0) throw new ArgumentException();
+                    if (runFeynmanFormula < -1) throw new ArgumentException();
                 }
                 else if (arg.ToLower().StartsWith("#"))
                 {

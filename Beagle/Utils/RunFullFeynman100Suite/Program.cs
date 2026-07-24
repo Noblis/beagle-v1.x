@@ -8,8 +8,12 @@ public static class Program
     private const string RelativePathToRunProject = "../../../../../Run"; //if running from Visual Studio or Rider
     //private const string RelativePathToRunProject = "../../Run"; //if running from command line
 
-    private const int StopAfterMin = 10;
-    private const int ExpressStopAfterMin = 4;
+    private const int StopAfterMin = -1; //10;
+    private const long StopAfterBirths = 350_000_000;
+
+    private const int ExpressStopAfterMin = -1; //4;
+    private const long ExpressStopAfterBirths = 135_000_000;
+
     private const int FeynmanEqCount = 100;
     private const int NumberOfRunsPerEq = 10;
     // ReSharper disable once InconsistentNaming
@@ -48,12 +52,12 @@ public static class Program
                 if (DifficultProblems.Contains(eq))
                 {
                     runningExpress = false;
-                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={StopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={StopAfterMin} StopAfterBirths={StopAfterBirths} RunFeynman={eq} NoEscMenu #useLibDevice";
                 }
                 else
                 {
                     runningExpress = true;
-                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={ExpressStopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={ExpressStopAfterMin} StopAfterBirths={ExpressStopAfterBirths} RunFeynman={eq} NoEscMenu #useLibDevice";
                 }
 
                 for (var i = 1; i <= NumberOfRunsPerEq; i++)
