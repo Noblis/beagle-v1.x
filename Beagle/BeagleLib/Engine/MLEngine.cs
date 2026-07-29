@@ -497,13 +497,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 {
                                     var idx = Interlocked.Increment(ref _newbornOrganismsCount);
 
-#if DEBUG
+                                    #if DEBUG
                                     if (idx >= _newbornOrganisms.Length)
                                     {
                                         Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                                         Debugger.Break();
                                     }
-#endif
+                                    #endif
 
                                     _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                                 }
