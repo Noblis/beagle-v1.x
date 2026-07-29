@@ -537,7 +537,7 @@ public class Organism
     private static readonly ConcurrentStack<Organism>[] _organismDeadPools;
     #endregion
 
-    #region Lieaner Regression Methods
+    #region Linear Regression Methods
     public void CalcScaleAndOffsetIfNeeded(float[][] inputsArray, float[] correctOutputs)
     {
         if (MLSetup.IsCorrelationFunctionRun && !LinearRegressionDone)
