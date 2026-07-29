@@ -16,7 +16,7 @@ namespace BeagleLib.Engine;
 
 public abstract class MLEngineCore : IDisposable
 {
-    public abstract void Train(int stopAfterMin = -1, bool noEscMenu = false, bool benchmarkRun = false);
+    public abstract void Train(int stopAfterMin = -1, long stopAfterBirths = -1, bool noEscMenu = false, bool benchmarkRun = false);
     public abstract void Dispose();
 }
 
@@ -183,7 +183,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     #endregion
 
     #region Methods
-    public override void Train(int stopAfterMin = -1, bool noEscMenu = false, bool benchmarkRun = false)
+    public override void Train(int stopAfterMin = -1, long stopAfterBirths = -1, bool noEscMenu = false, bool benchmarkRun = false)
     {
         try
         {
@@ -254,29 +254,21 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 }
 
                 if (done || benchmarkRun) break;
+                
                 if (stopAfterMin > 0 && _totalTimeWatch.Elapsed.TotalMinutes > stopAfterMin)
                 {
                     Output.WriteLine("Allotted time exceeded");
-                    var modelVerified = VerifyModel();
-                    if (!noEscMenu)
-                    {
-                        DisplayModelAsLatex();
-                        Thread.Sleep(3000); //sleep for three seconds to let Browser open request complete
-                    }
-
-                    if (modelVerified)
-                    {
-                        Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
-                        Environment.ExitCode = 0;
-                    }
-                    else
-                    {
-                        Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
-                        Environment.ExitCode = 1;
-                    }
-
+                    VerifyAndComplete(noEscMenu);
                     break;
                 }
+
+                if (stopAfterBirths > 0 && _totalBirths > stopAfterBirths)
+                {
+                    Output.WriteLine("Allotted number of births exceeded");
+                    VerifyAndComplete(noEscMenu);
+                    break;
+                }
+
             }
             Console.WriteLine("Training Stopped...");
         }
@@ -293,6 +285,27 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Output.Dispose();
         }
     }
+
+    private void VerifyAndComplete(bool noEscMenu)
+    {
+        if (!noEscMenu)
+        {
+            DisplayModelAsLatex();
+            Thread.Sleep(3000); //sleep for three seconds to let Browser open request complete
+        }
+
+        if (VerifyModel())
+        {
+            Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
+            Environment.ExitCode = 0;
+        }
+        else
+        {
+            Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
+            Environment.ExitCode = 1;
+        }
+    }
+
     protected bool TrainingLoopBody()
     {
         #region reset stuff for new generation, set up experiments (inputs/output), convert inputs to one long array
