@@ -378,6 +378,36 @@ public class Organism
         mutationCommands.Mutate(ref mutationCommandsLength, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
         return CreateByCopyingCommandsFromPartOfSpan(mutationCommands, mutationCommandsLength);
     }
+
+    public Organism ProduceCrossoverChild(byte inputsCount, ref organisms, int organismsCount)
+    {
+        Span<Command> crossoverCommands = stackalloc Command[BConfig.MaxScriptLength];
+        var crossoverCommandsLength = Commands.Length;
+
+        Commands.CopyTo(crossoverCommands);
+
+#if DEBUG 
+        //Verify that it copied correctly
+        if (Commands.Length != crossoverCommandsLength) ReportInvalidScriptAndBreak();
+        
+        for (var i = 0; i < Commands.Length; i++)
+        {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (Commands[i].Operation != crossoverCommands[i].Operation ||
+                Commands[i].CommandType == CommandTypeEnum.CommandPlusFloat && Commands[i].ConstValue != crossoverCommands[i].ConstValue ||
+                Commands[i].CommandType == CommandTypeEnum.CommandPlusIndex && Commands[i].Idx != crossoverCommands[i].Idx)
+            {
+                ReportInvalidScriptAndBreak();
+            }
+        }
+#endif
+        //TODO: Find a crossover partner
+        
+        crossoverCommands.Crossover(ref crossoverCommandsLength, ref partner);
+        return CreateByCopyingCommandsFromPartOfSpan(crossoverCommands, crossoverCommandsLength);
+
+    }
+
     public IEnumerable<Command> GetFullCommands(float[][] inputsArray, float[] correctOutputs)
     {
         if (MLSetup.IsCorrelationFunctionRun)
