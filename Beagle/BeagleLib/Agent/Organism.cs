@@ -386,7 +386,7 @@ public class Organism
 
         Commands.CopyTo(crossoverCommands);
 
-#if DEBUG 
+        #if DEBUG 
         //Verify that it copied correctly
         if (Commands.Length != crossoverCommandsLength) ReportInvalidScriptAndBreak();
         
@@ -400,7 +400,7 @@ public class Organism
                 ReportInvalidScriptAndBreak();
             }
         }
-#endif
+        #endif
         //TODO: Find a crossover partner
         // Pick random search direction
         int searchIter=1;
@@ -411,30 +411,32 @@ public class Organism
         int searchPoint = Rnd.Random.Next(organismsCount);
         int startPoint = searchPoint;
 
-        int maxSearchPoints = 1000;
+        int maxSearchPoints = 5;
         int searchedPointsSoFar = 0;
         double bestDelta = 1;
         int partnerID = -1;
         double myASR = ASR;
         while(bestDelta>MLSetup.Current.CrossoverPartnerDelta && searchedPointsSoFar<maxSearchPoints)
         {
-            double asr = organisms[searchPoint].ASR;
+            double asr = organisms[searchPoint]!.ASR;
             if (Math.Abs(myASR-asr)<bestDelta)
             {
                 bestDelta = Math.Abs(myASR - asr);
                 partnerID = searchPoint;
-                searchPoint += searchIter;
-                searchedPointsSoFar++;
-                if (searchPoint<0 || searchPoint >= organismsCount)
-                {
-                    searchIter = -1 * searchIter;
-                    searchPoint = startPoint + searchIter;
-                }
+
             }
+            searchPoint += searchIter;
+            searchedPointsSoFar++;
+            if (searchPoint < 0 || searchPoint >= organismsCount)
+            {
+                searchIter = -1 * searchIter;
+                searchPoint = startPoint + searchIter;
+            }
+
         }
 
 
-        crossoverCommands.Crossover(ref crossoverCommandsLength, organisms[partnerID]);
+        crossoverCommands.Crossover(ref crossoverCommandsLength, organisms[partnerID]!);
         return CreateByCopyingCommandsFromPartOfSpan(crossoverCommands, crossoverCommandsLength);
 
     }

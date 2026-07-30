@@ -36,7 +36,7 @@ public static class CommandSpanCrossoverExt
     {
 
         //TODO: Find valid starting point
-        int[] numbers = new int[crossoverEnd];
+        int[] numbers = new int[crossoverEnd+1];
         int validCrossCount = 0;
 
         for (int i = crossoverEnd; i>=0; i--)
@@ -53,7 +53,7 @@ public static class CommandSpanCrossoverExt
 
     public static void IdentifyPartnerCrossoverChunk(Span<Command> partner, int crossoverEnd, ref int crossoverStart)
     {
-        int[] numbers = new int[crossoverEnd];
+        int[] numbers = new int[crossoverEnd+1];
         int validCrossCount = 0;
 
         for (int i = crossoverEnd; i>=0; i--)
