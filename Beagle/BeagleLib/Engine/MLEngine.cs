@@ -505,7 +505,16 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                     }
                                     #endif
 
-                                    _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                                if (Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
+                                    {
+                                        _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_organisms, _organismsCount);
+                                    }
+                                else
+                                    {
+                                        _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                                    }
+
+                                   
                                 }
 
                                 pctProb--;
