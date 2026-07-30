@@ -379,7 +379,7 @@ public class Organism
         return CreateByCopyingCommandsFromPartOfSpan(mutationCommands, mutationCommandsLength);
     }
 
-    public Organism ProduceCrossoverChild(byte inputsCount, ref organisms, int organismsCount)
+    public Organism ProduceCrossoverChild(byte inputsCount, Organism[] organisms, int organismsCount)
     {
         Span<Command> crossoverCommands = stackalloc Command[BConfig.MaxScriptLength];
         var crossoverCommandsLength = Commands.Length;
