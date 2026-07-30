@@ -5,31 +5,18 @@ using BeagleLib.VM;
 
 namespace BeagleLib.Agent;
 
-public static class CommandSpanMutationExt
+public static class CommandSpanCrossoverExt
 {
-    #region Mutation Methods
-    public static void Mutate(this Span<Command> me, ref int mutationCommandsLength, byte inputsCount, OpEnum[] allowedOperations, int allowedAdjunctOperationsCount)
+    #region Crossover Methods
+    public static void Crossover(this Span<Command> me, ref int crossoverCommandsLength, Organism partner)
     {
-        var randomPct = Rnd.Random.Next(100);
+        var random = Rnd.Random.Next(crossoverCommandsLength);
 
-        int mutationsCount;
-        if (randomPct < 33) mutationsCount = 1; // 33%
-        else if (randomPct < 55) mutationsCount = 2; // 22%
-        else if (randomPct < 70) mutationsCount = 3; // 15%
-        else if (randomPct < 80) mutationsCount = 4; // 10%
-        else if (randomPct < 87) mutationsCount = 5; // 7%
-        else if (randomPct < 91) mutationsCount = 6; // 4%
-        else if (randomPct < 94) mutationsCount = 7; // 3%
-        else if (randomPct < 96) mutationsCount = 8; // 2%
-        else if (randomPct < 97) mutationsCount = 9; // 1%
-        else if (randomPct < 98) mutationsCount = 10; // 1%
-        else if (randomPct < 99) mutationsCount = 11; // 1%
-        else mutationsCount = 12; // 1%
+        int crossoverEnd = random;
+        int crossoverStart;
 
-        for (var i = 0; i < mutationsCount; i++)
-        {
-            me.MutateOnce(ref mutationCommandsLength, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
-        }
+        // Scan to left of crossoverEnd to find potential crossoverStart points
+
 
         if (MLSetup.Current.RemoveRedundantCommandsAfterMutation) me.RemoveRedundantCommands(ref mutationCommandsLength);
     }
