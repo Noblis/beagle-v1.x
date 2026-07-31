@@ -27,6 +27,7 @@ public static class CommandSpanCrossoverExt
         var partnerCrossoverStart = 0;
         IdentifyPartnerCrossoverChunk(partnerCommands, partnerCrossoverEnd, ref partnerCrossoverStart);
 
+        me.InsertCrossoverChunk(partnerCommands, ref crossoverCommandsLength, crossoverEnd, crossoverStart, partnerCrossoverEnd, partnerCrossoverStart);
 
 
 
