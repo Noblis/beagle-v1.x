@@ -39,10 +39,13 @@ public static class CommandSpanCrossoverExt
         //TODO: Find valid starting point
         int[] numbers = new int[crossoverEnd+1];
         int validCrossCount = 0;
+        int stackEffect = 0;
 
         for (int i = crossoverEnd; i>=0; i--)
         {
-            if (me.VerifyScriptValid(crossoverEnd, i))
+            stackEffect += me[i].StackEffect;
+            //if (me.VerifyCrossoverScriptValid(crossoverEnd, i))
+            if (stackEffect ==1)
             {
                 numbers[validCrossCount] = i;
                 validCrossCount++;         
@@ -56,10 +59,12 @@ public static class CommandSpanCrossoverExt
     {
         int[] numbers = new int[crossoverEnd+1];
         int validCrossCount = 0;
+        int stackEffect = 0;
 
         for (int i = crossoverEnd; i>=0; i--)
         {
-            if (partner.VerifyScriptValid(crossoverEnd,i))
+            stackEffect += partner[i].StackEffect;
+            if (stackEffect==1)
             {
                 numbers[validCrossCount] = i;
                 validCrossCount++;
@@ -85,7 +90,7 @@ public static class CommandSpanCrossoverExt
     #endregion
 
     #region Chunk Validation Methods
-    public static bool VerifyScriptValid(this Span<Command> me, int crossoverEnd, int crossoverStart)
+    public static bool VerifyCrossoverScriptValid(this Span<Command> me, int crossoverEnd, int crossoverStart)
     {
 
         var stackCount = 0;
