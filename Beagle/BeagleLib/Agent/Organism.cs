@@ -411,25 +411,25 @@ public class Organism
         int searchPoint = Rnd.Random.Next(organismsCount);
         int startPoint = searchPoint;
 
-        int maxSearchPoints = 10000;
+        int maxSearchPoints = 1000;
         int searchedPointsSoFar = 0;
         double bestDelta = 1;
         int partnerID = -1;
         double myASR = ASR;
         while(bestDelta>MLSetup.Current.CrossoverPartnerDelta && searchedPointsSoFar<maxSearchPoints)
         { 
-            if (organisms[searchPoint] == null) 
-            { 
-                searchPoint += searchIter; 
-                searchedPointsSoFar++;
-                if (searchPoint < 0 || searchPoint >= organismsCount)
-                {
-                    searchIter = -1 * searchIter;
-                    searchPoint = startPoint + searchIter;
-                }
-                continue; 
+            //if (organisms[searchPoint] == null) 
+            //{ 
+            //    searchPoint += searchIter; 
+            //    searchedPointsSoFar++;
+            //    if (searchPoint < 0 || searchPoint >= organismsCount)
+            //    {
+            //        searchIter = -1 * searchIter;
+            //        searchPoint = startPoint + searchIter;
+            //    }
+            //    continue; 
             
-            }
+            //}
             double asr = organisms[searchPoint]!.ASR;
             if (Math.Abs(myASR-asr)<bestDelta)
             {
@@ -449,7 +449,7 @@ public class Organism
 
 
         crossoverCommands.Crossover(ref crossoverCommandsLength, organisms[partnerID]!);
-        Output.WriteLine("Crossover Success!");
+        //Output.WriteLine("Crossover Success!");
         return CreateByCopyingCommandsFromPartOfSpan(crossoverCommands, crossoverCommandsLength);
 
     }
