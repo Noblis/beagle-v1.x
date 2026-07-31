@@ -25,7 +25,7 @@ public static class CommandSpanCrossoverExt
 
         var partnerCrossoverEnd = Rnd.Random.Next(partnerCommandsLength);
         var partnerCrossoverStart = 0;
-        IdentifyPartnerCrossoverChunk(partnerCommands, partnerCrossoverEnd, ref partnerCrossoverStart);
+        IdentifyPartnerCrossoverChunk(ref partnerCommands, ref partnerCommandsLength, partnerCrossoverEnd, ref partnerCrossoverStart);
 
         me.InsertCrossoverChunk(partnerCommands, ref crossoverCommandsLength, crossoverEnd, crossoverStart, partnerCrossoverEnd, partnerCrossoverStart);
 
@@ -33,7 +33,7 @@ public static class CommandSpanCrossoverExt
 
         if (MLSetup.Current.RemoveRedundantCommandsAfterMutation) me.RemoveRedundantCommands(ref crossoverCommandsLength);
     }
-    public static void IdentifyCrossoverChunk(this Span<Command> me, int crossoverEnd, ref int crossoverStart)
+    public static void IdentifyCrossoverChunk(this Span<Command> me, ref int crossoverEnd, ref int crossoverStart)
     {
 
         //TODO: Find valid starting point
@@ -44,18 +44,18 @@ public static class CommandSpanCrossoverExt
         for (int i = crossoverEnd; i>=0; i--)
         {
             stackEffect += me[i].StackEffect;
-            //if (me.VerifyCrossoverScriptValid(crossoverEnd, i))
             if (stackEffect ==1)
             {
                 numbers[validCrossCount] = i;
-                validCrossCount++;         
+                validCrossCount++;
+                break;
             }
         }
 
         crossoverStart = numbers[Rnd.Random.Next(validCrossCount)];
     }
 
-    public static void IdentifyPartnerCrossoverChunk(Span<Command> partner, int crossoverEnd, ref int crossoverStart)
+    public static void IdentifyPartnerCrossoverChunk(ref Span<Command> partner, ref int partnerLength, int crossoverEnd, ref int crossoverStart)
     {
         int[] numbers = new int[crossoverEnd+1];
         int validCrossCount = 0;
@@ -63,11 +63,16 @@ public static class CommandSpanCrossoverExt
 
         for (int i = crossoverEnd; i>=0; i--)
         {
+            if (stackEffect == 0 && partner[i].Operation == OpEnum.Dup)
+            {
+                partner.RemoveAt(ref partnerLength, i);
+            }
             stackEffect += partner[i].StackEffect;
             if (stackEffect==1)
             {
                 numbers[validCrossCount] = i;
                 validCrossCount++;
+                break;
             }
         }
         crossoverStart = numbers[Rnd.Random.Next(validCrossCount)];
@@ -76,13 +81,13 @@ public static class CommandSpanCrossoverExt
     public static void InsertCrossoverChunk(this Span<Command> me, Span<Command> partner, ref int length, int crossoverEnd, int crossoverStart, int partnerCrossoverEnd, int partnerCrossoverStart)
     {
         //TODO: Remove old chunk and then drop in new chunk
-        for (int i = 0; i<=crossoverEnd-crossoverStart; i++)
+        for (var i = 0; i<=crossoverEnd-crossoverStart; i++)
         {
-            me.RemoveAt(ref length, crossoverStart);
+            me.RemoveAt(ref length, crossoverEnd-i);
         }
-        for (int i = 0; i <= partnerCrossoverEnd - partnerCrossoverStart; i++)
+        for (var i = 0; i <= partnerCrossoverEnd - partnerCrossoverStart; i++)
         {
-            me.Add(ref length, partner[i]);
+            me.Insert(ref length, crossoverStart+i,partner[i+partnerCrossoverStart]);
         }
     }
 
