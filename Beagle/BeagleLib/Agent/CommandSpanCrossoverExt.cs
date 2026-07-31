@@ -25,15 +25,32 @@ public static class CommandSpanCrossoverExt
 
         var partnerCrossoverEnd = Rnd.Random.Next(partnerCommandsLength);
         var partnerCrossoverStart = 0;
-        IdentifyPartnerCrossoverChunk(ref partnerCommands, ref partnerCommandsLength, partnerCrossoverEnd, ref partnerCrossoverStart);
+        IdentifyPartnerCrossoverChunk(ref partnerCommands, ref partnerCommandsLength, ref partnerCrossoverEnd, ref partnerCrossoverStart);
 
         me.InsertCrossoverChunk(partnerCommands, ref crossoverCommandsLength, crossoverEnd, crossoverStart, partnerCrossoverEnd, partnerCrossoverStart);
+        int se = 0;
+        for (int i = 0; i < crossoverCommandsLength; i++)
+        {
+            if (se < me[i].MinStackRequired)
+            {
+                Output.WriteLine("Error");
+            }
 
-
+            se += me[i].StackEffect;
+        }
 
         if (MLSetup.Current.RemoveRedundantCommandsAfterMutation) me.RemoveRedundantCommands(ref crossoverCommandsLength);
+
+        for (int i = 0; i < crossoverCommandsLength; i++)
+        {
+            if (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste)
+            {
+                crossoverCommandsLength = -1;
+                break;
+            }
+        }
     }
-    public static void IdentifyCrossoverChunk(this Span<Command> me, ref int crossoverEnd, ref int crossoverStart)
+    public static void IdentifyCrossoverChunk(this Span<Command> me, int crossoverEnd, ref int crossoverStart)
     {
 
         //TODO: Find valid starting point
@@ -55,7 +72,7 @@ public static class CommandSpanCrossoverExt
         crossoverStart = numbers[Rnd.Random.Next(validCrossCount)];
     }
 
-    public static void IdentifyPartnerCrossoverChunk(ref Span<Command> partner, ref int partnerLength, int crossoverEnd, ref int crossoverStart)
+    public static void IdentifyPartnerCrossoverChunk(ref Span<Command> partner, ref int partnerLength, ref int crossoverEnd, ref int crossoverStart)
     {
         int[] numbers = new int[crossoverEnd+1];
         int validCrossCount = 0;
@@ -66,6 +83,8 @@ public static class CommandSpanCrossoverExt
             if (stackEffect == 0 && partner[i].Operation == OpEnum.Dup)
             {
                 partner.RemoveAt(ref partnerLength, i);
+                crossoverEnd -= 1;
+                continue;
             }
             stackEffect += partner[i].StackEffect;
             if (stackEffect==1)
