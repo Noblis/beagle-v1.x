@@ -456,7 +456,7 @@ public class Organism
 
         }
 
-
+        if (partnerID == -1) return null;
         crossoverCommands.Crossover(ref crossoverCommandsLength, organisms[partnerID]!);
         if (crossoverCommandsLength == -1) return null;
         //Output.WriteLine("Crossover Success!");
