@@ -430,7 +430,16 @@ public class Organism
             //    continue; 
             
             //}
-            double asr = organisms[searchPoint]!.ASR;
+            double asr;
+            try
+            {
+                asr = organisms[searchPoint]!.ASR;
+            }
+            catch (Exception ex)
+            {
+                asr = 0.0;
+            }
+
             if (Math.Abs(myASR-asr)<bestDelta)
             {
                 bestDelta = Math.Abs(myASR - asr);

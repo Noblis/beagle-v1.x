@@ -4,6 +4,7 @@ using BeagleLib.VM;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Net.Mail;
+using Newtonsoft.Json.Linq;
 
 namespace BeagleLib.Agent;
 
@@ -19,6 +20,12 @@ public static class CommandSpanCrossoverExt
         // Scan to left of crossoverEnd to find potential crossoverStart points
         me.IdentifyCrossoverChunk( crossoverEnd, ref crossoverStart);
 
+        if (crossoverStart == -1)
+        {
+            crossoverCommandsLength = -1;
+            return;
+        }
+
         int partnerCommandsLength = partner.Commands.Length;
         Span < Command > partnerCommands = stackalloc Command[BConfig.MaxScriptLength];
         partner.Commands.CopyTo(partnerCommands);
@@ -27,27 +34,36 @@ public static class CommandSpanCrossoverExt
         var partnerCrossoverStart = 0;
         IdentifyPartnerCrossoverChunk(ref partnerCommands, ref partnerCommandsLength, ref partnerCrossoverEnd, ref partnerCrossoverStart);
 
-        me.InsertCrossoverChunk(partnerCommands, ref crossoverCommandsLength, crossoverEnd, crossoverStart, partnerCrossoverEnd, partnerCrossoverStart);
-        int se = 0;
-        for (int i = 0; i < crossoverCommandsLength; i++)
+        if (partnerCommandsLength == -1)
         {
-            if (se < me[i].MinStackRequired)
-            {
-                Output.WriteLine("Error");
-            }
-
-            se += me[i].StackEffect;
+            crossoverCommandsLength = -1;
+            return;
         }
+
+        me.InsertCrossoverChunk(partnerCommands, ref crossoverCommandsLength, crossoverEnd, crossoverStart, partnerCrossoverEnd, partnerCrossoverStart);
+        //int se = 0;
+        //for (int i = 0; i < crossoverCommandsLength; i++)
+        //{
+        //    if (se < me[i].MinStackRequired)
+        //    {
+        //        Output.WriteLine("Error");
+        //    }
+
+        //    se += me[i].StackEffect;
+        //}
 
         if (MLSetup.Current.RemoveRedundantCommandsAfterMutation) me.RemoveRedundantCommands(ref crossoverCommandsLength);
 
+        int stackEffect = 0;
         for (int i = 0; i < crossoverCommandsLength; i++)
         {
-            if (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste)
+            if (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste || stackEffect < me[i].MinStackRequired)
             {
                 crossoverCommandsLength = -1;
                 break;
             }
+
+            stackEffect += me[i].StackEffect;
         }
     }
     public static void IdentifyCrossoverChunk(this Span<Command> me, int crossoverEnd, ref int crossoverStart)
@@ -61,6 +77,11 @@ public static class CommandSpanCrossoverExt
         for (int i = crossoverEnd; i>=0; i--)
         {
             stackEffect += me[i].StackEffect;
+            if (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste)
+            {
+                crossoverStart = -1;
+                return;
+            }
             if (stackEffect ==1)
             {
                 numbers[validCrossCount] = i;
@@ -78,12 +99,36 @@ public static class CommandSpanCrossoverExt
         int validCrossCount = 0;
         int stackEffect = 0;
 
+        while (partner[crossoverEnd].Operation == OpEnum.Swap) crossoverEnd -= 1;
+
         for (int i = crossoverEnd; i>=0; i--)
         {
+            if (partner[i].Operation == OpEnum.Copy || partner[i].Operation == OpEnum.Paste)
+            {
+                partnerLength = -1;
+                return;
+            }
             if (stackEffect == 0 && partner[i].Operation == OpEnum.Dup)
             {
                 partner.RemoveAt(ref partnerLength, i);
                 crossoverEnd -= 1;
+                continue;
+            }
+
+            if (stackEffect == 0 && partner[i].Operation == OpEnum.Swap)
+            {
+                partner.RemoveAt(ref partnerLength, i);
+                crossoverEnd--;
+                int skipSize = partner[i-1].MinStackRequired;
+                for (int j = 1; j <= skipSize+1; j++)
+                {
+                    partner.RemoveAt(ref partnerLength, i-(j));
+                    crossoverEnd--;
+                }
+                //numbers[validCrossCount] = i - (2+skipSize);
+                //validCrossCount++;
+                //break;
+                i = i - (1 + skipSize);
                 continue;
             }
             stackEffect += partner[i].StackEffect;
