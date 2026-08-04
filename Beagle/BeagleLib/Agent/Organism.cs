@@ -386,8 +386,7 @@ public class Organism
 
         Commands.CopyTo(crossoverCommands);
 
-        #if DEBUG 
-        //Verify that it copied correctly
+        #if DEBUG //Verify that it copied correctly
         if (Commands.Length != crossoverCommandsLength) ReportInvalidScriptAndBreak();
         
         for (var i = 0; i < Commands.Length; i++)
@@ -401,13 +400,15 @@ public class Organism
             }
         }
         #endif
-        //TODO: Find a crossover partner
-        // Pick random search direction
+        
+        // Pick random search direction for crossover partner
         int searchIter=1;
         if (Rnd.Random.NextDouble() < 0.5)
         {
             searchIter = -1;
         }
+
+        // Set random search starting point
         int searchPoint = Rnd.Random.Next(organismsCount);
         int startPoint = searchPoint;
 
@@ -416,31 +417,21 @@ public class Organism
         double bestDelta = 1;
         int partnerID = -1;
         double myASR = ASR;
+
+        // Search for a compatible partner or most compatible partner within maxSearchPoints
         while(bestDelta>MLSetup.Current.CrossoverPartnerDelta && searchedPointsSoFar<maxSearchPoints)
-        { 
-            //if (organisms[searchPoint] == null) 
-            //{ 
-            //    searchPoint += searchIter; 
-            //    searchedPointsSoFar++;
-            //    if (searchPoint < 0 || searchPoint >= organismsCount)
-            //    {
-            //        searchIter = -1 * searchIter;
-            //        searchPoint = startPoint + searchIter;
-            //    }
-            //    continue; 
-            
-            //}
+        {
             double asr;
-            try
+            try  // Occasionally getting models with a null ASR (might be a bug)
             {
                 asr = organisms[searchPoint]!.ASR;
             }
             catch (Exception ex)
             {
-                asr = 0.0;
+                asr = -1.0;
             }
 
-            if (Math.Abs(myASR-asr)<bestDelta)
+            if (Math.Abs(myASR-asr)<bestDelta) // check if compatible
             {
                 bestDelta = Math.Abs(myASR - asr);
                 partnerID = searchPoint;
@@ -448,7 +439,7 @@ public class Organism
             }
             searchPoint += searchIter;
             searchedPointsSoFar++;
-            if (searchPoint < 0 || searchPoint >= organismsCount)
+            if (searchPoint < 0 || searchPoint >= organismsCount) // flip search direction if end of array
             {
                 searchIter = -1 * searchIter;
                 searchPoint = startPoint + searchIter;
@@ -456,10 +447,9 @@ public class Organism
 
         }
 
-        if (partnerID == -1) return null;
+        if (partnerID == -1) return null; // returns null if no compatible partner found
         crossoverCommands.Crossover(ref crossoverCommandsLength, organisms[partnerID]!);
-        if (crossoverCommandsLength == -1) return null;
-        //Output.WriteLine("Crossover Success!");
+        if (crossoverCommandsLength == -1) return null; // returns null if crossover failed
         return CreateByCopyingCommandsFromPartOfSpan(crossoverCommands, crossoverCommandsLength);
 
     }

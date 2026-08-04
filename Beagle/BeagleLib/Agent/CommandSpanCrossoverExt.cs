@@ -34,7 +34,7 @@ public static class CommandSpanCrossoverExt
         var partnerCrossoverStart = 0;
         IdentifyPartnerCrossoverChunk(ref partnerCommands, ref partnerCommandsLength, ref partnerCrossoverEnd, ref partnerCrossoverStart);
 
-        if (partnerCommandsLength == -1)
+        if (partnerCommandsLength == -1 || (crossoverCommandsLength-(crossoverEnd-crossoverStart)+(partnerCrossoverEnd-partnerCrossoverStart)>BConfig.MaxScriptLength))
         {
             crossoverCommandsLength = -1;
             return;
