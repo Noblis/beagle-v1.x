@@ -512,11 +512,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                         {
                                             _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                                         }
-                                        //else
-                                        //{
-                                        //    Output.WriteLine("Successfully Crossed!");
-                                        //}
-                                        
                                     }
                                     else
                                     {
