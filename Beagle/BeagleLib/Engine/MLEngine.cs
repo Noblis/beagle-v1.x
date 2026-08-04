@@ -507,9 +507,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                                     if (Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
                                     {
-                                        _newbornOrganisms[idx] =
-                                            organism.ProduceCrossoverChild(_organisms!, _organismsCount);
-                                        if (_newbornOrganisms[idx] == null )
+                                        _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_organisms!, _organismsCount);
+                                        if (_newbornOrganisms[idx] == null ) // if crossover fails, do mutation instead
                                         {
                                             _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                                         }

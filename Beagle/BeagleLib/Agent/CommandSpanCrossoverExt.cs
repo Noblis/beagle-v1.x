@@ -1,10 +1,6 @@
 ﻿using BeagleLib.Engine;
 using BeagleLib.Util;
 using BeagleLib.VM;
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
-using System.Net.Mail;
-using Newtonsoft.Json.Linq;
 
 namespace BeagleLib.Agent;
 
@@ -17,10 +13,10 @@ public static class CommandSpanCrossoverExt
         var crossoverEnd = Rnd.Random.Next(crossoverCommandsLength);
         var crossoverStart = 0;
 
-        // Scan to left of crossoverEnd to find potential crossoverStart points
+        // Scan to left of crossoverEnd to find potential crossoverStart points (this version will find just one)
         me.IdentifyCrossoverChunk( crossoverEnd, ref crossoverStart);
 
-        if (crossoverStart == -1)
+        if (crossoverStart == -1) // catch if crossover chunk search fails
         {
             crossoverCommandsLength = -1;
             return;
@@ -34,6 +30,7 @@ public static class CommandSpanCrossoverExt
         var partnerCrossoverStart = 0;
         IdentifyPartnerCrossoverChunk(ref partnerCommands, ref partnerCommandsLength, ref partnerCrossoverEnd, ref partnerCrossoverStart);
 
+        // catch if fails to find crossover chunk in partner
         if (partnerCommandsLength == -1 || (crossoverCommandsLength-(crossoverEnd-crossoverStart)+(partnerCrossoverEnd-partnerCrossoverStart)>BConfig.MaxScriptLength))
         {
             crossoverCommandsLength = -1;
@@ -41,19 +38,10 @@ public static class CommandSpanCrossoverExt
         }
 
         me.InsertCrossoverChunk(partnerCommands, ref crossoverCommandsLength, crossoverEnd, crossoverStart, partnerCrossoverEnd, partnerCrossoverStart);
-        //int se = 0;
-        //for (int i = 0; i < crossoverCommandsLength; i++)
-        //{
-        //    if (se < me[i].MinStackRequired)
-        //    {
-        //        Output.WriteLine("Error");
-        //    }
-
-        //    se += me[i].StackEffect;
-        //}
 
         if (MLSetup.Current.RemoveRedundantCommandsAfterMutation) me.RemoveRedundantCommands(ref crossoverCommandsLength);
 
+        // check for invalid crossover
         int stackEffect = 0;
         for (int i = 0; i < crossoverCommandsLength; i++)
         {
@@ -66,10 +54,9 @@ public static class CommandSpanCrossoverExt
             stackEffect += me[i].StackEffect;
         }
     }
+
     public static void IdentifyCrossoverChunk(this Span<Command> me, int crossoverEnd, ref int crossoverStart)
     {
-
-        //TODO: Find valid starting point
         int[] numbers = new int[crossoverEnd+1];
         int validCrossCount = 0;
         int stackEffect = 0;
@@ -89,7 +76,7 @@ public static class CommandSpanCrossoverExt
                 break;
             }
         }
-
+        // for generalizability to select one if we find multiple
         crossoverStart = numbers[Rnd.Random.Next(validCrossCount)];
     }
 
@@ -99,22 +86,26 @@ public static class CommandSpanCrossoverExt
         int validCrossCount = 0;
         int stackEffect = 0;
 
+        // if endpoint is swap, move endpoint to the left
         while (partner[crossoverEnd].Operation == OpEnum.Swap) crossoverEnd -= 1;
 
+        // find crossover candidate chunks
         for (int i = crossoverEnd; i>=0; i--)
         {
+            // abort if a copy or paste
             if (partner[i].Operation == OpEnum.Copy || partner[i].Operation == OpEnum.Paste)
             {
                 partnerLength = -1;
                 return;
             }
+            // if duplicate isn't needed by this chunk, skip it
             if (stackEffect == 0 && partner[i].Operation == OpEnum.Dup)
             {
                 partner.RemoveAt(ref partnerLength, i);
                 crossoverEnd -= 1;
                 continue;
             }
-
+            // if swap isn't needed by this chunk, skip it and the chunk that isn't needed
             if (stackEffect == 0 && partner[i].Operation == OpEnum.Swap)
             {
                 partner.RemoveAt(ref partnerLength, i);
@@ -125,26 +116,24 @@ public static class CommandSpanCrossoverExt
                     partner.RemoveAt(ref partnerLength, i-(j));
                     crossoverEnd--;
                 }
-                //numbers[validCrossCount] = i - (2+skipSize);
-                //validCrossCount++;
-                //break;
                 i = i - (1 + skipSize);
                 continue;
             }
             stackEffect += partner[i].StackEffect;
-            if (stackEffect==1)
+            if (stackEffect==1) // check if valid chunk found
             {
                 numbers[validCrossCount] = i;
                 validCrossCount++;
                 break;
             }
         }
+        // for generalizability to select one if we find multiple
         crossoverStart = numbers[Rnd.Random.Next(validCrossCount)];
     }
 
     public static void InsertCrossoverChunk(this Span<Command> me, Span<Command> partner, ref int length, int crossoverEnd, int crossoverStart, int partnerCrossoverEnd, int partnerCrossoverStart)
     {
-        //TODO: Remove old chunk and then drop in new chunk
+        // remove old chunk and then drop in new chunk
         for (var i = 0; i<=crossoverEnd-crossoverStart; i++)
         {
             me.RemoveAt(ref length, crossoverEnd-i);
@@ -158,24 +147,4 @@ public static class CommandSpanCrossoverExt
 
     #endregion
 
-    #region Chunk Validation Methods
-    public static bool VerifyCrossoverScriptValid(this Span<Command> me, int crossoverEnd, int crossoverStart)
-    {
-
-        var stackCount = 0;
-        // ReSharper disable once ForCanBeConvertedToForeach
-        // ReSharper disable once LoopCanBeConvertedToQuery
-        for (var addr = crossoverEnd; addr >= crossoverStart; addr--)
-        {
-            var command = me[addr];
-            if (command.Operation == OpEnum.Paste) if(me.GetCopyAddr(command.Idx, addr)<crossoverStart) return false;
-
-            stackCount += me[addr].StackEffect;
-        }
-        if (stackCount != 1) return false;
-        return true;
-
-
-    }
-    #endregion
 }
