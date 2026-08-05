@@ -491,6 +491,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                             //decide how many children (if any) based on percentile probabilities
                             var pctProb = _pctProbs[pctProbsIdx];
 
+                            //create a deviation
+                            pctProb += Rnd.RandomSign * Rnd.Random.NextDouble() * pctProb / 2.0;
+
                             do
                             {
                                 if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
