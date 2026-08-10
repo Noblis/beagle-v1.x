@@ -253,32 +253,32 @@ public class Organism
                 }
                 case "TAN":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Tan));
                     break;
                 }
                 case "ARCOS":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Arcos));
                     break;
                 }
                 case "ARCSIN":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Arcsin));
                     break;
                 }
                 case "ARCTAN":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Arctan));
                     break;
                 }
                 case "TANH":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Tanh));
                     break;
                 }
                 case "EXP":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Exp));
                     break;
                 }
                 case "POW":
