@@ -5,12 +5,13 @@ using BeagleLib.Util;
 using BeagleLib.VM;
 using ILGPU;
 using ILGPU.Runtime;
+using ILGPU.Runtime.Cuda;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Runtime;
 using System.Runtime.CompilerServices;
-using ILGPU.Runtime.Cuda;
 using WebMonk;
+//using WebMonk.RazorSharp.HtmlTags;
 
 namespace BeagleLib.Engine;
 
@@ -152,6 +153,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _newbornOrganisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _scores = new int[MLSetup.Current.OrganismsArraySize];
             _taxedScorePercentiles = new int[100];
+            //additions for NSGA selection
+            _scoreLayers = new int[100];
+            _sizeLayers = new int[100];
+            _layerNumbers = new int[100];
 
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
@@ -306,6 +311,79 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
     }
 
+    public bool DominatesQ(int size, int score, int sizeRef, int scoreRef)
+    {
+        return (size < sizeRef) && (score > scoreRef);
+    }
+
+    public void FrontSelect(int[] sizeLayersRef, int[] scoreLayersRef, int[] frontIndices, ref int frontCount, bool[] selectedQ)
+    {
+        bool[] onFrontQ = new bool[100];
+        for (int i = 0; i < 100; i++) onFrontQ[i] = false;
+        for (int i = 0; i < 100; i++) if (!selectedQ[i]) onFrontQ[i] = true;
+        for (int i = 0; i < 100; i++)
+        {
+            if (onFrontQ[i] && !selectedQ[i])
+            {
+                for (int j = 0; j < 100; j++)
+                {
+                    if ((i != j) && !selectedQ[j] && onFrontQ[j] && sizeLayersRef[i] <= sizeLayersRef[j] &&
+                        scoreLayersRef[i] >= scoreLayersRef[j])
+                    {
+                        onFrontQ[j] = false;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < 100; i++)
+        {
+            if (onFrontQ[i])
+            {
+                frontIndices[frontCount] = i;
+                frontCount++;
+            }
+        }
+
+
+    }
+
+    public void ParetoLayers(int[] layerNumbersRef, int[] sizeLayersRef, int[] scoreLayersRef)
+    {
+        int[] frontIndices = new int[100];
+        int frontCount = 0;
+        bool[] selectedQ = new bool[100];
+        for (int i = 0; i < 100; i++) selectedQ[i] = false;
+        int lastIndex = 0;
+        int layerNumber = 0;
+        int[] sizeLayersTmp = new int[100];
+        int[] scoreLayersTmp = new int[100];
+        int[] layerNumbersTmp = new int[100];
+        while (frontCount < 100)
+        {
+            FrontSelect(sizeLayersRef, scoreLayersRef, frontIndices, ref frontCount, selectedQ);
+            for (int i = lastIndex; i < frontCount; i++)
+            {
+                selectedQ[frontIndices[i]] = true;
+                //layerNumbersRef[frontIndices[i]] = layerNumber;
+                sizeLayersTmp[i] = sizeLayersRef[frontIndices[i]];
+                scoreLayersTmp[i] = scoreLayersRef[frontIndices[i]];
+                layerNumbersTmp[i] = layerNumber; //layerNumbersRef[frontIndices[i]];
+            }
+
+            lastIndex = frontCount;
+            layerNumber++;
+        }
+
+        for (int i = 0; i < 100; i++)
+        {
+            sizeLayersRef[i] = sizeLayersTmp[i];
+            scoreLayersRef[i] = scoreLayersTmp[i];
+            layerNumbersRef[i] = layerNumbersTmp[i];
+        }
+
+    }
+
     protected bool TrainingLoopBody()
     {
         #region reset stuff for new generation, set up experiments (inputs/output), convert inputs to one long array
@@ -402,15 +480,38 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         #endregion
 
+
+// TODO: compute Pareto layers
+// int paretoLayers = 0;
+// _layers = [[pairs, ...], ...]
         #region set up and sort the percentiles array
         using (new ConsoleTimer("set up and sort the percentiles array", _showProfilingInfo))
         {
-            Parallel.For(0, 100, i => { _taxedScorePercentiles[i] = _organisms[Rnd.Random.Next(_organismsCount)]!.TaxedScore; });
-            Array.Sort(_taxedScorePercentiles);
+            
+            Parallel.For(0, 100,
+                i =>
+                {
+                    int pick = Rnd.Random.Next(_organismsCount); 
+                    _sizeLayers[i] = _organisms[pick]!.Commands.Length;
+                    _scoreLayers[i] = _organisms[pick]!.Score;
+                });
+            ParetoLayers(_layerNumbers, _sizeLayers, _scoreLayers);
+            Output.Write("Layers: ");
+            for(int i=0; i<100; i++)
+            {
+                Output.Write(_layerNumbers[i].ToString()); 
+                Output.Write(" ");
+                Output.Write(i.ToString());
+                Output.Write(" /");
+            }
+            //Parallel.For(0, 100, i => { _taxedScorePercentiles[i] = _organisms[Rnd.Random.Next(_organismsCount)]!.TaxedScore; });
+            //Array.Sort(_taxedScorePercentiles);
         }
         #endregion
 
         #region calculate offset percentiles based on colony size vis-a-vis target colony size
+        // TODO: compute layer number for each organism. For population size adjustments,
+        // allow for biased probability of shifting to a higher/lower layer
         sbyte taxedScorePercentilesIdxOffset; //positive offset makes organisms die more
         using (new ConsoleTimer("calculate offset percentiles based on colony size vis-a-vis target colony size", _showProfilingInfo))
         {
@@ -497,13 +598,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 {
                                     var idx = Interlocked.Increment(ref _newbornOrganismsCount);
 
-                                    #if DEBUG
+#if DEBUG
                                     if (idx >= _newbornOrganisms.Length)
                                     {
                                         Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                                         Debugger.Break();
                                     }
-                                    #endif
+#endif
 
                                     _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                                 }
@@ -627,7 +728,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
             Console.ResetColor();
 
-            #if DEBUG
+#if DEBUG
             int score = 0;
             var fitFunc = new TFitFunc();
             float[] outputs = new float[MLSetup.Current.ExperimentsPerGeneration];
@@ -730,7 +831,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: Invalid shortest satisfactory organism score on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                 Debugger.Break();
             }
-            #endif
+#endif
 
             Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Found Satisfactory Solution on {Environment.MachineName}", $"Beagle {BConfig.Version}: {MLSetup.Current.Name} completed in {_totalTimeWatch.Elapsed:c} on {Environment.MachineName}\n\n{_shortestEverSatisfactoryOrganism.ToString(_inputLabels)}");
             if (!MLSetup.Current.KeepOptimizingAfterSolutionFound)
@@ -1204,7 +1305,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         _mostAccurateOrganismsSinceLastColonyReset[idx] = organism;
     }
-    #endregion
+#endregion
 
 
     #region Readonly Fields Set in Constructor
@@ -1219,6 +1320,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly float[] _allInputs;
 
     protected readonly int[] _taxedScorePercentiles;
+    //NSGA selection parameters
+    protected readonly int[] _scoreLayers;
+    protected readonly int[] _sizeLayers;
+    protected readonly int[] _layerNumbers;
 
     protected readonly Context _context;
     protected readonly AcceleratorInfo<TFitFunc>[] _accelerators;

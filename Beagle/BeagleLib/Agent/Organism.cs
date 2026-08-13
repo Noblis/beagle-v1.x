@@ -256,9 +256,9 @@ public class Organism
                     commands.Add(new Command(OpEnum.Tan));
                     break;
                 }
-                case "ARCOS":
+                case "ARCCOS":
                 {
-                    commands.Add(new Command(OpEnum.Arcos));
+                    commands.Add(new Command(OpEnum.Arccos));
                     break;
                 }
                 case "ARCSIN":
