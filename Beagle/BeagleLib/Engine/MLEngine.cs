@@ -158,6 +158,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _scoreLayers = new int[100];
             _sizeLayers = new int[100];
             _layerNumbers = new int[100];
+            _layerOffspringTargets = new float[100];
 
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
