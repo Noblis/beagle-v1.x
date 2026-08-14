@@ -604,7 +604,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         _organisms[i]!.Commands.Length);
                 });
                 // compute offspring per layer targets using the number of layers and number of organisms per layer
-                int maxLayer = _layerNumbers[_organismsCount];
+                int maxLayer = _layerNumbers[99];
                 for (int i = 0; i < maxLayer; i++)
                 {
                     _layerOffspringTargets[i] = 10 / MathF.Pow(2f, i);
