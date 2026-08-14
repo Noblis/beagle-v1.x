@@ -319,7 +319,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     public int GetParetoLayer(int[] sizeLayersRef, int[] scoreLayersRef, int[] layerNumbersRef, int score, int size)
     {
-        int modelLayerNumber = layerNumbersRef[_organismsCount];
         bool dominated = false;
         int currentLayer = 0;
         for (int i = 0; i < 100; i++)
@@ -605,7 +604,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         _organisms[i]!.Commands.Length);
                 });
                 // compute offspring per layer targets using the number of layers and number of organisms per layer
-
+                int maxLayer = _layerNumbers[_organismsCount];
+                for (int i = 0; i < maxLayer; i++)
+                {
+                    _layerOffspringTargets[i] = 10 / MathF.Pow(2f, i);
+                }
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
@@ -1358,6 +1361,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly int[] _scoreLayers;
     protected readonly int[] _sizeLayers;
     protected readonly int[] _layerNumbers;
+    protected readonly float[] _layerOffspringTargets;
 
     protected readonly Context _context;
     protected readonly AcceleratorInfo<TFitFunc>[] _accelerators;
