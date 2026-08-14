@@ -152,6 +152,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _organisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _newbornOrganisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _scores = new int[MLSetup.Current.OrganismsArraySize];
+            _layers = new int[MLSetup.Current.OrganismsArraySize];
             _taxedScorePercentiles = new int[100];
             //additions for NSGA selection
             _scoreLayers = new int[100];
@@ -314,6 +315,31 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public bool DominatesQ(int size, int score, int sizeRef, int scoreRef)
     {
         return (size < sizeRef) && (score > scoreRef);
+    }
+
+    public int GetParetoLayer(int[] sizeLayersRef, int[] scoreLayersRef, int[] layerNumbersRef, int score, int size)
+    {
+        int modelLayerNumber = layerNumbersRef[_organismsCount];
+        bool dominated = false;
+        int currentLayer = 0;
+        for (int i = 0; i < 100; i++)
+        {
+            if (layerNumbersRef[i]>currentLayer)
+            {
+                if (dominated==false) return currentLayer;
+                currentLayer++;
+                dominated = false;
+            }
+
+
+            if (DominatesQ(sizeLayersRef[i], scoreLayersRef[i], size, score))
+            {
+                dominated = true;
+            }
+
+        }
+
+        return currentLayer + 1;
     }
 
     public void FrontSelect(int[] sizeLayersRef, int[] scoreLayersRef, int[] frontIndices, ref int frontCount, bool[] selectedQ)
@@ -572,6 +598,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             else
             {
                 _newbornOrganismsCount = -1;
+                // record the layer number for each organism
+                Parallel.For(0, _organismsCount, i =>
+                {
+                    _layers[i] = GetParetoLayer(_sizeLayers, _scoreLayers, _layerNumbers, _scores[i],
+                        _organisms[i]!.Commands.Length);
+                });
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
@@ -1346,6 +1378,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected int _newbornOrganismsCount;
 
     protected int[] _scores;
+    protected int[] _layers;
     #endregion
 
     #region Total & Generation Counters
