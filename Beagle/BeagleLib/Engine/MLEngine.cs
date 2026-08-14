@@ -159,6 +159,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _sizeLayers = new int[100];
             _layerNumbers = new int[100];
             _layerOffspringTargets = new float[100];
+            _layerSizes = new int[100];
 
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
@@ -603,12 +604,31 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 {
                     _layers[i] = GetParetoLayer(_sizeLayers, _scoreLayers, _layerNumbers, _scores[i],
                         _organisms[i]!.Commands.Length);
+                    _layerSizes[_layers[i]]++;
                 });
                 // compute offspring per layer targets using the number of layers and number of organisms per layer
                 int maxLayer = _layerNumbers[99];
+                float totalTarget = 0.0f;
                 for (int i = 0; i < maxLayer; i++)
                 {
                     _layerOffspringTargets[i] = 10 / MathF.Pow(1.2f, i);
+                    totalTarget += _layerOffspringTargets[i];
+                }
+
+                // determine total "per layer" target population size
+                for (int i = 0; i < maxLayer; i++)
+                {
+                    _layerOffspringTargets[i] /= totalTarget;
+                    _layerOffspringTargets[i] *=
+                        MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
+                }
+
+                // determine how many exist in each layer and divide target "per layer" population by layer size
+                
+                for (int i = 0; i < _organismsCount; i++)
+                {
+                    _layerOffspringTargets[i] /= _layerSizes[i];
+                    
                 }
                 Parallel.For(0, _organismsCount, i =>
                 {
@@ -1362,6 +1382,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly int[] _scoreLayers;
     protected readonly int[] _sizeLayers;
     protected readonly int[] _layerNumbers;
+    protected readonly int[] _layerSizes;
     protected readonly float[] _layerOffspringTargets;
 
     protected readonly Context _context;
