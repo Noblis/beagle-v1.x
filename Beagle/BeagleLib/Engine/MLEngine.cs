@@ -608,7 +608,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 int maxLayer = _layerNumbers[99];
                 for (int i = 0; i < maxLayer; i++)
                 {
-                    _layerOffspringTargets[i] = 10 / MathF.Pow(2f, i);
+                    _layerOffspringTargets[i] = 10 / MathF.Pow(1.2f, i);
                 }
                 Parallel.For(0, _organismsCount, i =>
                 {
