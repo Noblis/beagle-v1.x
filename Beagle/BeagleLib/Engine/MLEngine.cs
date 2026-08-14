@@ -604,6 +604,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _layers[i] = GetParetoLayer(_sizeLayers, _scoreLayers, _layerNumbers, _scores[i],
                         _organisms[i]!.Commands.Length);
                 });
+                // compute offspring per layer targets using the number of layers and number of organisms per layer
+
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
