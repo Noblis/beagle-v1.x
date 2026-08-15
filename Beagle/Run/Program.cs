@@ -56,12 +56,6 @@ public class Program
                     runFeynmanFormula = int.Parse(argParts[1]);
                     if (runFeynmanFormula < -1) throw new ArgumentException();
                 }
-                else if (arg.ToLower().StartsWith("benchgroup"))
-                {
-                    var argParts = arg.Split('=');
-                    if (argParts.Length != 2) throw new ArgumentException();
-                    QuickBenchmark.Desired = (uint)int.Parse(argParts[1].Replace("_", ""));
-                }
                 else if (arg.ToLower().StartsWith("benchfit"))
                 {
                     var argParts = arg.Split('=');
@@ -94,7 +88,7 @@ public class Program
                 Output.WriteLine("StopAfterBirths={births} - directs Beagle to stop after number of births specified");
                 Output.WriteLine("RunFeynman={1-100} - directs Beagle to run one of the formulas from Feynman 100 benchmark");
                 Output.WriteLine("UseLibDevice - directs Beagle to use NVIDIA hardware-accelerated math lib. Not recommended for most users.");
-                Output.WriteLine("BenchFit={std|corr} BenchGens={generations} BenchGroup={blockSize} - runs the QuickBenchmark harness for N generations and reports births/deaths throughput.");
+                Output.WriteLine("BenchFit={std|corr} BenchGens={generations} - runs the QuickBenchmark harness for N generations and reports births/deaths throughput.");
 
                 Output.WriteLine("For example: RunFeynman=1 NoEscMenu StopAfterMin=10");
                 return;
