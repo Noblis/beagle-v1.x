@@ -144,15 +144,33 @@ public static class MainKernel
         }
         else
         {
-            int score;
-            //if (isOutputValid && isCorrectOutputValid) score = fitFunc.FitFunction(allInputs, (uint)(groupStart + experimentIdx * inputsCount), inputsCount, output, correctOutput);
-            if (isOutputValid && isCorrectOutputValid) score = fitFunc.FitFunction(output, correctOutput);
-            else score = fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid);
+            //Patch C: grid-stride over experiments inside each thread, so the GPU block size is
+            //independent of ExperimentsPerGeneration. One block = one organism. The block-level
+            //organism index must come from Grid.IdxX (the prologue's index-based division is only
+            //valid when Group.DimX == numberOfExperiments, i.e. the correlation mapping).
+            var organismIdxx = (int)Grid.IdxX;
+            var expScriptStart = checked((uint)scriptStarts[organismIdxx]);
+            var expScriptEnd = organismIdxx >= scriptStarts.Length - 1 ? (int)allCommands.Length : scriptStarts[organismIdxx + 1];
+            var expScriptLength = checked((uint)(expScriptEnd - (int)expScriptStart));
+            var expCommands = allCommands.SubView(expScriptStart, expScriptLength);
+            var myScore = 0;
+            for (var experiment = Group.IdxX; experiment < numberOfExperiments; experiment += Group.DimX)
+            {
+                var expInputs = allInputs.SubView((uint)((groupStart + experiment) * inputsCount), inputsCount);
+                var expOutput = new CodeMachine().RunCommands(expInputs, expCommands);
+                var expCorrectOutput = correctOutputs[groupStart + experiment];
 
-            //Patch B: one block = one organism (Group.DimX == numberOfExperiments), so
-            //replace global atomics with a block reduction: one global write per organism.
-            var total = GroupExtensions.AllReduce<int, AddInt32>(score);
-            if (Group.IsFirstThread) rewards[organismIdx] = total;
+                var expOutputValid = expOutput.IsValidNumber();
+                var expCorrectValid = expCorrectOutput.IsValidNumber();
+
+                int experimentScore;
+                if (expOutputValid && expCorrectValid) experimentScore = fitFunc.FitFunction(expOutput, expCorrectOutput);
+                else experimentScore = fitFunc.FitFunctionIfInvalid(expOutputValid, expCorrectValid);
+                myScore += experimentScore;
+            }
+
+            var total = GroupExtensions.AllReduce<int, AddInt32>(myScore);
+            if (Group.IsFirstThread) rewards[Grid.IdxX] = total;
         }
     }
     #endregion

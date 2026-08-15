@@ -23,6 +23,8 @@ public class QuickBenchmark : MLSetup
     public override int TargetColonySize(int generation) => 1_000_000;
     public override double SolutionFoundASRThreshold => 1.0;
     public override uint ExperimentsPerGeneration => 512;
+    public static uint Desired { get; set; }
+    public override uint DesiredGroupSize => Desired;
     public override long TotalBirthsToResetColonyIfNoProgress => long.MaxValue / 4;
     #endregion
 }

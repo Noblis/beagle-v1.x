@@ -70,6 +70,8 @@ public abstract class MLSetup
     protected int? _organismArraySize;
 
     public virtual uint ExperimentsPerGeneration => 512;
+    //0 = auto (min(MaxNumThreadsPerGroup, ExperimentsPerGeneration)); otherwise forces the GPU block size (Patch C).
+    public virtual uint DesiredGroupSize => 0;
     public virtual long TotalBirthsToResetColonyIfNoProgress => 25_000_000_000;
 
     protected int ScriptLengthTaxRate

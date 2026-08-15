@@ -127,7 +127,16 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _accelerators[i].Accelerator = devices[i].CreateAccelerator(_context);
                 }
 
-                _accelerators[i].GroupSize = (uint)Math.Min(_accelerators[i].Accelerator.MaxNumThreadsPerGroup, MLSetup.Current.ExperimentsPerGeneration);
+                var desiredGroupSize = MLSetup.Current.DesiredGroupSize;
+                if (desiredGroupSize > 0)
+                {
+                    _accelerators[i].GroupSize = (uint)Math.Min(desiredGroupSize, _accelerators[i].Accelerator.MaxNumThreadsPerGroup);
+                    if (_accelerators[i].Accelerator.MaxNumThreadsPerGroup % (int)_accelerators[i].GroupSize != 0) _accelerators[i].GroupSize = (uint)Math.Min(_accelerators[i].Accelerator.MaxNumThreadsPerGroup, MLSetup.Current.ExperimentsPerGeneration);
+                }
+                else
+                {
+                    _accelerators[i].GroupSize = (uint)Math.Min(_accelerators[i].Accelerator.MaxNumThreadsPerGroup, MLSetup.Current.ExperimentsPerGeneration);
+                }
 
                 //for CPU we cap memory at 1 Gb
                 long memorySize;
@@ -919,11 +928,17 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 if (!FitFunc.UseCorrelationFit) devRewardsView.MemSetToZero(stream);
                 #endregion
 
-                #region Execute Kernel (single launch per batch; rounds are gone - Patch A keeps semantics via GroupSize==ExperimentsPerGeneration)
-                var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration);
-                var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
-
-                accelerator.Kernel(stream, launchDimension, MLSetup.Current.ExperimentsPerGeneration, devScriptStartsView, devAllCommandsView, 0, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, devRewardsView, FitFunc);
+                #region Execute Kernel (Patch C: std uses grid-stride loop with tunable block size; correlation keeps one thread per experiment)
+                if (FitFunc.UseCorrelationFit)
+                {
+                    var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)MLSetup.Current.ExperimentsPerGeneration));
+                    accelerator.Kernel(stream, launchDimension, MLSetup.Current.ExperimentsPerGeneration, devScriptStartsView, devAllCommandsView, 0, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, devRewardsView, FitFunc);
+                }
+                else
+                {
+                    var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)accelerator.GroupSize));
+                    accelerator.Kernel(stream, launchDimension, MLSetup.Current.ExperimentsPerGeneration, devScriptStartsView, devAllCommandsView, 0, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, devRewardsView, FitFunc);
+                }
                 #endregion
 
                 #region Get and return the results

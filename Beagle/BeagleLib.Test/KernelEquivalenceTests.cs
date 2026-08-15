@@ -185,16 +185,20 @@ public class KernelEquivalenceTests
         using var dRewards = acc.Allocate1D<int>(organismCount);
         var stream = acc.DefaultStream;
 
-        dRewards.View.MemSetToZero(stream);
-        kernel(stream, new KernelConfig(new Index1D(organismCount), new Index1D((int)Experiments)), Experiments,
-               dScriptStarts.View, dCommands.View, 0u, dInputs.View, InputsCount, dCorrect.View, dRewards.View, new StdFitFunc());
-        stream.Synchronize();
-        var gpuRewards = new int[organismCount];
-        dRewards.View.CopyToCPU(stream, gpuRewards);
-
-        for (var o = 0; o < organismCount; o++)
+        //Grid-stride std loop must be bit-exact for any power-of-two block size (Patch C).
+        foreach (var groupSize in new[] { 512, 256, 128 })
         {
-            Assert.That(gpuRewards[o], Is.EqualTo(cpuRewards[o]), $"organism {o} mismatch on exact inputs");
+            dRewards.View.MemSetToZero(stream);
+            kernel(stream, new KernelConfig(new Index1D(organismCount), new Index1D(groupSize)), Experiments,
+                   dScriptStarts.View, dCommands.View, 0u, dInputs.View, InputsCount, dCorrect.View, dRewards.View, new StdFitFunc());
+            stream.Synchronize();
+            var gpuRewards = new int[organismCount];
+            dRewards.View.CopyToCPU(stream, gpuRewards);
+
+            for (var o = 0; o < organismCount; o++)
+            {
+                Assert.That(gpuRewards[o], Is.EqualTo(cpuRewards[o]), $"organism {o} mismatch on exact inputs, groupSize={groupSize}");
+            }
         }
     }
 }
