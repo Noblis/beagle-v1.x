@@ -318,13 +318,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             Output.WriteLine("BENCHMARK start generations=" + generations);
             long prevBirths = 0, prevDeaths = 0;
-            var steadyWatch = new Stopwatch(); // excludes generation 1 (JIT/kernel warmup)
             long steadyTimeTicks = 0;
             double _steadyAccelerator = 0;
             long steadyBirths = 0, steadyDeaths = 0;
+            long steadyCells = 0; // organisms scored per generation (generation-start colony size)
             for (var g = 1; g <= generations; g++)
             {
                 _currentGeneration = g;
+                _organismCellCountAtGenStart = _organismsCount;
                 _generationWatch.Restart();
                 TrainingLoopBody();
                 _generationTime = _generationWatch.Elapsed;
@@ -334,6 +335,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _steadyAccelerator += _acceleratorGenerationTime.TotalSeconds;
                     steadyBirths += _totalBirths - prevBirths;
                     steadyDeaths += _totalDeaths - prevDeaths;
+                    steadyCells += _organismCellCountAtGenStart;
                 }
                 var births = _totalBirths;
                 var deaths = _totalDeaths;
@@ -355,12 +357,19 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _totalBirths / Math.Max(_totalTimeWatch.Elapsed.TotalSeconds, 1e-9),
                 _totalDeaths / Math.Max(_totalTimeWatch.Elapsed.TotalSeconds, 1e-9)));
             Output.WriteLine(string.Format(
-                "BENCHMARK STEADY-STATE (gens 2..{0}): time={1:0.00}s births={2:N0} deaths={3:N0} birthsPerSec={4:N0} deathsPerSec={5:N0} genAvg={6:0.000}s genAccelAvg={7:0.000}s",
-                generations, steadySeconds, steadyBirths, steadyDeaths,
+                "STEADY-STATE (gens 2..{0}): time={1:0.00}s births={2:N0} deaths={3:N0} birthsPerSec={4:N0} deathsPerSec={5:N0} genAvg={6:0.000}s genAccelAvg={7:0.000}s",
+                generations, steadySeconds,
+                steadyBirths, steadyDeaths,
                 steadyBirths / Math.Max(steadySeconds, 1e-9),
                 steadyDeaths / Math.Max(steadySeconds, 1e-9),
                 steadySeconds / (generations - 1),
                 _steadyAccelerator / (generations - 1)));
+            Output.WriteLine(string.Format(
+                "WEIGHTED: birthsPerSec={0:N0} deathsPerSec={1:N0} cellsPerAccelSec={2:N0} cellsPerGenSec={3:N0}",
+                steadyBirths / Math.Max(steadySeconds, 1e-9),
+                steadyDeaths / Math.Max(steadySeconds, 1e-9),
+                steadyCells / Math.Max(_steadyAccelerator, 1e-9),
+                steadyCells / Math.Max(steadySeconds - _steadyAccelerator, 1e-9)));
         }
         catch (Exception ex)
         {
@@ -1314,6 +1323,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected int _currentGeneration;
     protected long _totalBirths;
     protected long _totalDeaths;
+    protected long _organismCellCountAtGenStart;
     #endregion
 
     #region TimeSpan Fields
