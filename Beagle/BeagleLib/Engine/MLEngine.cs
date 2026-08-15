@@ -286,6 +286,86 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
     }
 
+    /// <summary>Quick benchmark: runs a fixed number of generations and reports births/deaths throughput.</summary>
+    public void TrainBenchmark(int generations)
+    {
+        try
+        {
+            _showProfilingInfo = false;
+
+            _currentGeneration = 0;
+            _generationAtLastColonyReset = 0;
+            _totalTimeWatch.Restart();
+            _totalBirths = _organismsCount;
+            _totalDeaths = 0;
+
+            _shortestEverSatisfactoryOrganism = null;
+            _mostAccurateEverOrganism = null;
+            _mostAccurateOrganismsSinceLastColonyReset = new Organism?[BConfig.TopMostAccurateOrganismsToKeep];
+            for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++) _mostAccurateOrganismsSinceLastColonyReset[i] = null;
+            _mostAccurateEverOrganismTotalTime = TimeSpan.Zero;
+            _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate = 0;
+
+            var benchOut = File.AppendText($"{MLSetup.Current.Name}-benchmark-{typeof(TFitFunc).Name}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt");
+
+            Output.WriteLine("BENCHMARK start generations=" + generations);
+            long prevBirths = 0, prevDeaths = 0;
+            var steadyWatch = new Stopwatch(); // excludes generation 1 (JIT/kernel warmup)
+            long steadyTimeTicks = 0;
+            double _steadyAccelerator = 0;
+            long steadyBirths = 0, steadyDeaths = 0;
+            for (var g = 1; g <= generations; g++)
+            {
+                _currentGeneration = g;
+                _generationWatch.Restart();
+                TrainingLoopBody();
+                _generationTime = _generationWatch.Elapsed;
+                if (g > 1)
+                {
+                    steadyTimeTicks += _generationTime.Ticks;
+                    _steadyAccelerator += _acceleratorGenerationTime.TotalSeconds;
+                    steadyBirths += _totalBirths - prevBirths;
+                    steadyDeaths += _totalDeaths - prevDeaths;
+                }
+                var births = _totalBirths;
+                var deaths = _totalDeaths;
+                var line = string.Format(
+                    "GEN {0}: genTime={1:0.000}s accelTime={2:0.000}s births={3:N0} deaths={4:N0} colony={5:N0} totalBirths={6:N0} totalDeaths={7:N0}",
+                    g, _generationTime.TotalSeconds, _acceleratorGenerationTime.TotalSeconds,
+                    births - prevBirths, deaths - prevDeaths, _organismsCount, births, deaths);
+                Output.WriteLine(line);
+                benchOut.WriteLine(line);
+                benchOut.Flush();
+                prevBirths = births;
+                prevDeaths = deaths;
+            }
+            benchOut.Dispose();
+            var steadySeconds = TimeSpan.FromTicks(steadyTimeTicks).TotalSeconds;
+            Output.WriteLine(string.Format(
+                "BENCHMARK SUMMARY generations={0} elapsed={1:0.00}s totalBirths={2:N0} totalDeaths={3:N0} birthsPerSec={4:N0} deathsPerSec={5:N0}",
+                generations, _totalTimeWatch.Elapsed.TotalSeconds, _totalBirths, _totalDeaths,
+                _totalBirths / Math.Max(_totalTimeWatch.Elapsed.TotalSeconds, 1e-9),
+                _totalDeaths / Math.Max(_totalTimeWatch.Elapsed.TotalSeconds, 1e-9)));
+            Output.WriteLine(string.Format(
+                "BENCHMARK STEADY-STATE (gens 2..{0}): time={1:0.00}s births={2:N0} deaths={3:N0} birthsPerSec={4:N0} deathsPerSec={5:N0} genAvg={6:0.000}s genAccelAvg={7:0.000}s",
+                generations, steadySeconds, steadyBirths, steadyDeaths,
+                steadyBirths / Math.Max(steadySeconds, 1e-9),
+                steadyDeaths / Math.Max(steadySeconds, 1e-9),
+                steadySeconds / (generations - 1),
+                _steadyAccelerator / (generations - 1)));
+        }
+        catch (Exception ex)
+        {
+            Output.WriteLine(ex.ToString());
+            throw;
+        }
+        finally
+        {
+            Output.FlushFileStream();
+            Output.Dispose();
+        }
+    }
+
     private void VerifyAndComplete(bool noEscMenu)
     {
         if (!noEscMenu)
@@ -444,6 +524,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
                     {
                         Organism.SaveOrganismToDeadPool(organism);
+                        Interlocked.Increment(ref _totalDeaths);
                     }
                     _organisms[i] = null;
                 });
@@ -456,6 +537,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[i], _shortestEverSatisfactoryOrganism))
                     {
                         Organism.SaveOrganismToDeadPool(_mostAccurateOrganismsSinceLastColonyReset[i]!);
+                        Interlocked.Increment(ref _totalDeaths);
                     }
                     _mostAccurateOrganismsSinceLastColonyReset[i] = null;
                 }
@@ -522,6 +604,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
                     {
                         Organism.SaveOrganismToDeadPool(organism);
+                        Interlocked.Increment(ref _totalDeaths);
                     }
                     _organisms[i] = null;
                 });
@@ -1246,6 +1329,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     #region Total & Generation Counters
     protected int _currentGeneration;
     protected long _totalBirths;
+    protected long _totalDeaths;
     #endregion
 
     #region TimeSpan Fields
