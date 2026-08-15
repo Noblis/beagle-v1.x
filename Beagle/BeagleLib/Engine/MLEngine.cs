@@ -135,11 +135,19 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 else memorySize = _accelerators[i].Accelerator.MemorySize;
 
                 _accelerators[i].MaxCommandBufferSize = Math.Min(memorySize / _accelerators[i].GroupSize * 75, 0X7FEFFFFF); //first we divide, then we multiply to reduce the change of overflow, we cap by .net max array size (0X7FEFFFFF)
-                _accelerators[i].AllCommands = new Command[_accelerators[i].MaxCommandBufferSize];
+                //Patch A: device-side cap for the persistent command buffer so a huge host MaxCommandBufferSize cannot OOM the GPU.
+                _accelerators[i].MaxDeviceCommandBufferSize = Math.Min(_accelerators[i].MaxCommandBufferSize, 256_000_000);
+                _accelerators[i].AllCommands = new Command[_accelerators[i].MaxDeviceCommandBufferSize];
                 _accelerators[i].ScriptStarts = new int[(int)Math.Ceiling((double)MLSetup.Current.OrganismsArraySize / _accelerators.Length)];
 
                 _accelerators[i].AllInputs = _accelerators[i].Accelerator.Allocate1D<float>(_allInputs.Length);
                 _accelerators[i].CorrectOutputs = _accelerators[i].Accelerator.Allocate1D<float>(MLSetup.Current.ExperimentsPerGeneration);
+
+                //Patch A: allocate persistent stream + device buffers once, reuse per scoring batch
+                _accelerators[i].Stream = _accelerators[i].Accelerator.CreateStream();
+                _accelerators[i].DevScriptStarts = _accelerators[i].Accelerator.Allocate1D<int>(_accelerators[i].ScriptStarts.Length);
+                _accelerators[i].DevCommands = _accelerators[i].Accelerator.Allocate1D<Command>(_accelerators[i].MaxDeviceCommandBufferSize);
+                _accelerators[i].DevRewards = _accelerators[i].Accelerator.Allocate1D<int>(_accelerators[i].ScriptStarts.Length);
 
                 //_accelerators[i].Kernel = _accelerators[i].Accelerator.LoadStreamKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
                 _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
@@ -852,7 +860,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var scoresLogicalLength = 0;
         #endregion
 
-        using (var stream = accelerator.Accelerator.CreateStream())
+        //Patch A: persistent stream + device buffers; kernel launches stay in-order on one stream and we
+        //synchronize exactly once per batch, right before reading the results back.
+        var stream = accelerator.Stream;
         {
             #region Copy stuff that does not change between batches to GPU
             accelerator.AllInputs.CopyFromCPU(stream, _allInputs);
@@ -871,7 +881,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 for (var i = currentOrganismBatchStartIdx; i < organisms.Length; i++)
                 {
                     currentOrganismBatchEndIdx = i;
-                    if (allCommandsIndex + organisms[i]!.Commands.Length > accelerator.MaxCommandBufferSize)
+                    if (allCommandsIndex + organisms[i]!.Commands.Length > accelerator.MaxDeviceCommandBufferSize)
                     {
                         currentOrganismBatchEndIdx--; //roll back
                         break;
@@ -891,54 +901,28 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 currentOrganismBatchStartIdx = currentOrganismBatchEndIdx + 1;
                 #endregion
 
-                //if (first)
-                //{
-                //    first = false;
-                //    Output.WriteLineUnlessAtLineStart();
-                //    Output.WriteLine($"-executing batch: {batchOrganismCount:N0} x {accelerator.GroupSize:N0}");
-                //}
-                //else
-                //{
-                //    Output.WriteLineUnlessAtLineStart();
-                //    Output.WriteLine($"-executing additional batch: {batchOrganismCount:N0} x {accelerator.GroupSize:N0}");
-                //}
+                #region Copy stuff that changes to persistent GPU buffers
+                var devScriptStartsView = accelerator.DevScriptStarts.View.SubView(0, batchOrganismCount);
+                var devAllCommandsView = accelerator.DevCommands.View.SubView(0, allCommandsIndex);
+                var devRewardsView = accelerator.DevRewards.View.SubView(0, batchOrganismCount);
+                devScriptStartsView.CopyFromCPU(stream, batchScriptStarts);
+                devAllCommandsView.CopyFromCPU(stream, batchAllCommands);
+                if (!FitFunc.UseCorrelationFit) devRewardsView.MemSetToZero(stream);
+                #endregion
 
-                using (var acceleratorScriptStarts = accelerator.Accelerator.Allocate1D<int>(batchScriptStarts.Length))
-                {
-                    using (var acceleratorAllCommands = accelerator.Accelerator.Allocate1D<Command>(batchAllCommands.Length))
-                    {
-                        using (var acceleratorGrossRewards = accelerator.Accelerator.Allocate1D<int>(batchOrganismCount))
-                        {
-                            #region Copy stuff that changes to GPU
-                            acceleratorScriptStarts.View.CopyFromCPU(stream, batchScriptStarts);
-                            acceleratorAllCommands.View.CopyFromCPU(stream, batchAllCommands);
-                            if (!FitFunc.UseCorrelationFit) acceleratorGrossRewards.View.MemSetToZero(stream);
-                            #endregion
+                #region Execute Kernel (single launch per batch; rounds are gone - Patch A keeps semantics via GroupSize==ExperimentsPerGeneration)
+                var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration);
+                var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
 
-                            #region Execute Kernel
-                            var groupStart = (uint)0;
-                            do
-                            {
-                                var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration - groupStart);
-                                var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
+                accelerator.Kernel(stream, launchDimension, MLSetup.Current.ExperimentsPerGeneration, devScriptStartsView, devAllCommandsView, 0, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, devRewardsView, FitFunc);
+                #endregion
 
-                                accelerator.Kernel(stream, launchDimension, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, acceleratorGrossRewards.View, FitFunc);
-                                if (flashFileStream) Output.FlushFileStream();
-                                stream.Synchronize();
-
-                                groupStart += currentGroupSize;
-                            }
-                            while (groupStart < MLSetup.Current.ExperimentsPerGeneration);
-                            #endregion
-
-                            #region Get and return the results
-                            var grossRewardsThisAcceleratorThisBatch = grossRewardsThisAccelerator.Slice(scoresLogicalLength, batchOrganismCount);
-                            acceleratorGrossRewards.View.CopyToCPU(stream, grossRewardsThisAcceleratorThisBatch);
-                            scoresLogicalLength += batchOrganismCount;
-                            #endregion
-                        }
-                    }
-                }
+                #region Get and return the results
+                stream.Synchronize();
+                var grossRewardsThisAcceleratorThisBatch = grossRewardsThisAccelerator.Slice(scoresLogicalLength, batchOrganismCount);
+                devRewardsView.CopyToCPU(stream, grossRewardsThisAcceleratorThisBatch);
+                scoresLogicalLength += batchOrganismCount;
+                #endregion
             }
             #endregion
         }
