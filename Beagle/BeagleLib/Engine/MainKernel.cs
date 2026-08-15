@@ -3,6 +3,8 @@ using BeagleLib.Engine.FitFunc;
 using BeagleLib.Util;
 using BeagleLib.VM;
 using ILGPU;
+using ILGPU.Algorithms;
+using ILGPU.Algorithms.ScanReduceOperations;
 
 namespace BeagleLib.Engine;
 
@@ -147,8 +149,10 @@ public static class MainKernel
             if (isOutputValid && isCorrectOutputValid) score = fitFunc.FitFunction(output, correctOutput);
             else score = fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid);
 
-            //accumulate results
-            Atomic.Add(ref rewards[organismIdx], score);
+            //Patch B: one block = one organism (Group.DimX == numberOfExperiments), so
+            //replace global atomics with a block reduction: one global write per organism.
+            var total = GroupExtensions.AllReduce<int, AddInt32>(score);
+            if (Group.IsFirstThread) rewards[organismIdx] = total;
         }
     }
     #endregion
