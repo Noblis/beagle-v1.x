@@ -135,11 +135,19 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 else memorySize = _accelerators[i].Accelerator.MemorySize;
 
                 _accelerators[i].MaxCommandBufferSize = Math.Min(memorySize / _accelerators[i].GroupSize * 75, 0X7FEFFFFF); //first we divide, then we multiply to reduce the change of overflow, we cap by .net max array size (0X7FEFFFFF)
-                _accelerators[i].AllCommands = new Command[_accelerators[i].MaxCommandBufferSize];
+                //Patch A: device-side cap for the persistent command buffer so a huge host MaxCommandBufferSize cannot OOM the GPU.
+                _accelerators[i].MaxDeviceCommandBufferSize = Math.Min(_accelerators[i].MaxCommandBufferSize, 256_000_000);
+                _accelerators[i].AllCommands = new Command[_accelerators[i].MaxDeviceCommandBufferSize];
                 _accelerators[i].ScriptStarts = new int[(int)Math.Ceiling((double)MLSetup.Current.OrganismsArraySize / _accelerators.Length)];
 
                 _accelerators[i].AllInputs = _accelerators[i].Accelerator.Allocate1D<float>(_allInputs.Length);
                 _accelerators[i].CorrectOutputs = _accelerators[i].Accelerator.Allocate1D<float>(MLSetup.Current.ExperimentsPerGeneration);
+
+                //Patch A: allocate persistent stream + device buffers once, reuse per scoring batch
+                _accelerators[i].Stream = _accelerators[i].Accelerator.CreateStream();
+                _accelerators[i].DevScriptStarts = _accelerators[i].Accelerator.Allocate1D<int>(_accelerators[i].ScriptStarts.Length);
+                _accelerators[i].DevCommands = _accelerators[i].Accelerator.Allocate1D<Command>(_accelerators[i].MaxDeviceCommandBufferSize);
+                _accelerators[i].DevRewards = _accelerators[i].Accelerator.Allocate1D<int>(_accelerators[i].ScriptStarts.Length);
 
                 //_accelerators[i].Kernel = _accelerators[i].Accelerator.LoadStreamKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
                 _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
@@ -152,6 +160,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _newbornOrganisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _scores = new int[MLSetup.Current.OrganismsArraySize];
             _taxedScorePercentiles = new int[100];
+            _childCounts = new int[MLSetup.Current.OrganismsArraySize];
 
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
@@ -277,6 +286,95 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Run Error on {Environment.MachineName}", $"Beagle {BConfig.Version}: Error occurred on {Environment.MachineName} while running {MLSetup.Current.Name}\n\n{ex}");
             Output.WriteLine(ex.ToString());
             
+            throw;
+        }
+        finally
+        {
+            Output.FlushFileStream();
+            Output.Dispose();
+        }
+    }
+
+    /// <summary>Quick benchmark: runs a fixed number of generations and reports births/deaths throughput.</summary>
+    public void TrainBenchmark(int generations)
+    {
+        try
+        {
+            _showProfilingInfo = false;
+
+            _currentGeneration = 0;
+            _generationAtLastColonyReset = 0;
+            _totalTimeWatch.Restart();
+            _totalBirths = _organismsCount;
+            _totalDeaths = 0;
+
+            _shortestEverSatisfactoryOrganism = null;
+            _mostAccurateEverOrganism = null;
+            _mostAccurateOrganismsSinceLastColonyReset = new Organism?[BConfig.TopMostAccurateOrganismsToKeep];
+            for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++) _mostAccurateOrganismsSinceLastColonyReset[i] = null;
+            _mostAccurateEverOrganismTotalTime = TimeSpan.Zero;
+            _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate = 0;
+
+            var benchOut = File.AppendText($"{MLSetup.Current.Name}-benchmark-{typeof(TFitFunc).Name}-{DateTime.Now:yyyy-MM-dd-HH-mm-ss}.txt");
+
+            Output.WriteLine("BENCHMARK start generations=" + generations);
+            long prevBirths = 0, prevDeaths = 0;
+            long steadyTimeTicks = 0;
+            double _steadyAccelerator = 0;
+            long steadyBirths = 0, steadyDeaths = 0;
+            long steadyCells = 0; // organisms scored per generation (generation-start colony size)
+            for (var g = 1; g <= generations; g++)
+            {
+                _currentGeneration = g;
+                _organismCellCountAtGenStart = _organismsCount;
+                _generationWatch.Restart();
+                TrainingLoopBody();
+                _generationTime = _generationWatch.Elapsed;
+                if (g > 1)
+                {
+                    steadyTimeTicks += _generationTime.Ticks;
+                    _steadyAccelerator += _acceleratorGenerationTime.TotalSeconds;
+                    steadyBirths += _totalBirths - prevBirths;
+                    steadyDeaths += _totalDeaths - prevDeaths;
+                    steadyCells += _organismCellCountAtGenStart;
+                }
+                var births = _totalBirths;
+                var deaths = _totalDeaths;
+                var line = string.Format(
+                    "GEN {0}: genTime={1:0.000}s accelTime={2:0.000}s births={3:N0} deaths={4:N0} colony={5:N0} totalBirths={6:N0} totalDeaths={7:N0}",
+                    g, _generationTime.TotalSeconds, _acceleratorGenerationTime.TotalSeconds,
+                    births - prevBirths, deaths - prevDeaths, _organismsCount, births, deaths);
+                Output.WriteLine(line);
+                benchOut.WriteLine(line);
+                benchOut.Flush();
+                prevBirths = births;
+                prevDeaths = deaths;
+            }
+            benchOut.Dispose();
+            var steadySeconds = TimeSpan.FromTicks(steadyTimeTicks).TotalSeconds;
+            Output.WriteLine(string.Format(
+                "BENCHMARK SUMMARY generations={0} elapsed={1:0.00}s totalBirths={2:N0} totalDeaths={3:N0} birthsPerSec={4:N0} deathsPerSec={5:N0}",
+                generations, _totalTimeWatch.Elapsed.TotalSeconds, _totalBirths, _totalDeaths,
+                _totalBirths / Math.Max(_totalTimeWatch.Elapsed.TotalSeconds, 1e-9),
+                _totalDeaths / Math.Max(_totalTimeWatch.Elapsed.TotalSeconds, 1e-9)));
+            Output.WriteLine(string.Format(
+                "STEADY-STATE (gens 2..{0}): time={1:0.00}s births={2:N0} deaths={3:N0} birthsPerSec={4:N0} deathsPerSec={5:N0} genAvg={6:0.000}s genAccelAvg={7:0.000}s",
+                generations, steadySeconds,
+                steadyBirths, steadyDeaths,
+                steadyBirths / Math.Max(steadySeconds, 1e-9),
+                steadyDeaths / Math.Max(steadySeconds, 1e-9),
+                steadySeconds / (generations - 1),
+                _steadyAccelerator / (generations - 1)));
+            Output.WriteLine(string.Format(
+                "WEIGHTED: birthsPerSec={0:N0} deathsPerSec={1:N0} cellsPerAccelSec={2:N0} cellsPerGenSec={3:N0}",
+                steadyBirths / Math.Max(steadySeconds, 1e-9),
+                steadyDeaths / Math.Max(steadySeconds, 1e-9),
+                steadyCells / Math.Max(_steadyAccelerator, 1e-9),
+                steadyCells / Math.Max(steadySeconds - _steadyAccelerator, 1e-9)));
+        }
+        catch (Exception ex)
+        {
+            Output.WriteLine(ex.ToString());
             throw;
         }
         finally
@@ -444,6 +542,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
                     {
                         Organism.SaveOrganismToDeadPool(organism);
+                        Interlocked.Increment(ref _totalDeaths);
                     }
                     _organisms[i] = null;
                 });
@@ -456,6 +555,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[i], _shortestEverSatisfactoryOrganism))
                     {
                         Organism.SaveOrganismToDeadPool(_mostAccurateOrganismsSinceLastColonyReset[i]!);
+                        Interlocked.Increment(ref _totalDeaths);
                     }
                     _mostAccurateOrganismsSinceLastColonyReset[i] = null;
                 }
@@ -470,12 +570,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             }
             else
             {
-                _newbornOrganismsCount = -1;
+                //Patch E: two-phase reproduction without the shared per-child Interlocked.Increment.
+                //Phase 1: each parent independently decides how many children it will have.
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
 
                     var step = 100 / _pctProbs.Length; Debug.Assert(100 % _pctProbs.Length == 0);
+                    var childrenCount = 0;
                     for (var pctProbsIdx = 0; pctProbsIdx < _pctProbs.Length; pctProbsIdx++)
                     {
                         var taxedScorePercentilesIdx = step * (pctProbsIdx + 1);
@@ -493,21 +595,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                             do
                             {
-                                if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
-                                {
-                                    var idx = Interlocked.Increment(ref _newbornOrganismsCount);
-
-                                    #if DEBUG
-                                    if (idx >= _newbornOrganisms.Length)
-                                    {
-                                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
-                                        Debugger.Break();
-                                    }
-                                    #endif
-
-                                    _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
-                                }
-
+                                if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb) childrenCount++;
                                 pctProb--;
                             }
                             while (pctProb > 0);
@@ -516,16 +604,51 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         }
                     }
 
+                    _childCounts[i] = childrenCount;
+                });
+
+                //Phase 2: prefix-sum child counts into non-overlapping output ranges.
+                var totalChildren = 0;
+                for (var i = 0; i < _organismsCount; i++)
+                {
+                    var count = _childCounts[i];
+                    _childCounts[i] = totalChildren;
+                    totalChildren += count;
+                }
+                _newbornOrganismsCount = totalChildren;
+
+                //Phase 3: every parent writes directly into its unique range; then parents die.
+                Parallel.For(0, _organismsCount, i =>
+                {
+                    var organism = _organisms[i]!;
+                    var writeIdx = _childCounts[i];
+                    var writeCount = i + 1 < _organismsCount ? _childCounts[i + 1] - writeIdx : totalChildren - writeIdx;
+
+                    for (var child = 0; child < writeCount; child++)
+                    {
+                        var idx = writeIdx + child;
+
+                        #if DEBUG
+                        if (idx >= _newbornOrganisms.Length)
+                        {
+                            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+                            Debugger.Break();
+                        }
+                        #endif
+
+                        _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    }
+
                     //death (100% chance)
                     if (!ReferenceEquals(organism, _mostAccurateEverOrganism) && 
                         !ReferenceEquals(organism, _shortestEverSatisfactoryOrganism) &&
                         !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
                     {
                         Organism.SaveOrganismToDeadPool(organism);
+                        Interlocked.Increment(ref _totalDeaths);
                     }
                     _organisms[i] = null;
                 });
-                _newbornOrganismsCount++;
             }
 
             _totalBirths += _newbornOrganismsCount;
@@ -769,7 +892,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var scoresLogicalLength = 0;
         #endregion
 
-        using (var stream = accelerator.Accelerator.CreateStream())
+        //Patch A: persistent stream + device buffers; kernel launches stay in-order on one stream and we
+        //synchronize exactly once per batch, right before reading the results back.
+        var stream = accelerator.Stream;
         {
             #region Copy stuff that does not change between batches to GPU
             accelerator.AllInputs.CopyFromCPU(stream, _allInputs);
@@ -788,7 +913,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 for (var i = currentOrganismBatchStartIdx; i < organisms.Length; i++)
                 {
                     currentOrganismBatchEndIdx = i;
-                    if (allCommandsIndex + organisms[i]!.Commands.Length > accelerator.MaxCommandBufferSize)
+                    if (allCommandsIndex + organisms[i]!.Commands.Length > accelerator.MaxDeviceCommandBufferSize)
                     {
                         currentOrganismBatchEndIdx--; //roll back
                         break;
@@ -808,54 +933,28 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 currentOrganismBatchStartIdx = currentOrganismBatchEndIdx + 1;
                 #endregion
 
-                //if (first)
-                //{
-                //    first = false;
-                //    Output.WriteLineUnlessAtLineStart();
-                //    Output.WriteLine($"-executing batch: {batchOrganismCount:N0} x {accelerator.GroupSize:N0}");
-                //}
-                //else
-                //{
-                //    Output.WriteLineUnlessAtLineStart();
-                //    Output.WriteLine($"-executing additional batch: {batchOrganismCount:N0} x {accelerator.GroupSize:N0}");
-                //}
+                #region Copy stuff that changes to persistent GPU buffers
+                var devScriptStartsView = accelerator.DevScriptStarts.View.SubView(0, batchOrganismCount);
+                var devAllCommandsView = accelerator.DevCommands.View.SubView(0, allCommandsIndex);
+                var devRewardsView = accelerator.DevRewards.View.SubView(0, batchOrganismCount);
+                devScriptStartsView.CopyFromCPU(stream, batchScriptStarts);
+                devAllCommandsView.CopyFromCPU(stream, batchAllCommands);
+                if (!FitFunc.UseCorrelationFit) devRewardsView.MemSetToZero(stream);
+                #endregion
 
-                using (var acceleratorScriptStarts = accelerator.Accelerator.Allocate1D<int>(batchScriptStarts.Length))
-                {
-                    using (var acceleratorAllCommands = accelerator.Accelerator.Allocate1D<Command>(batchAllCommands.Length))
-                    {
-                        using (var acceleratorGrossRewards = accelerator.Accelerator.Allocate1D<int>(batchOrganismCount))
-                        {
-                            #region Copy stuff that changes to GPU
-                            acceleratorScriptStarts.View.CopyFromCPU(stream, batchScriptStarts);
-                            acceleratorAllCommands.View.CopyFromCPU(stream, batchAllCommands);
-                            if (!FitFunc.UseCorrelationFit) acceleratorGrossRewards.View.MemSetToZero(stream);
-                            #endregion
+                #region Execute Kernel (single launch per batch; rounds are gone - Patch A keeps semantics via GroupSize==ExperimentsPerGeneration)
+                var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration);
+                var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
 
-                            #region Execute Kernel
-                            var groupStart = (uint)0;
-                            do
-                            {
-                                var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration - groupStart);
-                                var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
+                accelerator.Kernel(stream, launchDimension, MLSetup.Current.ExperimentsPerGeneration, devScriptStartsView, devAllCommandsView, 0, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, devRewardsView, FitFunc);
+                #endregion
 
-                                accelerator.Kernel(stream, launchDimension, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, acceleratorGrossRewards.View, FitFunc);
-                                if (flashFileStream) Output.FlushFileStream();
-                                stream.Synchronize();
-
-                                groupStart += currentGroupSize;
-                            }
-                            while (groupStart < MLSetup.Current.ExperimentsPerGeneration);
-                            #endregion
-
-                            #region Get and return the results
-                            var grossRewardsThisAcceleratorThisBatch = grossRewardsThisAccelerator.Slice(scoresLogicalLength, batchOrganismCount);
-                            acceleratorGrossRewards.View.CopyToCPU(stream, grossRewardsThisAcceleratorThisBatch);
-                            scoresLogicalLength += batchOrganismCount;
-                            #endregion
-                        }
-                    }
-                }
+                #region Get and return the results
+                stream.Synchronize();
+                var grossRewardsThisAcceleratorThisBatch = grossRewardsThisAccelerator.Slice(scoresLogicalLength, batchOrganismCount);
+                devRewardsView.CopyToCPU(stream, grossRewardsThisAcceleratorThisBatch);
+                scoresLogicalLength += batchOrganismCount;
+                #endregion
             }
             #endregion
         }
@@ -1241,11 +1340,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected int _newbornOrganismsCount;
 
     protected int[] _scores;
+    protected int[] _childCounts;
     #endregion
 
     #region Total & Generation Counters
     protected int _currentGeneration;
     protected long _totalBirths;
+    protected long _totalDeaths;
+    protected long _organismCellCountAtGenStart;
     #endregion
 
     #region TimeSpan Fields
