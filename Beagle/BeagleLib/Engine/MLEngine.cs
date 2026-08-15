@@ -160,6 +160,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _newbornOrganisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _scores = new int[MLSetup.Current.OrganismsArraySize];
             _taxedScorePercentiles = new int[100];
+            _childCounts = new int[MLSetup.Current.OrganismsArraySize];
 
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
@@ -569,12 +570,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             }
             else
             {
-                _newbornOrganismsCount = -1;
+                //Patch E: two-phase reproduction without the shared per-child Interlocked.Increment.
+                //Phase 1: each parent independently decides how many children it will have.
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
 
                     var step = 100 / _pctProbs.Length; Debug.Assert(100 % _pctProbs.Length == 0);
+                    var childrenCount = 0;
                     for (var pctProbsIdx = 0; pctProbsIdx < _pctProbs.Length; pctProbsIdx++)
                     {
                         var taxedScorePercentilesIdx = step * (pctProbsIdx + 1);
@@ -592,27 +595,48 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                             do
                             {
-                                if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
-                                {
-                                    var idx = Interlocked.Increment(ref _newbornOrganismsCount);
-
-                                    #if DEBUG
-                                    if (idx >= _newbornOrganisms.Length)
-                                    {
-                                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
-                                        Debugger.Break();
-                                    }
-                                    #endif
-
-                                    _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
-                                }
-
+                                if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb) childrenCount++;
                                 pctProb--;
                             }
                             while (pctProb > 0);
 
                             break; //if we found the right percentile, we are done!
                         }
+                    }
+
+                    _childCounts[i] = childrenCount;
+                });
+
+                //Phase 2: prefix-sum child counts into non-overlapping output ranges.
+                var totalChildren = 0;
+                for (var i = 0; i < _organismsCount; i++)
+                {
+                    var count = _childCounts[i];
+                    _childCounts[i] = totalChildren;
+                    totalChildren += count;
+                }
+                _newbornOrganismsCount = totalChildren;
+
+                //Phase 3: every parent writes directly into its unique range; then parents die.
+                Parallel.For(0, _organismsCount, i =>
+                {
+                    var organism = _organisms[i]!;
+                    var writeIdx = _childCounts[i];
+                    var writeCount = i + 1 < _organismsCount ? _childCounts[i + 1] - writeIdx : totalChildren - writeIdx;
+
+                    for (var child = 0; child < writeCount; child++)
+                    {
+                        var idx = writeIdx + child;
+
+                        #if DEBUG
+                        if (idx >= _newbornOrganisms.Length)
+                        {
+                            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+                            Debugger.Break();
+                        }
+                        #endif
+
+                        _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                     }
 
                     //death (100% chance)
@@ -625,7 +649,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                     _organisms[i] = null;
                 });
-                _newbornOrganismsCount++;
             }
 
             _totalBirths += _newbornOrganismsCount;
@@ -1317,6 +1340,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected int _newbornOrganismsCount;
 
     protected int[] _scores;
+    protected int[] _childCounts;
     #endregion
 
     #region Total & Generation Counters
