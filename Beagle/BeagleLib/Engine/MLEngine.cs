@@ -340,7 +340,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         }
 
-        return currentLayer + 1;
+        return currentLayer;
     }
 
     public void FrontSelect(int[] sizeLayersRef, int[] scoreLayersRef, int[] frontIndices, ref int frontCount, bool[] selectedQ)
@@ -355,7 +355,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 for (int j = 0; j < 100; j++)
                 {
                     if ((i != j) && !selectedQ[j] && onFrontQ[j] && sizeLayersRef[i] <= sizeLayersRef[j] &&
-                        scoreLayersRef[i] >= scoreLayersRef[j])
+                        scoreLayersRef[i] > scoreLayersRef[j])
                     {
                         onFrontQ[j] = false;
                     }
@@ -609,71 +609,72 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 // compute offspring per layer targets using the number of layers and number of organisms per layer
                 int maxLayer = _layerNumbers[99];
                 float totalTarget = 0.0f;
-                for (int i = 0; i < maxLayer; i++)
+                for (int i = 0; i <= maxLayer; i++)
                 {
-                    _layerOffspringTargets[i] = 10 / MathF.Pow(1.2f, i);
+                    _layerOffspringTargets[i] = 10 / MathF.Pow(2f, i);
                     totalTarget += _layerOffspringTargets[i];
                 }
 
                 // determine total "per layer" target population size
-                for (int i = 0; i < maxLayer; i++)
+                for (int i = 0; i <= maxLayer; i++)
                 {
                     _layerOffspringTargets[i] /= totalTarget;
                     _layerOffspringTargets[i] *=
-                        MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
+                        MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset); //cast to float? 
                 }
 
                 // determine how many exist in each layer and divide target "per layer" population by layer size
                 
-                for (int i = 0; i < _organismsCount; i++)
+                for (int i = 0; i <= maxLayer; i++)
                 {
                     _layerOffspringTargets[i] /= _layerSizes[i];
-                    
+                    _layerSizes[i] = 0;
+
                 }
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
 
-                    var step = 100 / _pctProbs.Length; Debug.Assert(100 % _pctProbs.Length == 0);
-                    for (var pctProbsIdx = 0; pctProbsIdx < _pctProbs.Length; pctProbsIdx++)
+                    //var step = 100 / _pctProbs.Length; Debug.Assert(100 % _pctProbs.Length == 0);
+                    //for (var pctProbsIdx = 0; pctProbsIdx < _pctProbs.Length; pctProbsIdx++)
+                    //{
+                    //    var taxedScorePercentilesIdx = step * (pctProbsIdx + 1);
+                    //    var offsetTaxedScorePercentilesIdx = FixTaxedScorePercentilesIdx(taxedScorePercentilesIdx + taxedScorePercentilesIdxOffset);
+                    //    var taxedScorePercentile = _taxedScorePercentiles[offsetTaxedScorePercentilesIdx];
+
+                    //    //if last or less than taxedScorePercentile
+                    //    var isStrictInequality = !Rnd.RandomBoolWithChance(1.0/pctProbsIdx);
+                    //    if (pctProbsIdx == _pctProbs.Length - 1 ||
+                    //        isStrictInequality && organism.TaxedScore < taxedScorePercentile ||
+                    //        !isStrictInequality && organism.TaxedScore <= taxedScorePercentile)
+                    //    {
+                    //        //decide how many children (if any) based on percentile probabilities
+                    var pctProb = _layerOffspringTargets[_layers[i]];
+
+                    do
                     {
-                        var taxedScorePercentilesIdx = step * (pctProbsIdx + 1);
-                        var offsetTaxedScorePercentilesIdx = FixTaxedScorePercentilesIdx(taxedScorePercentilesIdx + taxedScorePercentilesIdxOffset);
-                        var taxedScorePercentile = _taxedScorePercentiles[offsetTaxedScorePercentilesIdx];
-
-                        //if last or less than taxedScorePercentile
-                        var isStrictInequality = !Rnd.RandomBoolWithChance(1.0/pctProbsIdx);
-                        if (pctProbsIdx == _pctProbs.Length - 1 ||
-                            isStrictInequality && organism.TaxedScore < taxedScorePercentile ||
-                            !isStrictInequality && organism.TaxedScore <= taxedScorePercentile)
+                        if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
                         {
-                            //decide how many children (if any) based on percentile probabilities
-                            var pctProb = _pctProbs[pctProbsIdx];
-
-                            do
-                            {
-                                if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
-                                {
-                                    var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+                            var idx = Interlocked.Increment(ref _newbornOrganismsCount);
 
 #if DEBUG
-                                    if (idx >= _newbornOrganisms.Length)
-                                    {
-                                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
-                                        Debugger.Break();
-                                    }
+                            if (idx >= _newbornOrganisms.Length)
+                            {
+                                Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+                                Debugger.Break();
+                            }
 #endif
 
-                                    _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
-                                }
-
-                                pctProb--;
-                            }
-                            while (pctProb > 0);
-
-                            break; //if we found the right percentile, we are done!
+                            _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                         }
+
+                        pctProb--;
                     }
+                    while (pctProb > 0);
+
+                            //break; //if we found the right percentile, we are done!
+                        //}
+                    //}
 
                     //death (100% chance)
                     if (!ReferenceEquals(organism, _mostAccurateEverOrganism) && 
