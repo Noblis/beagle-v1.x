@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net.Mail;
 using System.Runtime.CompilerServices;
@@ -253,32 +253,32 @@ public class Organism
                 }
                 case "TAN":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Tan));
                     break;
                 }
-                case "ARCOS":
+                case "ARCCOS":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Arccos));
                     break;
                 }
                 case "ARCSIN":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Arcsin));
                     break;
                 }
                 case "ARCTAN":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Arctan));
                     break;
                 }
                 case "TANH":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Tanh));
                     break;
                 }
                 case "EXP":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Exp));
                     break;
                 }
                 case "POW":
@@ -302,7 +302,7 @@ public class Organism
     protected Organism(int commandsLength) :this(new Command[commandsLength]) { }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected Organism(Command[] commands)
+    internal Organism(Command[] commands)
     {
         ResetPropertiesForNewOrganism();
         Commands = commands;
@@ -593,6 +593,13 @@ public class Organism
                 }
             }
             Debug.Assert(dblOutputs.Count == dblCorrectOutputs.Count);
+            if (dblOutputs.Count < 2)
+            {
+                // Degenerate organism: no valid outputs to regress. Finalize with identity scale so
+                // downstream Scale/Offset reads and GetFullCommands behave normally (nothing appended).
+                SetScaleAndOffset(1f, 0f);
+                return;
+            }
             Debug.Assert(dblOutputs.Count >= 2);
             float mean = total / dblOutputs.Count;
 

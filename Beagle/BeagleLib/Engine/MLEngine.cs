@@ -1,4 +1,4 @@
-﻿using BeagleLib.Agent;
+using BeagleLib.Agent;
 using BeagleLib.Engine.FitFunc;
 using BeagleLib.MathStackLib;
 using BeagleLib.Util;
@@ -161,6 +161,28 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _scores = new int[MLSetup.Current.OrganismsArraySize];
             _taxedScorePercentiles = new int[100];
             _childCounts = new int[MLSetup.Current.OrganismsArraySize];
+
+            // ------- Pareto multi-objective selection (ported from Noblis multi-objective, riding efficiency's two-phase reproduction) -------
+            _layers = new int[MLSetup.Current.OrganismsArraySize];
+            _scoreLayers = new int[100];
+            _sizeLayers = new int[100];
+            _layerNumbers = new int[100];
+            _layerOffspringTargets = new float[100];
+            _layerSizes = new int[100];
+            _isFrontZero = new bool[MLSetup.Current.OrganismsArraySize];
+            _frontIndices = new int[MLSetup.Current.OrganismsArraySize];
+            _maxEliteCapacity = Math.Min(500_000, MLSetup.Current.OrganismsArraySize);
+            _eliteArchive = new Organism[_maxEliteCapacity];
+            // hoisted once, not per-generation (preserves efficiency for the ported Pareto code)
+            _pfOnFront = new bool[100];
+            _pfSelected = new bool[100];
+            _pfFrontIdx = new int[100];
+            _pfSizeTmp = new int[100];
+            _pfScoreTmp = new int[100];
+            _pfLayerTmp = new int[100];
+            _sweepBucketStart = new int[321];
+            _sweepBucketCount = new int[321];
+            _sweepCompaction = new int[MLSetup.Current.OrganismsArraySize];
 
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
@@ -404,6 +426,167 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
     }
 
+    /// <summary>True if (size, score) Pareto-dominates (sizeRef, scoreRef): smaller AND better score.</summary>
+    protected bool DominatesQ(int size, int score, int sizeRef, int scoreRef)
+    {
+        return size < sizeRef && score > scoreRef;
+    }
+
+    /// <summary>Classifies (score, size) into a Pareto layer using the 100-sample layer refs.</summary>
+    protected int GetParetoLayer(int[] sizeLayersRef, int[] scoreLayersRef, int[] layerNumbersRef, int score, int size)
+    {
+        bool dominated = false;
+        int currentLayer = 0;
+        for (int i = 0; i < 100; i++)
+        {
+            if (layerNumbersRef[i] > currentLayer)
+            {
+                if (dominated == false) return currentLayer;
+                currentLayer++;
+                dominated = false;
+            }
+
+            if (DominatesQ(sizeLayersRef[i], scoreLayersRef[i], size, score))
+            {
+                dominated = true;
+            }
+        }
+
+        return currentLayer;
+    }
+
+    /// <summary>Computes the current Pareto front of the unselected sample members into frontIndices.</summary>
+    protected void FrontSelect(int[] sizeLayersRef, int[] scoreLayersRef, int[] frontIndices, ref int frontCount, bool[] selectedQ)
+    {
+        var onFrontQ = _pfOnFront;
+        for (int i = 0; i < 100; i++) onFrontQ[i] = !selectedQ[i];
+        for (int i = 0; i < 100; i++)
+        {
+            if (onFrontQ[i])
+            {
+                for (int j = 0; j < 100; j++)
+                {
+                    if (i != j && !selectedQ[j] && onFrontQ[j] && sizeLayersRef[i] <= sizeLayersRef[j] &&
+                        scoreLayersRef[i] > scoreLayersRef[j])
+                    {
+                        onFrontQ[j] = false;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < 100; i++)
+        {
+            if (onFrontQ[i])
+            {
+                frontIndices[frontCount] = i;
+                frontCount++;
+            }
+        }
+    }
+
+    /// <summary>Assigns non-dominated Pareto layers (layer 0 = front) to the 100-sample set, in place.</summary>
+    protected void ParetoLayers(int[] layerNumbersRef, int[] sizeLayersRef, int[] scoreLayersRef)
+    {
+        var frontIndices = _pfFrontIdx;
+        int frontCount = 0;
+        var selectedQ = _pfSelected;
+        for (int i = 0; i < 100; i++) selectedQ[i] = false;
+        int lastIndex = 0;
+        int layerNumber = 0;
+        var sizeTmp = _pfSizeTmp;
+        var scoreTmp = _pfScoreTmp;
+        var layerNumTmp = _pfLayerTmp;
+        while (frontCount < 100)
+        {
+            FrontSelect(sizeLayersRef, scoreLayersRef, frontIndices, ref frontCount, selectedQ);
+            for (int i = lastIndex; i < frontCount; i++)
+            {
+                selectedQ[frontIndices[i]] = true;
+                sizeTmp[i] = sizeLayersRef[frontIndices[i]];
+                scoreTmp[i] = scoreLayersRef[frontIndices[i]];
+                layerNumTmp[i] = layerNumber;
+            }
+
+            lastIndex = frontCount;
+            layerNumber++;
+        }
+
+        for (int i = 0; i < 100; i++)
+        {
+            sizeLayersRef[i] = sizeTmp[i];
+            scoreLayersRef[i] = scoreTmp[i];
+            layerNumbersRef[i] = layerNumTmp[i];
+        }
+    }
+
+    /// <summary>
+    /// Identifies the true Pareto front (layer 0) of _organisms[] via a bucket sweep over Commands.Length.
+    /// O(n + 320); uses hoisted scratch buffers (no per-generation allocation). Writes _isFrontZero[],
+    /// _frontIndices[] and _frontCount.
+    /// </summary>
+    protected void ParetoFrontSweep(bool[] isFrontZero)
+    {
+        _frontCount = 0;
+
+        var bucketStart = _sweepBucketStart;
+        var bucketCount = _sweepBucketCount;
+        var compactionBuffer = _sweepCompaction;
+        Array.Clear(bucketCount, 0, 321);
+
+        // Phase 1: count organisms per length bucket
+        for (int i = 0; i < _organismsCount; i++)
+        {
+            if (_organisms[i] == null) continue;
+            int len = _organisms[i]!.Commands.Length;
+            bucketCount[len]++;
+        }
+
+        // Compute start positions for each bucket
+        int startPos = 0;
+        for (int l = 1; l <= 320; l++)
+        {
+            bucketStart[l] = startPos;
+            startPos += bucketCount[l];
+        }
+
+        // Place organism indices into compacted buckets
+        for (int i = 0; i < _organismsCount; i++)
+        {
+            if (_organisms[i] == null) continue;
+            int len = _organisms[i]!.Commands.Length;
+            compactionBuffer[bucketStart[len]++] = i;
+        }
+
+        // Phase 2: sweep from shortest to longest length, tracking best score among all shorter lengths
+        int bestScoreForShorter = int.MinValue;
+        startPos = 0;
+        for (int l = 1; l <= 320; l++)
+        {
+            if (bucketCount[l] == 0) continue;
+            int endPos = startPos + bucketCount[l];
+
+            for (int pos = startPos; pos < endPos; pos++)
+            {
+                int orgIdx = compactionBuffer[pos];
+                if (_organisms[orgIdx] == null) continue;
+                if (_organisms[orgIdx]!.Score > bestScoreForShorter)
+                {
+                    _isFrontZero[orgIdx] = true;
+                    isFrontZero[orgIdx] = true;
+                    _frontIndices[_frontCount++] = orgIdx;
+                    bestScoreForShorter = _organisms[orgIdx]!.Score;
+                }
+                else
+                {
+                    _isFrontZero[orgIdx] = false;
+                    isFrontZero[orgIdx] = false;
+                }
+            }
+            startPos = endPos;
+        }
+    }
+
     protected bool TrainingLoopBody()
     {
         #region reset stuff for new generation, set up experiments (inputs/output), convert inputs to one long array
@@ -500,23 +683,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         #endregion
 
-        #region set up and sort the percentiles array
-        using (new ConsoleTimer("set up and sort the percentiles array", _showProfilingInfo))
-        {
-            Parallel.For(0, 100, i => { _taxedScorePercentiles[i] = _organisms[Rnd.Random.Next(_organismsCount)]!.TaxedScore; });
-            Array.Sort(_taxedScorePercentiles);
-        }
-        #endregion
-
-        #region calculate offset percentiles based on colony size vis-a-vis target colony size
-        sbyte taxedScorePercentilesIdxOffset; //positive offset makes organisms die more
-        using (new ConsoleTimer("calculate offset percentiles based on colony size vis-a-vis target colony size", _showProfilingInfo))
-        {
-            var ratio = (double)MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset) / _organismsCount;
-            if (ratio > 1) taxedScorePercentilesIdxOffset = (sbyte)Math.Round(-Math.Min(10.0, (ratio - 1.0) * 10.0));
-            else taxedScorePercentilesIdxOffset = (sbyte)Math.Round(Math.Min(10.0, (1.0 / ratio - 1.0) * 10.0));
-        }
-        #endregion
+        // Pareto multi-objective selection replaces the old per-generation percentile sampling/sort:
+        // percentiles were only used to decide breeding child counts (see births/deaths loop below),
+        // which now uses the Pareto front + layers + elite archive instead.
 
         #region births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays
         using (new ConsoleTimer("births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays", _showProfilingInfo))
@@ -571,58 +740,98 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             else
             {
                 //Patch E: two-phase reproduction without the shared per-child Interlocked.Increment.
-                //Phase 1: each parent independently decides how many children it will have.
+                // + Pareto multi-objective selection (ported): front sweep, layer assignment, elite archive.
+                //Phase 0: identify the true Pareto front (layer 0) across the whole population.
+                ParetoFrontSweep(_isFrontZero);
+
+                // Minimal 100-sample approximation for non-front tier weights (geometric decay diversity).
+                Parallel.For(0, 100, i =>
+                {
+                    int pick = Rnd.Random.Next(_organismsCount);
+                    _sizeLayers[i] = _organisms[pick]!.Commands.Length;
+                    _scoreLayers[i] = _organisms[pick]!.Score;
+                });
+                ParetoLayers(_layerNumbers, _sizeLayers, _scoreLayers);
+
+                // Classify every organism into a Pareto layer; reinforce the true front-0 marks.
+                Array.Clear(_layerSizes, 0, _layerSizes.Length);
+                Parallel.For(0, _organismsCount, i =>
+                {
+                    _layers[i] = GetParetoLayer(_sizeLayers, _scoreLayers, _layerNumbers, _scores[i], _organisms[i]!.Commands.Length);
+                    _isFrontZero[i] = false; // default: non-front tier assignment
+                    _layerSizes[_layers[i]]++;
+                });
+                for (int f = 0; f < _frontCount && f < _frontIndices.Length; f++)
+                {
+                    int orgIdx = _frontIndices[f];
+                    if (orgIdx >= 0 && orgIdx < _organismsCount && _organisms[orgIdx] != null)
+                        _isFrontZero[orgIdx] = true;
+                }
+
+                // Breeding targets: 50% to the true front-0, 50% spread over non-front layers (geometric decay).
+                int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
+                float frontTargetPerMember = (_frontCount > 0) ? (0.5f * targetColonySize) / _frontCount : 0.0f;
+                int maxLayer = 0;
+                for (int i = 0; i < _organismsCount; i++)
+                    if (_layers[i] > maxLayer) maxLayer = _layers[i];
+                float nonFrontTarget = 0.5f * targetColonySize;
+                float totalWeight = 0f;
+                for (int l = 1; l <= maxLayer; l++) totalWeight += 10 / MathF.Pow(2f, l);
+                for (int l = 1; l <= maxLayer; l++)
+                    _layerOffspringTargets[l] = _layerSizes[l] > 0
+                        ? nonFrontTarget * (10 / MathF.Pow(2f, l)) / totalWeight / _layerSizes[l]
+                        : 0f;
+
+                // Capture this generation's true front to inject unchanged as next generation's elite (before parents die in Phase 3).
+                _eliteCount = 0;
+                for (int f = 0; f < _frontCount && _eliteCount < _maxEliteCapacity && f < _frontIndices.Length; f++)
+                {
+                    int orgIdx = _frontIndices[f];
+                    if (orgIdx >= 0 && orgIdx < _organismsCount && _organisms[orgIdx] != null)
+                    {
+                        var clone = _organisms[orgIdx]!.CloneForExport(_inputsArray, _correctOutputs);
+                        _eliteArchive[_eliteCount++] = clone;
+                    }
+                }
+                int eliteBaseOffset = _eliteCount;
+
+                //Phase 1: each parent independently decides how many children it will have from its Pareto tier.
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
-
-                    var step = 100 / _pctProbs.Length; Debug.Assert(100 % _pctProbs.Length == 0);
+                    float pctProb = _isFrontZero[i]
+                        ? frontTargetPerMember
+                        : _layerOffspringTargets[Math.Min(_layers[i], 99)];
                     var childrenCount = 0;
-                    for (var pctProbsIdx = 0; pctProbsIdx < _pctProbs.Length; pctProbsIdx++)
+                    while (pctProb > 0)
                     {
-                        var taxedScorePercentilesIdx = step * (pctProbsIdx + 1);
-                        var offsetTaxedScorePercentilesIdx = FixTaxedScorePercentilesIdx(taxedScorePercentilesIdx + taxedScorePercentilesIdxOffset);
-                        var taxedScorePercentile = _taxedScorePercentiles[offsetTaxedScorePercentilesIdx];
-
-                        //if last or less than taxedScorePercentile
-                        var isStrictInequality = !Rnd.RandomBoolWithChance(1.0/pctProbsIdx);
-                        if (pctProbsIdx == _pctProbs.Length - 1 ||
-                            isStrictInequality && organism.TaxedScore < taxedScorePercentile ||
-                            !isStrictInequality && organism.TaxedScore <= taxedScorePercentile)
-                        {
-                            //decide how many children (if any) based on percentile probabilities
-                            var pctProb = _pctProbs[pctProbsIdx];
-
-                            do
-                            {
-                                if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb) childrenCount++;
-                                pctProb--;
-                            }
-                            while (pctProb > 0);
-
-                            break; //if we found the right percentile, we are done!
-                        }
+                        if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb) childrenCount++;
+                        pctProb--;
                     }
 
                     _childCounts[i] = childrenCount;
                 });
 
-                //Phase 2: prefix-sum child counts into non-overlapping output ranges.
+                //Phase 2: prefix-sum child counts into non-overlapping output ranges (after the reserved elite slots).
                 var totalChildren = 0;
                 for (var i = 0; i < _organismsCount; i++)
                 {
                     var count = _childCounts[i];
-                    _childCounts[i] = totalChildren;
+                    _childCounts[i] = totalChildren + eliteBaseOffset;
                     totalChildren += count;
                 }
-                _newbornOrganismsCount = totalChildren;
+                _newbornOrganismsCount = eliteBaseOffset + totalChildren;
+
+                //Write this generation's elite archive (unchanged) into the reserved leading slots.
+                for (int i = 0; i < _eliteCount; i++)
+                    _newbornOrganisms[i] = new Organism(_eliteArchive[i].Commands);
 
                 //Phase 3: every parent writes directly into its unique range; then parents die.
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
                     var writeIdx = _childCounts[i];
-                    var writeCount = i + 1 < _organismsCount ? _childCounts[i + 1] - writeIdx : totalChildren - writeIdx;
+                    var writeCount = i + 1 < _organismsCount ? _childCounts[i + 1] - writeIdx : totalChildren + eliteBaseOffset - writeIdx;
 
                     for (var child = 0; child < writeCount; child++)
                     {
@@ -1307,9 +1516,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
 
     #region Readonly Fields Set in Constructor
-    //percentile probabilities
-    private readonly double[] _pctProbs = [0.01, 0.03, 0.06, 0.15, 0.25, 0.5, 1, 1.5, 2.5, 4]; //min 80%, max 160%
-
     protected bool _showProfilingInfo;
     
     protected readonly string[] _inputLabels;
@@ -1341,6 +1547,30 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     protected int[] _scores;
     protected int[] _childCounts;
+
+    // Pareto multi-objective selection state (ported to ride efficiency's two-phase reproduction)
+    protected int[] _layers = null!;
+    protected readonly int[] _scoreLayers;
+    protected readonly int[] _sizeLayers;
+    protected readonly int[] _layerNumbers;
+    protected readonly int[] _layerSizes;
+    protected readonly float[] _layerOffspringTargets;
+    protected bool[] _isFrontZero = null!;
+    protected readonly int[] _frontIndices;
+    protected readonly int _maxEliteCapacity;
+    protected Organism[] _eliteArchive = null!;
+    protected int _eliteCount;
+    protected int _frontCount;
+    // hoisted Pareto scratch buffers (no per-generation heap allocation)
+    protected readonly bool[] _pfOnFront;
+    protected readonly bool[] _pfSelected;
+    protected readonly int[] _pfFrontIdx;
+    protected readonly int[] _pfSizeTmp;
+    protected readonly int[] _pfScoreTmp;
+    protected readonly int[] _pfLayerTmp;
+    protected readonly int[] _sweepBucketStart;
+    protected readonly int[] _sweepBucketCount;
+    protected readonly int[] _sweepCompaction;
     #endregion
 
     #region Total & Generation Counters
