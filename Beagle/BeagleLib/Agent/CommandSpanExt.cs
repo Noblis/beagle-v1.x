@@ -47,7 +47,7 @@ namespace BeagleLib.Agent
         }
         public static void Insert(this Span<Command> me, ref int length, int addr, Command command)
         {
-            if (length == 320) return;
+            // catch? if (length == 320) return;
             for (var i = length; i > addr; i--)
             {
                 me[i] = me[i - 1];
