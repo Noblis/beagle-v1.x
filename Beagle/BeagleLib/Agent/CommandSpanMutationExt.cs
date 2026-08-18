@@ -61,7 +61,7 @@ public static class CommandSpanMutationExt
         // stack-effect compensating insertions) need a free slot; dropping a required compensation
         // would leave an invalid/stack-imbalanced script. Delete is safe even with compensation
         // because RemoveAt runs first and frees a slot the compensating insert then fills.
-        if (length >= me.Length) mutationType = MutationTypeEnum.Delete;
+        if (length >= me.Length - 3) mutationType = MutationTypeEnum.Delete;
 
         int stackEffect;
         int compensatingAddr;
