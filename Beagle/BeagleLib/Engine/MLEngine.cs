@@ -710,8 +710,33 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 #if DEBUG
                             if (idx >= _newbornOrganisms.Length)
                             {
-                                Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
-                                Debugger.Break();
+                                if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
+                                {
+                                    var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+
+                                    #if DEBUG
+                                    if (idx >= _newbornOrganisms.Length)
+                                    {
+                                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+                                        Debugger.Break();
+                                    }
+                                    #endif
+
+                                    if (Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
+                                    {
+                                        _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_organisms!, _organismsCount);
+                                        if (_newbornOrganisms[idx] == null ) // if crossover fails, do mutation instead
+                                        {
+                                            _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                                    }
+                                }
+
+                                pctProb--;
                             }
 #endif
 
@@ -729,8 +754,16 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     {
                         Organism.SaveOrganismToDeadPool(organism);
                     }
+                    //this has been commented out for crossover to be able to find a passive partner organism in the current colony
+                    //_organisms[i] = null; 
+                });
+
+                //TODO: see if this could be made to only run in debug
+                Parallel.For(0, _organismsCount, i =>
+                {
                     _organisms[i] = null;
                 });
+
                 _newbornOrganismsCount++;
 
                 // Capture this generation's true front for next generation's elite archive
