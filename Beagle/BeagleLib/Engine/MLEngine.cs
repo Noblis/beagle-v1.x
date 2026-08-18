@@ -682,18 +682,18 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _layerOffspringTargets[l] = nonFrontTarget * (10 / MathF.Pow(2f, l)) / totalWeight / _layerSizes[l];
 
                 // Elitism injection: clone archive members UNCHANGED at start of newborns
-                for (int i = 0; i < _eliteCount && _eliteArchive[i] != null; i++)
-                {
-                    int idx = Interlocked.Increment(ref _newbornOrganismsCount);
-#if DEBUG
-                    if (idx >= _newbornOrganisms.Length)
-                    {
-                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: elite archive overflow on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
-                        Debugger.Break();
-                    }
-#endif
-                    _newbornOrganisms[idx] = new Organism(_eliteArchive[i].Commands);
-                }
+//                for (int i = 0; i < _eliteCount && _eliteArchive[i] != null; i++)
+//                {
+//                    int idx = Interlocked.Increment(ref _newbornOrganismsCount);
+//#if DEBUG
+//                    if (idx >= _newbornOrganisms.Length)
+//                    {
+//                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: elite archive overflow on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+//                        Debugger.Break();
+//                    }
+//#endif
+//                    _newbornOrganisms[idx] = new Organism(_eliteArchive[i].Commands);
+//                }
 
                 // Breeding loop with tier-aware probability
                 Parallel.For(0, _organismsCount, i =>
