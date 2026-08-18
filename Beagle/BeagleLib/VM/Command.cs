@@ -5,6 +5,54 @@ namespace BeagleLib.VM;
 
 public readonly struct Command
 {
+    #region Valid-Opcode Lookup Table (Patch F)
+    //allowedOperations is a fixed array per MLSetup run (engine holds one instance), so we can cache
+    //the per-(stackEffect, stackSize) valid-op lists once. stackEffect idx: 0=null,1=-1,2=0,3=+1.
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<OpEnum[], OpEnum[][][]> ValidOpsTableCache = new();
+    private static readonly object ValidOpsTableLock = new();
+
+    public static OpEnum[][][] GetValidOpsTable(OpEnum[] allowedOperations)
+    {
+        if (ValidOpsTableCache.TryGetValue(allowedOperations, out var cached)) return cached;
+        lock (ValidOpsTableLock)
+        {
+            if (ValidOpsTableCache.TryGetValue(allowedOperations, out cached)) return cached;
+
+        var stackSizeMax = BConfig.StackSize + 2;
+        var table = new OpEnum[4][][];
+        for (var effectIdx = 0; effectIdx < 4; effectIdx++)
+        {
+            var effect = effectIdx switch { 1 => -1, 2 => 0, 3 => 1, _ => 0 }; //idx 0 = null (any effect)
+            table[effectIdx] = new OpEnum[stackSizeMax][];
+            for (var stackSize = 0; stackSize < stackSizeMax; stackSize++)
+            {
+                var count = 0;
+                for (var i = 0; i < allowedOperations.Length; i++)
+                {
+                    var opProp = allowedOperations[i].GetOperationProperties();
+                    if (effectIdx != 0 && opProp.StackEffect != effect) continue;
+                    if (opProp.MinStackRequired > stackSize) continue;
+                    count++;
+                }
+                var list = new OpEnum[count];
+                var idx = 0;
+                for (var i = 0; i < allowedOperations.Length; i++)
+                {
+                    var opProp = allowedOperations[i].GetOperationProperties();
+                    if (effectIdx != 0 && opProp.StackEffect != effect) continue;
+                    if (opProp.MinStackRequired > stackSize) continue;
+                    list[idx++] = allowedOperations[i];
+                }
+                table[effectIdx][stackSize] = list;
+            }
+        }
+        try { ValidOpsTableCache.Add(allowedOperations, table); }
+        catch (ArgumentException) { /* raced with another thread; table content is identical */ }
+        return table;
+        }
+    }
+    #endregion
+
     #region Constructors & Factory Methods
     public Command(OpEnum operation)
     {
@@ -64,24 +112,12 @@ public readonly struct Command
     {
         if (stackEffect == -1 && stackSize <= 1) throw new Exception("stackEffect == -1 && stackSize <= 1");
 
-        //create span for VALID allowed operations based on stackEffect and stackSize
-        if (_validAllowedOperations == null)
-        {
-            var operationEnumValues = Enum.GetValues(typeof(OpEnum));
-            _validAllowedOperations = new OpEnum[operationEnumValues.Length - 1]; //we do -1 because the first command is EndOfScript 
-        }
-
-        var validAllowedOperationsLength = 0;
-        for (var i = 0; i < allowedOperations.Length; i++)
-        {
-            var opProp = allowedOperations[i].GetOperationProperties();
-
-            if (stackEffect != null && opProp.StackEffect != stackEffect) continue;
-            if (opProp.MinStackRequired > stackSize) continue;
-
-            _validAllowedOperations[validAllowedOperationsLength++] = allowedOperations[i];
-        }
-        var validAllowedOperationsSpan = new Span<OpEnum>(_validAllowedOperations, 0, validAllowedOperationsLength);
+        //Patch F: look up the precomputed valid-operation list instead of scanning every opcode
+        //and rebuilding the candidate list on every single mutation call.
+        var table = GetValidOpsTable(allowedOperations);
+        var effectIdx = stackEffect switch { -1 => 1, 0 => 2, 1 => 3, _ => 0 };
+        var sizeIdx = Math.Clamp(stackSize, 0, BConfig.StackSize + 1);
+        var validAllowedOperationsSpan = new Span<OpEnum>(table[effectIdx][sizeIdx]);
 
         var command = CreateRandom(inputsCount, maxCopyIdx, validAllowedOperationsSpan, allowedAdjunctOperationsCount);
         return command;
@@ -171,7 +207,5 @@ public readonly struct Command
     private readonly OpEnum _operation;
     private readonly float _value;
     private const int MaxRandomFloatPlus1 = 11;
-
-    [ThreadStatic] private static OpEnum[]? _validAllowedOperations;
     #endregion
 }
