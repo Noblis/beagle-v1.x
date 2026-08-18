@@ -5,12 +5,13 @@ using BeagleLib.Util;
 using BeagleLib.VM;
 using ILGPU;
 using ILGPU.Runtime;
+using ILGPU.Runtime.Cuda;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Runtime;
 using System.Runtime.CompilerServices;
-using ILGPU.Runtime.Cuda;
 using WebMonk;
+//using WebMonk.RazorSharp.HtmlTags;
 
 namespace BeagleLib.Engine;
 
@@ -151,7 +152,20 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _organisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _newbornOrganisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _scores = new int[MLSetup.Current.OrganismsArraySize];
+            _layers = new int[MLSetup.Current.OrganismsArraySize];
             _taxedScorePercentiles = new int[100];
+            //additions for NSGA selection
+            _scoreLayers = new int[100];
+            _sizeLayers = new int[100];
+            _layerNumbers = new int[100];
+            _layerOffspringTargets = new float[100];
+            _layerSizes = new int[100];
+
+            // True Pareto front + elitism support
+            _isFrontZero = new bool[MLSetup.Current.OrganismsArraySize];
+            _frontIndices = new int[MLSetup.Current.OrganismsArraySize];
+            _maxEliteCapacity = Math.Min(500_000, MLSetup.Current.OrganismsArraySize);
+            _eliteArchive = new Organism[_maxEliteCapacity];
 
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
@@ -306,6 +320,174 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
     }
 
+    public bool DominatesQ(int size, int score, int sizeRef, int scoreRef)
+    {
+        return (size < sizeRef) && (score > scoreRef);
+    }
+
+    public int GetParetoLayer(int[] sizeLayersRef, int[] scoreLayersRef, int[] layerNumbersRef, int score, int size)
+    {
+        bool dominated = false;
+        int currentLayer = 0;
+        for (int i = 0; i < 100; i++)
+        {
+            if (layerNumbersRef[i]>currentLayer)
+            {
+                if (dominated==false) return currentLayer;
+                currentLayer++;
+                dominated = false;
+            }
+
+
+            if (DominatesQ(sizeLayersRef[i], scoreLayersRef[i], size, score))
+            {
+                dominated = true;
+            }
+
+        }
+
+        return currentLayer;
+    }
+
+    public void FrontSelect(int[] sizeLayersRef, int[] scoreLayersRef, int[] frontIndices, ref int frontCount, bool[] selectedQ)
+    {
+        bool[] onFrontQ = new bool[100];
+        for (int i = 0; i < 100; i++) onFrontQ[i] = false;
+        for (int i = 0; i < 100; i++) if (!selectedQ[i]) onFrontQ[i] = true;
+        for (int i = 0; i < 100; i++)
+        {
+            if (onFrontQ[i] && !selectedQ[i])
+            {
+                for (int j = 0; j < 100; j++)
+                {
+                    if ((i != j) && !selectedQ[j] && onFrontQ[j] && sizeLayersRef[i] <= sizeLayersRef[j] &&
+                        scoreLayersRef[i] > scoreLayersRef[j])
+                    {
+                        onFrontQ[j] = false;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < 100; i++)
+        {
+            if (onFrontQ[i])
+            {
+                frontIndices[frontCount] = i;
+                frontCount++;
+            }
+        }
+
+
+    }
+
+    public void ParetoLayers(int[] layerNumbersRef, int[] sizeLayersRef, int[] scoreLayersRef)
+    {
+        int[] frontIndices = new int[100];
+        int frontCount = 0;
+        bool[] selectedQ = new bool[100];
+        for (int i = 0; i < 100; i++) selectedQ[i] = false;
+        int lastIndex = 0;
+        int layerNumber = 0;
+        int[] sizeLayersTmp = new int[100];
+        int[] scoreLayersTmp = new int[100];
+        int[] layerNumbersTmp = new int[100];
+        while (frontCount < 100)
+        {
+            FrontSelect(sizeLayersRef, scoreLayersRef, frontIndices, ref frontCount, selectedQ);
+            for (int i = lastIndex; i < frontCount; i++)
+            {
+                selectedQ[frontIndices[i]] = true;
+                //layerNumbersRef[frontIndices[i]] = layerNumber;
+                sizeLayersTmp[i] = sizeLayersRef[frontIndices[i]];
+                scoreLayersTmp[i] = scoreLayersRef[frontIndices[i]];
+                layerNumbersTmp[i] = layerNumber; //layerNumbersRef[frontIndices[i]];
+            }
+
+            lastIndex = frontCount;
+            layerNumber++;
+        }
+
+        for (int i = 0; i < 100; i++)
+        {
+            sizeLayersRef[i] = sizeLayersTmp[i];
+            scoreLayersRef[i] = scoreLayersTmp[i];
+            layerNumbersRef[i] = layerNumbersTmp[i];
+        }
+
+    }
+
+    /// <summary>
+    /// Identifies the true Pareto front (front-0) of _organisms[] using a bucket sweep.
+    /// Both objectives are bounded integers: Commands.Length (1-320) and Score (int).
+    /// Time: O(n + L) where L &lt;= 320. Memory: ~4KB on stack per call.
+    /// Writes results to _isFrontZero[], _frontIndices, and _frontCount fields.
+    /// </summary>
+    protected void ParetoFrontSweep(bool[] isFrontZero)
+    {
+        _frontCount = 0;
+
+        // Buckets by Commands.Length
+        var bucketStart = new int[321];   // starting index for each length in compacted array
+        var bucketCount = new int[321];     // number of organisms per length bucket
+        var compactionBuffer = new int[_organismsCount];  // compacted organism indices
+
+        // Phase 1: count organisms per length bucket
+        for (int i = 0; i < _organismsCount; i++)
+        {
+            if (_organisms[i] == null) continue;
+            int len = _organisms[i]!.Commands.Length;
+            bucketCount[len]++;
+        }
+
+        // Compute start positions for each bucket
+        int startPos = 0;
+        for (int l = 1; l <= 320; l++)
+        {
+            bucketStart[l] = startPos;
+            startPos += bucketCount[l];
+        }
+
+        // Place organism indices into compacted buckets
+        for (int i = 0; i < _organismsCount; i++)
+        {
+            if (_organisms[i] == null) continue;
+            int len = _organisms[i]!.Commands.Length;
+            compactionBuffer[bucketStart[len]++] = i;
+        }
+
+        // Phase 2: sweep from shortest to longest length
+        // Track the best score seen among ALL shorter lengths (not just current bucket)
+        int bestScoreForShorter = int.MinValue;
+
+        startPos = 0;
+        for (int l = 1; l <= 320; l++)
+        {
+            if (bucketCount[l] == 0) continue;
+            int endPos = startPos + bucketCount[l];
+
+            // Sweep through this bucket's organisms
+            for (int pos = startPos; pos < endPos; pos++)
+            {
+                int orgIdx = compactionBuffer[pos];
+                if (_organisms[orgIdx] == null) continue;
+                if (_organisms[orgIdx]!.Score > bestScoreForShorter)
+                {
+                    _isFrontZero[orgIdx] = true;
+                    isFrontZero[orgIdx] = true; // sync with caller's array
+                    _frontIndices[_frontCount++] = orgIdx;
+                    bestScoreForShorter = _organisms[orgIdx]!.Score;
+                }
+                else
+                {
+                    _isFrontZero[orgIdx] = false;
+                    isFrontZero[orgIdx] = false; // sync with caller's array
+                }
+            }
+            startPos = endPos;
+        }
+    }
+
     protected bool TrainingLoopBody()
     {
         #region reset stuff for new generation, set up experiments (inputs/output), convert inputs to one long array
@@ -402,24 +584,18 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         #endregion
 
-        #region set up and sort the percentiles array
-        using (new ConsoleTimer("set up and sort the percentiles array", _showProfilingInfo))
-        {
-            Parallel.For(0, 100, i => { _taxedScorePercentiles[i] = _organisms[Rnd.Random.Next(_organismsCount)]!.TaxedScore; });
-            Array.Sort(_taxedScorePercentiles);
-        }
-        #endregion
 
-        #region calculate offset percentiles based on colony size vis-a-vis target colony size
-        sbyte taxedScorePercentilesIdxOffset; //positive offset makes organisms die more
-        using (new ConsoleTimer("calculate offset percentiles based on colony size vis-a-vis target colony size", _showProfilingInfo))
-        {
-            var ratio = (double)MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset) / _organismsCount;
-            if (ratio > 1) taxedScorePercentilesIdxOffset = (sbyte)Math.Round(-Math.Min(10.0, (ratio - 1.0) * 10.0));
-            else taxedScorePercentilesIdxOffset = (sbyte)Math.Round(Math.Min(10.0, (1.0 / ratio - 1.0) * 10.0));
-        }
-        #endregion
+        // True Pareto front identification on the full population
+        ParetoFrontSweep(_isFrontZero);
 
+        // Minimal 100-sample approximation for non-front tier weights (geometric decay diversity)
+        Parallel.For(0, 100, i =>
+        {
+            int pick = Rnd.Random.Next(_organismsCount);
+            _sizeLayers[i] = _organisms[pick]!.Commands.Length;
+            _scoreLayers[i] = _organisms[pick]!.Score;
+        });
+        ParetoLayers(_layerNumbers, _sizeLayers, _scoreLayers);
         #region births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays
         using (new ConsoleTimer("births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays", _showProfilingInfo))
         {
@@ -471,27 +647,68 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             else
             {
                 _newbornOrganismsCount = -1;
+
+                // Record per-organism layer + tier for breeding targets
+                Parallel.For(0, _organismsCount, i =>
+                {
+                    _layers[i] = GetParetoLayer(_sizeLayers, _scoreLayers, _layerNumbers, _scores[i],
+                        _organisms[i]!.Commands.Length);
+                    _isFrontZero[i] = false; // default: non-front tier assignment
+                    _layerSizes[_layers[i]]++;
+                });
+
+                // Mark true front-0 organisms (already swept above — reinforce here)
+                for (int f = 0; f < _frontCount && f < _frontIndices.Length; f++)
+                {
+                    int orgIdx = _frontIndices[f];
+                    if (orgIdx >= 0 && orgIdx < _organismsCount && _organisms[orgIdx] != null)
+                        _isFrontZero[orgIdx] = true;
+                }
+
+                // Breeding targets: 50% to true front-0, 50% non-front geometric decay
+                int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
+                float frontTargetPerMember = (_frontCount > 0)
+                    ? (0.5f * targetColonySize) / _frontCount
+                    : 0.0f;
+
+                // Non-front: geometric decay across layers, divided by layer size
+                int maxLayer = 0;
+                for (int i = 0; i < _organismsCount; i++)
+                    if (_layers[i] > maxLayer) maxLayer = _layers[i];
+                float nonFrontTarget = 0.5f * targetColonySize;
+                float totalWeight = 0f;
+                for (int l = 1; l <= maxLayer; l++) totalWeight += 10 / MathF.Pow(2f, l);
+                for (int l = 1; l <= maxLayer; l++)
+                    _layerOffspringTargets[l] = nonFrontTarget * (10 / MathF.Pow(2f, l)) / totalWeight / _layerSizes[l];
+
+                // Elitism injection: clone archive members UNCHANGED at start of newborns
+                for (int i = 0; i < _eliteCount && _eliteArchive[i] != null; i++)
+                {
+                    int idx = Interlocked.Increment(ref _newbornOrganismsCount);
+#if DEBUG
+                    if (idx >= _newbornOrganisms.Length)
+                    {
+                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: elite archive overflow on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+                        Debugger.Break();
+                    }
+#endif
+                    _newbornOrganisms[idx] = new Organism(_eliteArchive[i].Commands);
+                }
+
+                // Breeding loop with tier-aware probability
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
+                    float pctProb = _isFrontZero[i] ? frontTargetPerMember : _layerOffspringTargets[_layers[i]];
 
-                    var step = 100 / _pctProbs.Length; Debug.Assert(100 % _pctProbs.Length == 0);
-                    for (var pctProbsIdx = 0; pctProbsIdx < _pctProbs.Length; pctProbsIdx++)
+                    do
                     {
-                        var taxedScorePercentilesIdx = step * (pctProbsIdx + 1);
-                        var offsetTaxedScorePercentilesIdx = FixTaxedScorePercentilesIdx(taxedScorePercentilesIdx + taxedScorePercentilesIdxOffset);
-                        var taxedScorePercentile = _taxedScorePercentiles[offsetTaxedScorePercentilesIdx];
-
-                        //if last or less than taxedScorePercentile
-                        var isStrictInequality = !Rnd.RandomBoolWithChance(1.0/pctProbsIdx);
-                        if (pctProbsIdx == _pctProbs.Length - 1 ||
-                            isStrictInequality && organism.TaxedScore < taxedScorePercentile ||
-                            !isStrictInequality && organism.TaxedScore <= taxedScorePercentile)
+                        if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
                         {
-                            //decide how many children (if any) based on percentile probabilities
-                            var pctProb = _pctProbs[pctProbsIdx];
+                            var idx = Interlocked.Increment(ref _newbornOrganismsCount);
 
-                            do
+#if DEBUG
+                            if (idx >= _newbornOrganisms.Length)
                             {
                                 if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
                                 {
@@ -521,14 +738,17 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                                 pctProb--;
                             }
-                            while (pctProb > 0);
+#endif
 
-                            break; //if we found the right percentile, we are done!
+                            _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                         }
+
+                        pctProb--;
                     }
+                    while (pctProb > 0);
 
                     //death (100% chance)
-                    if (!ReferenceEquals(organism, _mostAccurateEverOrganism) && 
+                    if (!ReferenceEquals(organism, _mostAccurateEverOrganism) &&
                         !ReferenceEquals(organism, _shortestEverSatisfactoryOrganism) &&
                         !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
                     {
@@ -545,6 +765,18 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 });
 
                 _newbornOrganismsCount++;
+
+                // Capture this generation's true front for next generation's elite archive
+                _eliteCount = 0;
+                for (int f = 0; f < _frontCount && _eliteCount < _maxEliteCapacity && f < _frontIndices.Length; f++)
+                {
+                    int orgIdx = _frontIndices[f];
+                    if (orgIdx >= 0 && orgIdx < _organismsCount && _organisms[orgIdx] != null)
+                    {
+                        var clone = _organisms[orgIdx]!.CloneForExport(_inputsArray, _correctOutputs);
+                        _eliteArchive[_eliteCount++] = clone;
+                    }
+                }
             }
 
             _totalBirths += _newbornOrganismsCount;
@@ -646,7 +878,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
             Console.ResetColor();
 
-            #if DEBUG
+#if DEBUG
             int score = 0;
             var fitFunc = new TFitFunc();
             float[] outputs = new float[MLSetup.Current.ExperimentsPerGeneration];
@@ -749,7 +981,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: Invalid shortest satisfactory organism score on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                 Debugger.Break();
             }
-            #endif
+#endif
 
             Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Found Satisfactory Solution on {Environment.MachineName}", $"Beagle {BConfig.Version}: {MLSetup.Current.Name} completed in {_totalTimeWatch.Elapsed:c} on {Environment.MachineName}\n\n{_shortestEverSatisfactoryOrganism.ToString(_inputLabels)}");
             if (!MLSetup.Current.KeepOptimizingAfterSolutionFound)
@@ -1223,12 +1455,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         _mostAccurateOrganismsSinceLastColonyReset[idx] = organism;
     }
-    #endregion
+#endregion
 
 
     #region Readonly Fields Set in Constructor
     //percentile probabilities
-    private readonly double[] _pctProbs = [0.01, 0.03, 0.06, 0.15, 0.25, 0.5, 1, 1.5, 2.5, 4]; //min 80%, max 160%
 
     protected bool _showProfilingInfo;
     
@@ -1238,6 +1469,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly float[] _allInputs;
 
     protected readonly int[] _taxedScorePercentiles;
+    //NSGA selection parameters
+    protected readonly int[] _scoreLayers;
+    protected readonly int[] _sizeLayers;
+    protected readonly int[] _layerNumbers;
+    protected readonly int[] _layerSizes;
+    protected readonly float[] _layerOffspringTargets;
 
     protected readonly Context _context;
     protected readonly AcceleratorInfo<TFitFunc>[] _accelerators;
@@ -1260,6 +1497,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected int _newbornOrganismsCount;
 
     protected int[] _scores;
+    protected int[] _layers;
     #endregion
 
     #region Total & Generation Counters
@@ -1284,6 +1522,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected long _totalBirthAtLastMostAccurateEverOrganism;
 
     protected Organism? _shortestEverSatisfactoryOrganism;
+    #endregion
+
+    #region True Pareto Front + Elitism (added for breeding boost and survival of elite)
+    private bool[] _isFrontZero = null!;
+    private Organism[] _eliteArchive = null!;
+    private int _eliteCount;
+    private readonly int _maxEliteCapacity;
+    private int _frontCount;
+    private int[] _frontIndices = null!;
     #endregion
 
     //#region External Thread-Safe Interface
