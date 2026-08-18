@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using BeagleLib.Engine;
 using BeagleLib.Util;
 using BeagleLib.VM;
@@ -56,6 +56,12 @@ public static class CommandSpanMutationExt
         var mutationType = (MutationTypeEnum)Rnd.Random.Next(3) ;
         if (addr == length) mutationType = MutationTypeEnum.Insert;
         else if (addr == 0) mutationType = MutationTypeEnum.Replace;
+
+        // At max script length the only valid mutation is a deletion. Insert/replace (and their
+        // stack-effect compensating insertions) need a free slot; dropping a required compensation
+        // would leave an invalid/stack-imbalanced script. Delete is safe even with compensation
+        // because RemoveAt runs first and frees a slot the compensating insert then fills.
+        if (length >= me.Length) mutationType = MutationTypeEnum.Delete;
 
         int stackEffect;
         int compensatingAddr;
