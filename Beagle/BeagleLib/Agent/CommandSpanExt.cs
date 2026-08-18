@@ -47,10 +47,6 @@ namespace BeagleLib.Agent
         }
         public static void Insert(this Span<Command> me, ref int length, int addr, Command command)
         {
-            // Skip ANY insertion (including compensating/adjunct inserts that funnel through here) when the
-            // script is already at its max length — otherwise the shift write me[i] = me[i-1] at
-            // i == length == me.Length writes past the span and throws IndexOutOfRange.
-            if (length >= me.Length) return;
             for (var i = length; i > addr; i--)
             {
                 me[i] = me[i - 1];
