@@ -759,7 +759,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 {
                     _layers[i] = GetParetoLayer(_sizeLayers, _scoreLayers, _layerNumbers, _scores[i], _organisms[i]!.Commands.Length);
                     _isFrontZero[i] = false; // default: non-front tier assignment
-                    _layerSizes[_layers[i]]++;
+                    Interlocked.Increment(ref _layerSizes[_layers[i]]); // atomic: Parallel.For writes to shared layer cells
                 });
                 for (int f = 0; f < _frontCount && f < _frontIndices.Length; f++)
                 {
