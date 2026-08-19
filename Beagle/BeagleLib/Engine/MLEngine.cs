@@ -458,7 +458,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         // Phase 2: sweep from shortest to longest length
         // Track the best score seen among ALL shorter lengths (not just current bucket)
-        int bestScoreForShorter = int.MinValue;
+        int bestScoreForShorter = 0;
 
         startPos = 0;
         for (int l = 1; l <= 320; l++)
@@ -594,6 +594,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             int pick = Rnd.Random.Next(_organismsCount);
             _sizeLayers[i] = _organisms[pick]!.Commands.Length;
             _scoreLayers[i] = _organisms[pick]!.Score;
+            _layerSizes[i] = 0;
         });
         ParetoLayers(_layerNumbers, _sizeLayers, _scoreLayers);
         #region births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays
@@ -657,30 +658,57 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _layerSizes[_layers[i]]++;
                 });
 
-                // Mark true front-0 organisms (already swept above — reinforce here)
+                // Mark front-0 organisms
                 for (int f = 0; f < _frontCount && f < _frontIndices.Length; f++)
                 {
                     int orgIdx = _frontIndices[f];
-                    if (orgIdx >= 0 && orgIdx < _organismsCount && _organisms[orgIdx] != null)
+                    if (_organisms[orgIdx] != null)
                         _isFrontZero[orgIdx] = true;
+                }
+                // Capture this generation's true front for elite archive (TODO: will want this archive to be exported to user)
+                _eliteCount = 0;
+                for (int f = 0; f < _frontCount && _eliteCount < _maxEliteCapacity && f < _frontIndices.Length; f++)
+                {
+                    int orgIdx = _frontIndices[f];
+                    if (_organisms[orgIdx] != null)
+                    {
+                        var clone = _organisms[orgIdx]!.CloneForExport(_inputsArray, _correctOutputs);
+                        _eliteArchive[_eliteCount++] = clone;
+                    }
                 }
 
                 // Breeding targets: 50% to true front-0, 50% non-front geometric decay
                 int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
-                float frontTargetPerMember = (_frontCount > 0)
-                    ? (0.5f * targetColonySize) / _frontCount
-                    : 0.0f;
+                float frontTargetPerMember;
+                if (turboParetoSearch)
+                {
+                    frontTargetPerMember = (_frontCount > 0)
+                        ? (1.0f * targetColonySize) / _frontCount
+                        : 0.0f;
+                }
+                else
+                {
+                    frontTargetPerMember = (_frontCount > 0)
+                        ? (0.5f * targetColonySize) / _frontCount
+                        : 0.0f;
+                }
+
+                
 
                 // Non-front: geometric decay across layers, divided by layer size
                 int maxLayer = 0;
                 for (int i = 0; i < _organismsCount; i++)
                     if (_layers[i] > maxLayer) maxLayer = _layers[i];
                 float nonFrontTarget = 0.5f * targetColonySize;
-                float totalWeight = 0f;
-                for (int l = 1; l <= maxLayer; l++) totalWeight += 10 / MathF.Pow(2f, l);
                 for (int l = 1; l <= maxLayer; l++)
-                    _layerOffspringTargets[l] = nonFrontTarget * (10 / MathF.Pow(2f, l)) / totalWeight / _layerSizes[l];
-
+                    if (turboParetoSearch)
+                    {
+                        _layerOffspringTargets[l] = 0.0f;
+                    }
+                    else
+                    {
+                        _layerOffspringTargets[l] = nonFrontTarget / (MathF.Pow(2f, l)) / _layerSizes[l];
+                    }
                 // Elitism injection: clone archive members UNCHANGED at start of newborns
 //                for (int i = 0; i < _eliteCount && _eliteArchive[i] != null; i++)
 //                {
@@ -733,17 +761,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 });
                 _newbornOrganismsCount++;
 
-                // Capture this generation's true front for next generation's elite archive
-                _eliteCount = 0;
-                for (int f = 0; f < _frontCount && _eliteCount < _maxEliteCapacity && f < _frontIndices.Length; f++)
-                {
-                    int orgIdx = _frontIndices[f];
-                    if (orgIdx >= 0 && orgIdx < _organismsCount && _organisms[orgIdx] != null)
-                    {
-                        var clone = _organisms[orgIdx]!.CloneForExport(_inputsArray, _correctOutputs);
-                        _eliteArchive[_eliteCount++] = clone;
-                    }
-                }
+                
             }
 
             _totalBirths += _newbornOrganismsCount;
@@ -1498,6 +1516,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     private readonly int _maxEliteCapacity;
     private int _frontCount;
     private int[] _frontIndices = null!;
+    public bool turboParetoSearch = false; //TODO: toggle for extreme greedy Pareto front search
     #endregion
 
     //#region External Thread-Safe Interface
