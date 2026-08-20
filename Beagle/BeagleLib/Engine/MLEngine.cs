@@ -710,9 +710,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 #if DEBUG
                             if (idx >= _newbornOrganisms.Length)
                             {
-                                if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
-                                {
-                                    var idx = Interlocked.Increment(ref _newbornOrganismsCount);
 
                                     #if DEBUG
                                     if (idx >= _newbornOrganisms.Length)
@@ -734,7 +731,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                     {
                                         _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                                     }
-                                }
 
                                 pctProb--;
                             }
