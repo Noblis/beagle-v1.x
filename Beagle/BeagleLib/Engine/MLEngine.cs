@@ -417,12 +417,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     }
 
-    /// <summary>
     /// Identifies the true Pareto front (front-0) of _organisms[] using a bucket sweep.
     /// Both objectives are bounded integers: Commands.Length (1-320) and Score (int).
-    /// Time: O(n + L) where L &lt;= 320. Memory: ~4KB on stack per call.
+    /// Time: O(n + L) where L &lt;= 320.
     /// Writes results to _isFrontZero[], _frontIndices, and _frontCount fields.
-    /// </summary>
     protected void ParetoFrontSweep(bool[] isFrontZero)
     {
         _frontCount = 0;
@@ -432,7 +430,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var bucketCount = new int[321];     // number of organisms per length bucket
         var compactionBuffer = new int[_organismsCount];  // compacted organism indices
 
-        // Phase 1: count organisms per length bucket
+        // count organisms per length bucket
         for (int i = 0; i < _organismsCount; i++)
         {
             if (_organisms[i] == null) continue;
@@ -440,7 +438,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             bucketCount[len]++;
         }
 
-        // Compute start positions for each bucket
+        // compute start positions for each bucket
         int startPos = 0;
         for (int l = 1; l <= 320; l++)
         {
@@ -448,7 +446,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             startPos += bucketCount[l];
         }
 
-        // Place organism indices into compacted buckets
+        // place organism indices into compacted buckets
         for (int i = 0; i < _organismsCount; i++)
         {
             if (_organisms[i] == null) continue;
@@ -456,9 +454,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             compactionBuffer[bucketStart[len]++] = i;
         }
 
-        // Phase 2: sweep from shortest to longest length
+        // sweep from shortest to longest length
         // Track the best score seen among ALL shorter lengths (not just current bucket)
-        int bestScoreForShorter = 0;
+        int bestScoreForShorter = 0; //we don't want any negative scoring individuals
 
         startPos = 0;
         for (int l = 1; l <= 320; l++)
@@ -588,7 +586,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         // True Pareto front identification on the full population
         ParetoFrontSweep(_isFrontZero);
 
-        // Minimal 100-sample approximation for non-front tier weights (geometric decay diversity)
+        // Efficient 100-sample approximation for non-front tier weights
         Parallel.For(0, 100, i =>
         {
             int pick = Rnd.Random.Next(_organismsCount);
