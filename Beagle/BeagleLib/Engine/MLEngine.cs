@@ -649,7 +649,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             {
                 _newbornOrganismsCount = -1;
 
-                // Record per-organism layer + tier for breeding targets
+                // Record per-organism layer + tier for offspring targets
                 Parallel.For(0, _organismsCount, i =>
                 {
                     _layers[i] = GetParetoLayer(_sizeLayers, _scoreLayers, _layerNumbers, _scores[i],
@@ -677,7 +677,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                 }
 
-                // Breeding targets: 50% to true front-0, 50% non-front geometric decay
+                // Offspring targets: 50% to true front-0, 50% non-front geometric decay
                 int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 float frontTargetPerMember;
                 if (turboParetoSearch)
@@ -695,7 +695,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                 
 
-                // Non-front: geometric decay across layers, divided by layer size
+                // Non-front: geometric decay across layers, divided by layer size (smaller layers get more relative breeding rights)
                 int maxLayer = 0;
                 for (int i = 0; i < _organismsCount; i++)
                     if (_layers[i] > maxLayer) maxLayer = _layers[i];
