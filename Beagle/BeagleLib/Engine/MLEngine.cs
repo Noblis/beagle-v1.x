@@ -594,6 +594,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             int pick = Rnd.Random.Next(_organismsCount);
             _sizeLayers[i] = _organisms[pick]!.Commands.Length;
             _scoreLayers[i] = _organisms[pick]!.Score;
+            _layerSizes[i] = 0;
         });
         ParetoLayers(_layerNumbers, _sizeLayers, _scoreLayers);
         #region births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays
