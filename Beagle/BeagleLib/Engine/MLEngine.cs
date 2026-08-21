@@ -675,7 +675,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                 }
 
-                // Offspring targets: 50% to true front-0, 50% non-front geometric decay
+                // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute targets
                 int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 float frontTargetPerMember;
                 if (turboParetoSearch)
