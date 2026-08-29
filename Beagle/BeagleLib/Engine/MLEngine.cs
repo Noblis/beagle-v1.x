@@ -668,11 +668,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 for (int f = 0; f < _frontCount && _eliteCount < _maxEliteCapacity && f < _frontIndices.Length; f++)
                 {
                     int orgIdx = _frontIndices[f];
-                    if (_organisms[orgIdx] != null)
-                    {
-                        var clone = _organisms[orgIdx]!.CloneForExport(_inputsArray, _correctOutputs);
-                        _eliteArchive[_eliteCount++] = clone;
-                    }
+                    //if (_organisms[orgIdx] != null)
+                    //{
+                    //    var clone = _organisms[orgIdx]!.CloneForExport(_inputsArray, _correctOutputs);
+                    //    _eliteArchive[_eliteCount++] = clone;
+                    //}
                 }
 
                 // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute targets
