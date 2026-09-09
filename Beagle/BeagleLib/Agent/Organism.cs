@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Net.Mail;
 using System.Runtime.CompilerServices;
@@ -253,32 +253,32 @@ public class Organism
                 }
                 case "TAN":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Tan));
                     break;
                 }
-                case "ARCOS":
+                case "ARCCOS":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Arccos));
                     break;
                 }
                 case "ARCSIN":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Arcsin));
                     break;
                 }
                 case "ARCTAN":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Arctan));
                     break;
                 }
                 case "TANH":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Tanh));
                     break;
                 }
                 case "EXP":
                 {
-                    commands.Add(new Command(OpEnum.Cos));
+                    commands.Add(new Command(OpEnum.Exp));
                     break;
                 }
                 case "POW":
@@ -302,7 +302,7 @@ public class Organism
     protected Organism(int commandsLength) :this(new Command[commandsLength]) { }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected Organism(Command[] commands)
+    internal Organism(Command[] commands)
     {
         ResetPropertiesForNewOrganism();
         Commands = commands;
@@ -512,27 +512,60 @@ public class Organism
     #endregion
 
     #region Methods and Properties Related to Dead Pool, pool of Organism that can be reused (to reduce GC usage)
+    //Patch G: thread-local dead pools remove the shared ConcurrentStack contention from the
+    //birth/death hotspots. Each worker drafts its own per-script-length stacks; the shared
+    //ConcurrentStack remains as overflow/fallback.
+    [ThreadStatic] private static Stack<Organism>[]? _threadLocalDeadPools;
+
+    private static Stack<Organism>[] ThreadLocalDeadPools
+    {
+        get
+        {
+            if (_threadLocalDeadPools == null)
+            {
+                var pools = new Stack<Organism>[BConfig.MaxScriptLength];
+                for (var i = 0; i < pools.Length; i++) pools[i] = new Stack<Organism>();
+                _threadLocalDeadPools = pools;
+            }
+            return _threadLocalDeadPools;
+        }
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Organism LoadOrganismFromDeadPoolOrCreate(int commandsLength)
     {
         Debug.Assert(commandsLength >= 1);
 
+        //fast path: this thread's private pool
+        var threadStack = ThreadLocalDeadPools[commandsLength - 1];
+        if (threadStack.Count > 0)
+        {
+            var local = threadStack.Pop();
+            Debug.Assert(local.Commands.Length == commandsLength);
+            local.ResetPropertiesForNewOrganism();
+            return local;
+        }
+
         if (_organismDeadPools[commandsLength - 1].TryPop(out var organism))
         {
             Debug.Assert(organism.Commands.Length == commandsLength);
             organism.ResetPropertiesForNewOrganism();
-            
+
             return organism;
         }
-        
+
         return new Organism(commandsLength);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SaveOrganismToDeadPool(Organism organism)
     {
-        _organismDeadPools[organism.Commands.Length - 1].Push(organism);
+        //Try the thread's private pool first; the cap keeps memory bounded per thread.
+        var threadStack = ThreadLocalDeadPools[organism.Commands.Length - 1];
+        if (threadStack.Count < 4096) threadStack.Push(organism);
+        else _organismDeadPools[organism.Commands.Length - 1].Push(organism);
     }
+
 
     private static readonly ConcurrentStack<Organism>[] _organismDeadPools;
     #endregion
@@ -560,6 +593,13 @@ public class Organism
                 }
             }
             Debug.Assert(dblOutputs.Count == dblCorrectOutputs.Count);
+            if (dblOutputs.Count < 2)
+            {
+                // Degenerate organism: no valid outputs to regress. Finalize with identity scale so
+                // downstream Scale/Offset reads and GetFullCommands behave normally (nothing appended).
+                SetScaleAndOffset(1f, 0f);
+                return;
+            }
             Debug.Assert(dblOutputs.Count >= 2);
             float mean = total / dblOutputs.Count;
 
