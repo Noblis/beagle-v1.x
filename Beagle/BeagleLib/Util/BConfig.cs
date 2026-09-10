@@ -25,7 +25,7 @@ public static class BConfig
     public const int ClipboardSize = 32;
 
     public const int MaxScore = 10000;
-    public const int MaxScriptLength = 320;
+    public const int MaxScriptLength = 1024;//320;
 
     public const int TopMostAccurateOrganismsToKeep = 10;
     #endregion

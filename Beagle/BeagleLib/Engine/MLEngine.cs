@@ -426,8 +426,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         _frontCount = 0;
 
         // Buckets by Commands.Length
-        var bucketStart = new int[321];   // starting index for each length in compacted array
-        var bucketCount = new int[321];     // number of organisms per length bucket
+        var bucketStart = new int[BConfig.MaxScriptLength+1];   // starting index for each length in compacted array
+        var bucketCount = new int[BConfig.MaxScriptLength+1];     // number of organisms per length bucket
         var compactionBuffer = new int[_organismsCount];  // compacted organism indices
 
         // count organisms per length bucket
@@ -440,7 +440,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         // compute start positions for each bucket
         int startPos = 0;
-        for (int l = 1; l <= 320; l++)
+        for (int l = 1; l <= BConfig.MaxScriptLength; l++)
         {
             bucketStart[l] = startPos;
             startPos += bucketCount[l];
@@ -459,7 +459,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         int bestScoreForShorter = 0; //we don't want any negative scoring individuals
 
         startPos = 0;
-        for (int l = 1; l <= 320; l++)
+        for (int l = 1; l <= BConfig.MaxScriptLength; l++)
         {
             if (bucketCount[l] == 0) continue;
             int endPos = startPos + bucketCount[l];
@@ -705,7 +705,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                     else
                     {
-                        _layerOffspringTargets[l] = nonFrontTarget / (MathF.Pow(2f, l)) / _layerSizes[l];
+                        _layerOffspringTargets[l] = nonFrontTarget / (MathF.Pow(2f, l+1)) / _layerSizes[l];
                     }
                 // Elitism injection: clone archive members UNCHANGED at start of newborns
 //                for (int i = 0; i < _eliteCount && _eliteArchive[i] != null; i++)
