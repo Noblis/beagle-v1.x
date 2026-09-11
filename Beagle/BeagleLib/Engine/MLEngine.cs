@@ -153,13 +153,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _newbornOrganisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _scores = new int[MLSetup.Current.OrganismsArraySize];
             _layers = new int[MLSetup.Current.OrganismsArraySize];
-            _taxedScorePercentiles = new int[100];
+            _taxedScorePercentiles = new int[paretoSample];
             //additions for NSGA selection
-            _scoreLayers = new int[100];
-            _sizeLayers = new int[100];
-            _layerNumbers = new int[100];
-            _layerOffspringTargets = new float[100];
-            _layerSizes = new int[100];
+            _scoreLayers = new int[paretoSample];
+            _sizeLayers = new int[paretoSample];
+            _layerNumbers = new int[paretoSample];
+            _layerOffspringTargets = new float[paretoSample];
+            _layerSizes = new int[paretoSample];
 
             // True Pareto front + elitism support
             _isFrontZero = new bool[MLSetup.Current.OrganismsArraySize];
@@ -329,7 +329,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     {
         bool dominated = false;
         int currentLayer = 0;
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < paretoSample; i++)
         {
             if (layerNumbersRef[i]>currentLayer)
             {
@@ -351,14 +351,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     public void FrontSelect(int[] sizeLayersRef, int[] scoreLayersRef, int[] frontIndices, ref int frontCount, bool[] selectedQ)
     {
-        bool[] onFrontQ = new bool[100];
-        for (int i = 0; i < 100; i++) onFrontQ[i] = false;
-        for (int i = 0; i < 100; i++) if (!selectedQ[i]) onFrontQ[i] = true;
-        for (int i = 0; i < 100; i++)
+        bool[] onFrontQ = new bool[paretoSample];
+        for (int i = 0; i < paretoSample; i++) onFrontQ[i] = false;
+        for (int i = 0; i < paretoSample; i++) if (!selectedQ[i]) onFrontQ[i] = true;
+        for (int i = 0; i < paretoSample; i++)
         {
             if (onFrontQ[i] && !selectedQ[i])
             {
-                for (int j = 0; j < 100; j++)
+                for (int j = 0; j < paretoSample; j++)
                 {
                     if ((i != j) && !selectedQ[j] && onFrontQ[j] && sizeLayersRef[i] <= sizeLayersRef[j] &&
                         scoreLayersRef[i] > scoreLayersRef[j])
@@ -369,7 +369,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             }
         }
 
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < paretoSample; i++)
         {
             if (onFrontQ[i])
             {
@@ -383,16 +383,16 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     public void ParetoLayers(int[] layerNumbersRef, int[] sizeLayersRef, int[] scoreLayersRef)
     {
-        int[] frontIndices = new int[100];
+        int[] frontIndices = new int[paretoSample];
         int frontCount = 0;
-        bool[] selectedQ = new bool[100];
-        for (int i = 0; i < 100; i++) selectedQ[i] = false;
+        bool[] selectedQ = new bool[paretoSample];
+        for (int i = 0; i < paretoSample; i++) selectedQ[i] = false;
         int lastIndex = 0;
         int layerNumber = 0;
-        int[] sizeLayersTmp = new int[100];
-        int[] scoreLayersTmp = new int[100];
-        int[] layerNumbersTmp = new int[100];
-        while (frontCount < 100)
+        int[] sizeLayersTmp = new int[paretoSample];
+        int[] scoreLayersTmp = new int[paretoSample];
+        int[] layerNumbersTmp = new int[paretoSample];
+        while (frontCount < paretoSample)
         {
             FrontSelect(sizeLayersRef, scoreLayersRef, frontIndices, ref frontCount, selectedQ);
             for (int i = lastIndex; i < frontCount; i++)
@@ -408,7 +408,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             layerNumber++;
         }
 
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < paretoSample; i++)
         {
             sizeLayersRef[i] = sizeLayersTmp[i];
             scoreLayersRef[i] = scoreLayersTmp[i];
@@ -585,8 +585,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         // True Pareto front identification on the full population
         ParetoFrontSweep(_isFrontZero);
 
-        // Efficient 100-sample approximation for non-front tier weights
-        Parallel.For(0, 100, i =>
+        // Efficient small sample approximation for non-front tier weights
+        Parallel.For(0, paretoSample, i =>
         {
             int pick = Rnd.Random.Next(_organismsCount);
             _sizeLayers[i] = _organisms[pick]!.Commands.Length;
@@ -1514,6 +1514,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     private int _frontCount;
     private int[] _frontIndices = null!;
     public bool turboParetoSearch = false; //TODO: toggle for extreme greedy Pareto front search
+    public int paretoSample = 100; //TODO: toggle for different sample sizes
     #endregion
 
     //#region External Thread-Safe Interface
