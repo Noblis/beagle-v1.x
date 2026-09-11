@@ -8,17 +8,19 @@ public static class Program
     private const string RelativePathToRunProject = "../../../../../Run"; //if running from Visual Studio or Rider
     //private const string RelativePathToRunProject = "../../Run"; //if running from command line
 
-    private const int StopAfterMin = -1; //10;
-    private const long StopAfterBirths = 350_000_000;
+    private const int StopAfterMin = 10; //-1;
+    private const long StopAfterBirths = -1; //350_000_000;
 
     private const int ExpressStopAfterMin = -1; //4;
     private const long ExpressStopAfterBirths = 135_000_000;
 
     private const int FeynmanEqCount = 100;
     private const int NumberOfRunsPerEq = 10;
-    
+
     // ReSharper disable once InconsistentNaming
-    private static readonly int[] DifficultProblems = [5, 6, 7, 14, 18, 20, 21, 26, 29, 30, 31, 36, 38, 43, 44, 50, 56, 57, 72, 86, 87, 90, 91, 95];
+    private static readonly int[] EasyProblems = [1, 8, 10, 11, 12, 15, 16, 22, 23, 25, 26, 28, 31, 32, 34, 37, 39, 40, 42, 45, 46, 48, 49, 52, 53, 54, 55, 58, 59, 63, 66, 69, 70, 73, 74, 75, 76, 77, 78, 79, 83, 84, 85, 88, 89, 92, 93, 96, 97, 98, 100];
+    private static readonly int[] HardProblems = [5, 6, 7, 14, 18, 20, 21, 26, 29, 30, 31, 36, 38, 43, 44, 50, 56, 57, 72, 86, 87, 90, 91, 95];
+    //medium problems are all others
 
     private static void Main()
     {
@@ -50,7 +52,7 @@ public static class Program
             for (var eq = 1; eq <= FeynmanEqCount; eq++)
             {
                 bool runningExpress;
-                if (DifficultProblems.Contains(eq))
+                if (HardProblems.Contains(eq))
                 {
                     runningExpress = false;
                     startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={StopAfterMin} StopAfterBirths={StopAfterBirths} RunFeynman={eq} NoEscMenu #useLibDevice";
