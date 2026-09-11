@@ -419,7 +419,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     /// Identifies the true Pareto front (front-0) of _organisms[] using a bucket sweep.
     /// Both objectives are bounded integers: Commands.Length (1-320) and Score (int).
-    /// Time: O(n + L) where L &lt;= 320.
     /// Writes results to _isFrontZero[], _frontIndices, and _frontCount fields.
     protected void ParetoFrontSweep(bool[] isFrontZero)
     {
@@ -698,7 +697,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 for (int i = 0; i < _organismsCount; i++)
                     if (_layers[i] > maxLayer) maxLayer = _layers[i];
                 float nonFrontTarget = 0.5f * targetColonySize;
-                for (int l = 1; l <= maxLayer; l++)
+                for (int l = 0; l <= maxLayer; l++)
                     if (turboParetoSearch)
                     {
                         _layerOffspringTargets[l] = 0.0f;
