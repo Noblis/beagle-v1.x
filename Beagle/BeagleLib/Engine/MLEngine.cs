@@ -652,7 +652,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _layers[i] = GetParetoLayer(_sizeLayers, _scoreLayers, _layerNumbers, _scores[i],
                         _organisms[i]!.Commands.Length);
                     _isFrontZero[i] = false; // default: non-front tier assignment
-                    _layerSizes[_layers[i]]++;
+                    Interlocked.Increment(ref _layerSizes[_layers[i]]);
                 });
 
                 // Mark front-0 organisms
@@ -664,15 +664,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 }
                 // Capture this generation's true front for elite archive (TODO: will want this archive to be exported to user)
                 _eliteCount = 0;
-                for (int f = 0; f < _frontCount && _eliteCount < _maxEliteCapacity && f < _frontIndices.Length; f++)
-                {
-                    int orgIdx = _frontIndices[f];
+                //for (int f = 0; f < _frontCount && _eliteCount < _maxEliteCapacity && f < _frontIndices.Length; f++)
+                //{
+                    //int orgIdx = _frontIndices[f];
                     //if (_organisms[orgIdx] != null)
                     //{
                     //    var clone = _organisms[orgIdx]!.CloneForExport(_inputsArray, _correctOutputs);
                     //    _eliteArchive[_eliteCount++] = clone;
                     //}
-                }
+                //}
 
                 // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute targets
                 int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
