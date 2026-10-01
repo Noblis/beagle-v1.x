@@ -398,10 +398,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             for (int i = lastIndex; i < frontCount; i++)
             {
                 selectedQ[frontIndices[i]] = true;
-                //layerNumbersRef[frontIndices[i]] = layerNumber;
                 sizeLayersTmp[i] = sizeLayersRef[frontIndices[i]];
                 scoreLayersTmp[i] = scoreLayersRef[frontIndices[i]];
-                layerNumbersTmp[i] = layerNumber; //layerNumbersRef[frontIndices[i]];
+                layerNumbersTmp[i] = layerNumber;
             }
 
             lastIndex = frontCount;
@@ -417,9 +416,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     }
 
-    /// Identifies the true Pareto front (front-0) of _organisms[] using a bucket sweep.
-    /// Both objectives are bounded integers: Commands.Length (1-320) and Score (int).
-    /// Writes results to _isFrontZero[], _frontIndices, and _frontCount fields.
+    // Identifies the true Pareto front (front-0) of _organisms[] using a bucket sweep.
     protected void ParetoFrontSweep(bool[] isFrontZero)
     {
         _frontCount = 0;
@@ -585,7 +582,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         // True Pareto front identification on the full population
         ParetoFrontSweep(_isFrontZero);
 
-        // Efficient small sample approximation for non-front tier weights
+        // Efficient small sample approximation for non-front layer estimates
         Parallel.For(0, paretoSample, i =>
         {
             int pick = Rnd.Random.Next(_organismsCount);
@@ -674,7 +671,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     //}
                 //}
 
-                // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute targets
+                // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute offspring across layers
                 int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 float frontTargetPerMember;
                 if (turboParetoSearch)
@@ -706,19 +703,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     {
                         _layerOffspringTargets[l] = nonFrontTarget / (MathF.Pow(2f, l+1)) / _layerSizes[l];
                     }
-                // Elitism injection: clone archive members UNCHANGED at start of newborns
-//                for (int i = 0; i < _eliteCount && _eliteArchive[i] != null; i++)
-//                {
-//                    int idx = Interlocked.Increment(ref _newbornOrganismsCount);
-//#if DEBUG
-//                    if (idx >= _newbornOrganisms.Length)
-//                    {
-//                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: elite archive overflow on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
-//                        Debugger.Break();
-//                    }
-//#endif
-//                    _newbornOrganisms[idx] = new Organism(_eliteArchive[i].Commands);
-//                }
 
                 // Breeding loop with tier-aware probability
                 Parallel.For(0, _organismsCount, i =>
