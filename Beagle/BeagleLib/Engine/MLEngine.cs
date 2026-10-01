@@ -451,8 +451,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
 
         // sweep from shortest to longest length
-        // Track the best score seen among ALL shorter lengths (not just current bucket)
-        int bestScoreForShorter = 0; //we don't want any negative scoring individuals
+        // Track the best score seen among shorter lengths
+        int bestScoreForShorter = 0; 
 
         startPos = 0;
         for (int l = 1; l <= BConfig.MaxScriptLength; l++)
@@ -460,22 +460,21 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (bucketCount[l] == 0) continue;
             int endPos = startPos + bucketCount[l];
 
-            // Sweep through this bucket's organisms
             for (int pos = startPos; pos < endPos; pos++)
             {
                 int orgIdx = compactionBuffer[pos];
                 if (_organisms[orgIdx] == null) continue;
                 if (_organisms[orgIdx]!.Score > bestScoreForShorter)
                 {
-                    _isFrontZero[orgIdx] = true;
-                    isFrontZero[orgIdx] = true; // sync with caller's array
+                    //_isFrontZero[orgIdx] = true;
+                    isFrontZero[orgIdx] = true; 
                     _frontIndices[_frontCount++] = orgIdx;
                     bestScoreForShorter = _organisms[orgIdx]!.Score;
                 }
                 else
                 {
-                    _isFrontZero[orgIdx] = false;
-                    isFrontZero[orgIdx] = false; // sync with caller's array
+                    //_isFrontZero[orgIdx] = false;
+                    isFrontZero[orgIdx] = false; 
                 }
             }
             startPos = endPos;
@@ -1490,7 +1489,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected Organism? _shortestEverSatisfactoryOrganism;
     #endregion
 
-    #region True Pareto Front + Elitism (added for breeding boost and survival of elite)
+    #region Pareto Selection
     private bool[] _isFrontZero = null!;
     private Organism[] _eliteArchive = null!;
     private int _eliteCount;
