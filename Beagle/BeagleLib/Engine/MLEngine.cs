@@ -164,9 +164,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             // True Pareto front + elitism support
             _isFrontZero = new bool[MLSetup.Current.OrganismsArraySize];
             _frontIndices = new int[MLSetup.Current.OrganismsArraySize];
-            _maxEliteCapacity = Math.Min(500_000, MLSetup.Current.OrganismsArraySize);
-            _eliteArchive = new Organism[_maxEliteCapacity];
-
+            
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
                 //Create new organisms in multithreaded fashion
@@ -1468,9 +1466,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     #region Pareto Selection
     private bool[] _isFrontZero = null!;
-    private Organism[] _eliteArchive = null!;
-    private int _eliteCount;
-    private readonly int _maxEliteCapacity;
     private int _frontCount;
     private int[] _frontIndices = null!;
     public bool turboParetoSearch = false; //TODO: toggle for extreme greedy Pareto front search
