@@ -466,14 +466,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 if (_organisms[orgIdx] == null) continue;
                 if (_organisms[orgIdx]!.Score > bestScoreForShorter)
                 {
-                    //_isFrontZero[orgIdx] = true;
                     isFrontZero[orgIdx] = true; 
                     _frontIndices[_frontCount++] = orgIdx;
                     bestScoreForShorter = _organisms[orgIdx]!.Score;
                 }
                 else
                 {
-                    //_isFrontZero[orgIdx] = false;
                     isFrontZero[orgIdx] = false; 
                 }
             }
@@ -647,17 +645,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 {
                     _layers[i] = GetParetoLayer(_sizeLayers, _scoreLayers, _layerNumbers, _scores[i],
                         _organisms[i]!.Commands.Length);
-                    _isFrontZero[i] = false; // default: non-front tier assignment
-                    Interlocked.Increment(ref _layerSizes[_layers[i]]);
+                    if (!_isFrontZero[i]) Interlocked.Increment(ref _layerSizes[_layers[i]]);
                 });
 
-                // Mark front-0 organisms
-                for (int f = 0; f < _frontCount && f < _frontIndices.Length; f++)
-                {
-                    int orgIdx = _frontIndices[f];
-                    if (_organisms[orgIdx] != null)
-                        _isFrontZero[orgIdx] = true;
-                }
+              
                 // Capture this generation's true front for elite archive (TODO: will want this archive to be exported to user)
                 _eliteCount = 0;
                 //for (int f = 0; f < _frontCount && _eliteCount < _maxEliteCapacity && f < _frontIndices.Length; f++)
