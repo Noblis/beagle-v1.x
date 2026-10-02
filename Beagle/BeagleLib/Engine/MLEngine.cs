@@ -416,53 +416,52 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     }
 
-    // Identifies the true Pareto front (front-0) of _organisms[] using a bucket sweep.
+    // Identifies the true Pareto front (front-0) of current population.
     protected void ParetoFrontSweep(bool[] isFrontZero)
     {
         _frontCount = 0;
 
-        // Buckets by Commands.Length
-        var bucketStart = new int[BConfig.MaxScriptLength+1];   // starting index for each length in compacted array
-        var bucketCount = new int[BConfig.MaxScriptLength+1];     // number of organisms per length bucket
-        var compactionBuffer = new int[_organismsCount];  // compacted organism indices
+        // Group by Commands.Length
+        var bucketStart = new int[BConfig.MaxScriptLength+1];   
+        var bucketSize = new int[BConfig.MaxScriptLength+1];     
+        var sizeBuckets = new int[_organismsCount];
 
-        // count organisms per length bucket
+        // Count organisms per length bucket
         for (int i = 0; i < _organismsCount; i++)
         {
             if (_organisms[i] == null) continue;
             int len = _organisms[i]!.Commands.Length;
-            bucketCount[len]++;
+            bucketSize[len]++;
         }
 
-        // compute start positions for each bucket
+        // Compute start positions for each bucket
         int startPos = 0;
         for (int l = 1; l <= BConfig.MaxScriptLength; l++)
         {
             bucketStart[l] = startPos;
-            startPos += bucketCount[l];
+            startPos += bucketSize[l];
         }
 
-        // place organism indices into compacted buckets
+        // Place organism indices into buckets
         for (int i = 0; i < _organismsCount; i++)
         {
             if (_organisms[i] == null) continue;
             int len = _organisms[i]!.Commands.Length;
-            compactionBuffer[bucketStart[len]++] = i;
+            sizeBuckets[bucketStart[len]++] = i;
         }
 
-        // sweep from shortest to longest length
-        // Track the best score seen among shorter lengths
+        // Sweep from shortest to longest length to identify front
         int bestScoreForShorter = 0; 
 
         startPos = 0;
         for (int l = 1; l <= BConfig.MaxScriptLength; l++)
         {
-            if (bucketCount[l] == 0) continue;
-            int endPos = startPos + bucketCount[l];
+            if (bucketSize[l] == 0) continue;
+            int endPos = startPos + bucketSize[l];
 
             for (int pos = startPos; pos < endPos; pos++)
             {
-                int orgIdx = compactionBuffer[pos];
+                int orgIdx = sizeBuckets[pos];
                 if (_organisms[orgIdx] == null) continue;
                 if (_organisms[orgIdx]!.Score > bestScoreForShorter)
                 {
@@ -576,10 +575,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         #endregion
 
 
-        // True Pareto front identification on the full population
+        // Pareto front identification of the full population
         ParetoFrontSweep(_isFrontZero);
 
-        // Efficient small sample approximation for non-front layer estimates
+        // Small sample approximation for non-front layer estimates
         Parallel.For(0, paretoSample, i =>
         {
             int pick = Rnd.Random.Next(_organismsCount);
@@ -648,19 +647,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     if (!_isFrontZero[i]) Interlocked.Increment(ref _layerSizes[_layers[i]]);
                 });
 
-              
-                // Capture this generation's true front for elite archive (TODO: will want this archive to be exported to user)
-                _eliteCount = 0;
-                //for (int f = 0; f < _frontCount && _eliteCount < _maxEliteCapacity && f < _frontIndices.Length; f++)
-                //{
-                    //int orgIdx = _frontIndices[f];
-                    //if (_organisms[orgIdx] != null)
-                    //{
-                    //    var clone = _organisms[orgIdx]!.CloneForExport(_inputsArray, _correctOutputs);
-                    //    _eliteArchive[_eliteCount++] = clone;
-                    //}
-                //}
-
                 // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute offspring across layers
                 int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 float frontTargetPerMember;
@@ -679,7 +665,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                 
 
-                // Non-front: geometric decay across layers, divided by layer size (smaller layers get more relative breeding rights)
+                // Non-front: geometric decay across layers, divided by layer size
                 int maxLayer = 0;
                 for (int i = 0; i < _organismsCount; i++)
                     if (_layers[i] > maxLayer) maxLayer = _layers[i];
@@ -694,7 +680,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         _layerOffspringTargets[l] = nonFrontTarget / (MathF.Pow(2f, l+1)) / _layerSizes[l];
                     }
 
-                // Breeding loop with tier-aware probability
+                // Offspring generation
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
