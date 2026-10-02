@@ -150,7 +150,8 @@ public class Program
         {
             //new CsvGen<RydbergFormula>().CreateAndSaveCsvFile(5000); return;
 
-            using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(useLibDevice: useLibDevice);
+            using var mlEngine = new MLEngine<PPSNDemo, CorrelationFitFunc>(useLibDevice: useLibDevice);
+            //using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<AreaOfCircle, StdFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<Eq58s, CorrelationFitFunc>(useLibDevice: useLibDevice);

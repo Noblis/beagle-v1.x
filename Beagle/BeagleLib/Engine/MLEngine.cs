@@ -320,7 +320,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     public bool DominatesQ(int size, int score, int sizeRef, int scoreRef)
     {
-        return (size < sizeRef) && (score > scoreRef);
+        return (size <= sizeRef) && (score >= scoreRef) && (size < sizeRef || score > scoreRef);
     }
 
     public int GetParetoLayer(int[] sizeLayersRef, int[] scoreLayersRef, int[] layerNumbersRef, int score, int size)
@@ -359,7 +359,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 for (int j = 0; j < paretoSample; j++)
                 {
                     if ((i != j) && !selectedQ[j] && onFrontQ[j] && sizeLayersRef[i] <= sizeLayersRef[j] &&
-                        scoreLayersRef[i] > scoreLayersRef[j])
+                        scoreLayersRef[i] > scoreLayersRef[j]) 
                     {
                         onFrontQ[j] = false;
                     }
