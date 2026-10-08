@@ -153,19 +153,17 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _newbornOrganisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _scores = new int[MLSetup.Current.OrganismsArraySize];
             _layers = new int[MLSetup.Current.OrganismsArraySize];
-            _taxedScorePercentiles = new int[100];
+            _taxedScorePercentiles = new int[paretoSample];
             //additions for NSGA selection
-            _scoreLayers = new int[100];
-            _sizeLayers = new int[100];
-            _layerNumbers = new int[100];
-            _layerOffspringTargets = new float[100];
-            _layerSizes = new int[100];
+            _scoreLayers = new int[paretoSample];
+            _sizeLayers = new int[paretoSample];
+            _layerNumbers = new int[paretoSample];
+            _layerOffspringTargets = new float[paretoSample];
+            _layerSizes = new int[paretoSample];
 
             // True Pareto front + elitism support
             _isFrontZero = new bool[MLSetup.Current.OrganismsArraySize];
             _frontIndices = new int[MLSetup.Current.OrganismsArraySize];
-            _maxEliteCapacity = Math.Min(500_000, MLSetup.Current.OrganismsArraySize);
-            _eliteArchive = new Organism[_maxEliteCapacity];
 
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
