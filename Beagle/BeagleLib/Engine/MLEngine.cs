@@ -323,6 +323,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         return (size <= sizeRef) && (score >= scoreRef) && (size < sizeRef || score > scoreRef);
     }
 
+    // Identify which layer an organism from the whole population belongs to using sampled layers
     public int GetParetoLayer(int[] sizeLayersRef, int[] scoreLayersRef, int[] layerNumbersRef, int score, int size)
     {
         bool dominated = false;
@@ -347,6 +348,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         return currentLayer;
     }
 
+    // Identify the next front layer from sampled individuals
     public void FrontSelect(int[] sizeLayersRef, int[] scoreLayersRef, int[] frontIndices, ref int frontCount, bool[] selectedQ)
     {
         bool[] onFrontQ = new bool[paretoSample];
@@ -379,6 +381,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     }
 
+    // Group sampled individuals into layers
     public void ParetoLayers(int[] layerNumbersRef, int[] sizeLayersRef, int[] scoreLayersRef)
     {
         int[] frontIndices = new int[paretoSample];
