@@ -138,8 +138,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _accelerators[i].AllCommands = new Command[_accelerators[i].MaxCommandBufferSize];
                 _accelerators[i].ScriptStarts = new int[(int)Math.Ceiling((double)MLSetup.Current.OrganismsArraySize / _accelerators.Length)];
 
-                _accelerators[i].AllInputs = _accelerators[i].Accelerator.Allocate1D<float>(_allInputs.Length);
-                _accelerators[i].CorrectOutputs = _accelerators[i].Accelerator.Allocate1D<float>(MLSetup.Current.ExperimentsPerGeneration);
+                _accelerators[i].AllInputsMB = _accelerators[i].Accelerator.Allocate1D<float>(_allInputs.Length);
+                _accelerators[i].CorrectOutputsMB = _accelerators[i].Accelerator.Allocate1D<float>(MLSetup.Current.ExperimentsPerGeneration);
 
                 //_accelerators[i].Kernel = _accelerators[i].Accelerator.LoadStreamKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
                 _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
@@ -772,8 +772,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         using (var stream = accelerator.Accelerator.CreateStream())
         {
             #region Copy stuff that does not change between batches to GPU
-            accelerator.AllInputs.CopyFromCPU(stream, _allInputs);
-            accelerator.CorrectOutputs.CopyFromCPU(stream, _correctOutputs);
+            accelerator.AllInputsMB.CopyFromCPU(stream, _allInputs);
+            accelerator.CorrectOutputsMB.CopyFromCPU(stream, _correctOutputs);
             #endregion
 
             #region Run kernel in batches if needed
@@ -839,7 +839,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration - groupStart);
                                 var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
 
-                                accelerator.Kernel(stream, launchDimension, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputs.View, (uint)_inputLabels.Length, accelerator.CorrectOutputs.View, acceleratorGrossRewards.View, FitFunc);
+                                accelerator.Kernel(stream, launchDimension, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputsMB.View, (uint)_inputLabels.Length, accelerator.CorrectOutputsMB.View, acceleratorGrossRewards.View, FitFunc);
                                 if (flashFileStream) Output.FlushFileStream();
                                 stream.Synchronize();
 
