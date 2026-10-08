@@ -1518,7 +1518,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public bool turboParetoSearch = false; //TODO: toggle for extreme greedy Pareto front search
     public int paretoSample = 100; //TODO: toggle for different sample sizes
     public int crossoverLayerThreshold = 3;//5;
-    public int crossoverPartnerPoolSize = 100_000;
+    public int crossoverPartnerPoolSize = 10_000;
     #endregion
 
     //#region External Thread-Safe Interface
