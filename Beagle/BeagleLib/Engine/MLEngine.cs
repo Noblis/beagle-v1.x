@@ -160,7 +160,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _layerNumbers = new int[paretoSample];
             _layerOffspringTargets = new float[paretoSample];
             _layerSizes = new int[paretoSample];
-            _crossoverPartners = new Organism[10_000];
+            _crossoverPartners = new Organism[crossoverPartnerPoolSize];
 
             // True Pareto front + elitism support
             _isFrontZero = new bool[MLSetup.Current.OrganismsArraySize];
@@ -487,7 +487,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     {
         // Fill array with random
         int fillCount = 0;
-        for (int i = 0; i < 10000; i++) //TODO: maybe parallelize with atomic counter
+        for (int i = 0; i < crossoverPartnerPoolSize; i++) //TODO: maybe parallelize with atomic counter
         {
             int randIdx = Rnd.Random.Next(_organismsCount);
             if(_layers[randIdx]<=crossoverLayerThreshold && _scores[randIdx] > 0)
@@ -1518,6 +1518,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public bool turboParetoSearch = false; //TODO: toggle for extreme greedy Pareto front search
     public int paretoSample = 100; //TODO: toggle for different sample sizes
     public int crossoverLayerThreshold = 3;//5;
+    public int crossoverPartnerPoolSize = 100_000;
     #endregion
 
     //#region External Thread-Safe Interface
