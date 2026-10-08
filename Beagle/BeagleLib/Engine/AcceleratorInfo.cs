@@ -14,9 +14,6 @@ public class AcceleratorInfo<TFitFunc> : IDisposable where TFitFunc : struct, IF
         AllInputsMB.Dispose();
         CorrectOutputsMB.Dispose();
         Stream.Dispose();
-        //ScriptStartsMB.Dispose();
-        //CommandsMB.Dispose();
-        //RewardsMB.Dispose();
     }
     #endregion 
 
@@ -25,7 +22,6 @@ public class AcceleratorInfo<TFitFunc> : IDisposable where TFitFunc : struct, IF
 
     public uint GroupSize { get; set; }
     public long MaxCommandBufferSize { get; set; }
-    //public long MaxDeviceCommandBufferSize { get; set; }
     public Command[] AllCommands { get; set; } = null!;
     public int[] ScriptStarts { get; set; } = null!;
 
@@ -33,9 +29,6 @@ public class AcceleratorInfo<TFitFunc> : IDisposable where TFitFunc : struct, IF
     public MemoryBuffer1D<float, Stride1D.Dense> CorrectOutputsMB { get; set; } = null!;
 
     public AcceleratorStream Stream { get; set; } = null!;
-    //public MemoryBuffer1D<int, Stride1D.Dense> ScriptStartsMB { get; set; } = null!;
-    //public MemoryBuffer1D<Command, Stride1D.Dense> CommandsMB { get; set; } = null!;
-    //public MemoryBuffer1D<int, Stride1D.Dense> RewardsMB { get; set; } = null!;
 
     public Action<AcceleratorStream, KernelConfig, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc> Kernel { get; set; } = null!;
     #endregion
