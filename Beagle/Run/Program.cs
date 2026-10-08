@@ -21,6 +21,8 @@ public class Program
         var noEscMenu = false;
         var runFeynmanFormula = -1;
         var useLibDevice = false;
+        var benchFit = "std";
+        var benchGens = 0;
         foreach (var arg in args)
         {
             try
@@ -54,6 +56,19 @@ public class Program
                     runFeynmanFormula = int.Parse(argParts[1]);
                     if (runFeynmanFormula < -1) throw new ArgumentException();
                 }
+                else if (arg.ToLower().StartsWith("benchfit"))
+                {
+                    var argParts = arg.Split('=');
+                    if (argParts.Length != 2) throw new ArgumentException();
+                    benchFit = argParts[1].ToLower();
+                }
+                else if (arg.ToLower().StartsWith("benchgens"))
+                {
+                    var argParts = arg.Split('=');
+                    if (argParts.Length != 2) throw new ArgumentException();
+                    benchGens = int.Parse(argParts[1].Replace("_", ""));
+                    if (benchGens < 1) throw new ArgumentException();
+                }
                 else if (arg.ToLower().StartsWith("#"))
                 {
                     //This is a comment, rest of the line is not used
@@ -73,6 +88,7 @@ public class Program
                 Output.WriteLine("StopAfterBirths={births} - directs Beagle to stop after number of births specified");
                 Output.WriteLine("RunFeynman={1-100} - directs Beagle to run one of the formulas from Feynman 100 benchmark");
                 Output.WriteLine("UseLibDevice - directs Beagle to use NVIDIA hardware-accelerated math lib. Not recommended for most users.");
+                Output.WriteLine("BenchFit={std|corr} BenchGens={generations} - runs the QuickBenchmark harness for N generations and reports births/deaths throughput.");
 
                 Output.WriteLine("For example: RunFeynman=1 NoEscMenu StopAfterMin=10");
                 return;
@@ -138,7 +154,24 @@ public class Program
         //return;
         #endregion
 
-        #region RunFeynmen
+        #region QuickBenchmark
+        if (benchGens > 0)
+        {
+            if (benchFit == "corr")
+            {
+                using var benchEngine = new MLEngine<QuickBenchmark, CorrelationFitFunc>(useLibDevice: useLibDevice);
+                benchEngine.TrainBenchmark(benchGens);
+            }
+            else
+            {
+                using var benchEngine = new MLEngine<QuickBenchmark, StdFitFunc>(useLibDevice: useLibDevice);
+                benchEngine.TrainBenchmark(benchGens);
+            }
+            return;
+        }
+        #endregion
+
+        #region RunFeynman
         if (runFeynmanFormula > 0)
         {
             using var mlEngine = FeynmanBenchmark.GetFeynmanMLEngineForFormula<CorrelationFitFunc>(runFeynmanFormula);
