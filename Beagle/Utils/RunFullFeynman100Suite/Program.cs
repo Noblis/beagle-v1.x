@@ -5,7 +5,7 @@ namespace RunFullFeynman100Suite;
 
 public static class Program
 {
-    public enum ProblemType
+    private enum ProblemType
     {
         Easy, Medium, Hard 
     }
