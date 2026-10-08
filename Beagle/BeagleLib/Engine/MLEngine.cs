@@ -1061,6 +1061,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
     protected bool VerifyModel()
     {
+        var fgColor = Console.ForegroundColor;
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        
         var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 4;
         var inputsArray = new float[verificationExperimentsCount][];
         Parallel.For(0, inputsArray.Length, i =>
@@ -1133,6 +1136,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         Console.ForegroundColor = currentForegroundColor;
         Output.WriteLine();
+
+        Console.ForegroundColor = fgColor;
 
         return !error;
     }

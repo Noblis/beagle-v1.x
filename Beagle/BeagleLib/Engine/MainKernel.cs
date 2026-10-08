@@ -1,8 +1,10 @@
-﻿using System.Diagnostics;
-using BeagleLib.Engine.FitFunc;
+﻿using BeagleLib.Engine.FitFunc;
 using BeagleLib.Util;
 using BeagleLib.VM;
 using ILGPU;
+using ILGPU.Algorithms;
+using ILGPU.Algorithms.ScanReduceOperations;
+using System.Diagnostics;
 
 namespace BeagleLib.Engine;
 
@@ -148,7 +150,10 @@ public static class MainKernel
             else score = fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid);
 
             //accumulate results
-            Atomic.Add(ref rewards[organismIdx], score);
+            //Atomic.Add(ref rewards[organismIdx], score);
+
+            var total = GroupExtensions.AllReduce<int, AddInt32>(score);
+            if (Group.IsFirstThread) rewards[organismIdx] = total;
         }
     }
     #endregion
