@@ -379,7 +379,7 @@ public class Organism
         return CreateByCopyingCommandsFromPartOfSpan(mutationCommands, mutationCommandsLength);
     }
 
-    public Organism? ProduceCrossoverChild(Organism[] organisms, int organismsCount)
+    public Organism? ProduceCrossoverChild(Organism[] organisms, int organismsCount, int[] layerNumbers, int layerNum)
     {
         Span<Command> crossoverCommands = stackalloc Command[BConfig.MaxScriptLength];
         var crossoverCommandsLength = Commands.Length;
@@ -403,49 +403,69 @@ public class Organism
         
         // Pick random search direction for crossover partner
         int searchIter=1;
-        if (Rnd.Random.NextDouble() < 0.5)
-        {
-            searchIter = -1;
-        }
+        //if (Rnd.Random.NextDouble() < 0.5)
+        //{
+        //    searchIter = -1;
+        //}
 
         // Set random search starting point
         int searchPoint = Rnd.Random.Next(organismsCount);
-        int startPoint = searchPoint;
+        //int startPoint = searchPoint;
 
         int maxSearchPoints = 1000;
         int searchedPointsSoFar = 0;
-        double bestDelta = 1;
+        //double bestDelta = 1;
         int partnerID = -1;
-        double myASR = ASR;
+        //double myASR = ASR;
 
         // Search for a compatible partner or most compatible partner within maxSearchPoints
-        while(bestDelta>MLSetup.Current.CrossoverPartnerDelta && searchedPointsSoFar<maxSearchPoints)
+        //while(bestDelta>MLSetup.Current.CrossoverPartnerDelta && searchedPointsSoFar<maxSearchPoints)
+        //{
+        //    double asr;
+        //    try  // Occasionally getting models with a null ASR (might be a bug)
+        //    {
+        //        asr = organisms[searchPoint]!.ASR;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        asr = -1.0;
+        //    }
+
+        //    if (Math.Abs(myASR-asr)<bestDelta) // check if compatible
+        //    {
+        //        bestDelta = Math.Abs(myASR - asr);
+        //        partnerID = searchPoint;
+
+        //    }
+        //    searchPoint += searchIter;
+        //    searchedPointsSoFar++;
+        //    if (searchPoint < 0 || searchPoint >= organismsCount) // flip search direction if end of array
+        //    {
+        //        searchIter = -1 * searchIter;
+        //        searchPoint = startPoint + searchIter;
+        //    }
+
+        //}
+
+        int bestLayer = 100;//layerNum+MLSetup.Current.CrossoverPartnerLayerMax;
+        while (bestLayer > layerNum+MLSetup.Current.CrossoverPartnerLayerMax && searchedPointsSoFar < maxSearchPoints)
         {
-            double asr;
-            try  // Occasionally getting models with a null ASR (might be a bug)
+            if (layerNumbers[searchPoint] < bestLayer)
             {
-                asr = organisms[searchPoint]!.ASR;
-            }
-            catch (Exception ex)
-            {
-                asr = -1.0;
-            }
-
-            if (Math.Abs(myASR-asr)<bestDelta) // check if compatible
-            {
-                bestDelta = Math.Abs(myASR - asr);
+                bestLayer = layerNumbers[searchPoint];
                 partnerID = searchPoint;
-
             }
-            searchPoint += searchIter;
+            //searchPoint += searchIter;
+            searchPoint = Rnd.Random.Next(organismsCount);
             searchedPointsSoFar++;
-            if (searchPoint < 0 || searchPoint >= organismsCount) // flip search direction if end of array
-            {
-                searchIter = -1 * searchIter;
-                searchPoint = startPoint + searchIter;
-            }
+            //if (searchPoint < 0 || searchPoint >= organismsCount) // flip search direction if end of array
+            //{
+            //    searchIter = -1 * searchIter;
+            //    searchPoint = startPoint + searchIter;
+            //}
 
         }
+
 
         if (partnerID == -1) return null; // returns null if no compatible partner found
         crossoverCommands.Crossover(ref crossoverCommandsLength, organisms[partnerID]!);
