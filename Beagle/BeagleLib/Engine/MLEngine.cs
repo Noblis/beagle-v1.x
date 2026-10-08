@@ -329,6 +329,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     {
         bool dominated = false;
         int currentLayer = 0;
+        //TODO: Does this early termination on 0 and subzero scores help
+        if (score <= 0) return layerNumbersRef[paretoSample-1];
+
         for (int i = 0; i < paretoSample; i++)
         {
             if (layerNumbersRef[i] > currentLayer)
@@ -487,7 +490,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         for (int i = 0; i < 10000; i++) //TODO: maybe parallelize with atomic counter
         {
             int randIdx = Rnd.Random.Next(_organismsCount);
-            if(_layers[randIdx]<=crossoverLayerThreshold)
+            if(_layers[randIdx]<=crossoverLayerThreshold && _scores[randIdx] > 0)
             {
                 _crossoverPartners[fillCount] = _organisms[randIdx]!;
                 fillCount++;
@@ -1514,7 +1517,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     private int[] _frontIndices = null!;
     public bool turboParetoSearch = false; //TODO: toggle for extreme greedy Pareto front search
     public int paretoSample = 100; //TODO: toggle for different sample sizes
-    public int crossoverLayerThreshold = 5;
+    public int crossoverLayerThreshold = 3;//5;
     #endregion
 
     //#region External Thread-Safe Interface
