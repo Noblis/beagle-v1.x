@@ -141,7 +141,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _accelerators[i].AllInputsMB = _accelerators[i].Accelerator.Allocate1D<float>(_allInputs.Length);
                 _accelerators[i].CorrectOutputsMB = _accelerators[i].Accelerator.Allocate1D<float>(MLSetup.Current.ExperimentsPerGeneration);
 
-                //_accelerators[i].Kernel = _accelerators[i].Accelerator.LoadStreamKernel<byte, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
+                _accelerators[i].Stream = _accelerators[i].Accelerator.CreateStream();
+
                 _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
             }
             #endregion
@@ -769,96 +770,93 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var scoresLogicalLength = 0;
         #endregion
 
-        using (var stream = accelerator.Accelerator.CreateStream())
+        #region Copy stuff that does not change between batches to GPU
+        accelerator.AllInputsMB.CopyFromCPU(accelerator.Stream, _allInputs);
+        accelerator.CorrectOutputsMB.CopyFromCPU(accelerator.Stream, _correctOutputs);
+        #endregion
+
+        #region Run kernel in batches if needed
+        var currentOrganismBatchStartIdx = 0;
+        var currentOrganismBatchEndIdx = 0;
+        //var first = true;
+
+        while (currentOrganismBatchStartIdx < organisms.Length)
         {
-            #region Copy stuff that does not change between batches to GPU
-            accelerator.AllInputsMB.CopyFromCPU(stream, _allInputs);
-            accelerator.CorrectOutputsMB.CopyFromCPU(stream, _correctOutputs);
+            #region Set up batchScriptStarts and batchAllCommands
+            var allCommandsIndex = 0;
+            for (var i = currentOrganismBatchStartIdx; i < organisms.Length; i++)
+            {
+                currentOrganismBatchEndIdx = i;
+                if (allCommandsIndex + organisms[i]!.Commands.Length > accelerator.MaxCommandBufferSize)
+                {
+                    currentOrganismBatchEndIdx--; //roll back
+                    break;
+                }
+                accelerator.ScriptStarts[i - currentOrganismBatchStartIdx] = allCommandsIndex;
+                for (var j = 0; j < organisms[i]!.Commands.Length; j++)
+                {
+                    accelerator.AllCommands[allCommandsIndex++] = organisms[i]!.Commands[j];
+                }
+            }
+
+            var batchOrganismCount = currentOrganismBatchEndIdx + 1 - currentOrganismBatchStartIdx;
+            Debug.Assert(batchOrganismCount > 0);
+            var batchScriptStarts = new Span<int>(accelerator.ScriptStarts, 0, batchOrganismCount); //scriptStarts[..batchOrganismCount];
+            var batchAllCommands = new Span<Command>(accelerator.AllCommands, 0, allCommandsIndex); //_allCommands[..allCommandsIndex];
+
+            currentOrganismBatchStartIdx = currentOrganismBatchEndIdx + 1;
             #endregion
 
-            #region Run kernel in batches if needed
-            var currentOrganismBatchStartIdx = 0;
-            var currentOrganismBatchEndIdx = 0;
-            //var first = true;
+            //if (first)
+            //{
+            //    first = false;
+            //    Output.WriteLineUnlessAtLineStart();
+            //    Output.WriteLine($"-executing batch: {batchOrganismCount:N0} x {accelerator.GroupSize:N0}");
+            //}
+            //else
+            //{
+            //    Output.WriteLineUnlessAtLineStart();
+            //    Output.WriteLine($"-executing additional batch: {batchOrganismCount:N0} x {accelerator.GroupSize:N0}");
+            //}
 
-            while (currentOrganismBatchStartIdx < organisms.Length)
+            using (var acceleratorScriptStarts = accelerator.Accelerator.Allocate1D<int>(batchScriptStarts.Length))
             {
-                #region Set up batchScriptStarts and batchAllCommands
-                var allCommandsIndex = 0;
-                for (var i = currentOrganismBatchStartIdx; i < organisms.Length; i++)
+                using (var acceleratorAllCommands = accelerator.Accelerator.Allocate1D<Command>(batchAllCommands.Length))
                 {
-                    currentOrganismBatchEndIdx = i;
-                    if (allCommandsIndex + organisms[i]!.Commands.Length > accelerator.MaxCommandBufferSize)
+                    using (var acceleratorGrossRewards = accelerator.Accelerator.Allocate1D<int>(batchOrganismCount))
                     {
-                        currentOrganismBatchEndIdx--; //roll back
-                        break;
-                    }
-                    accelerator.ScriptStarts[i - currentOrganismBatchStartIdx] = allCommandsIndex;
-                    for (var j = 0; j < organisms[i]!.Commands.Length; j++)
-                    {
-                        accelerator.AllCommands[allCommandsIndex++] = organisms[i]!.Commands[j];
-                    }
-                }
+                        #region Copy stuff that changes to GPU
+                        acceleratorScriptStarts.View.CopyFromCPU(accelerator.Stream, batchScriptStarts);
+                        acceleratorAllCommands.View.CopyFromCPU(accelerator.Stream, batchAllCommands);
+                        if (!FitFunc.UseCorrelationFit) acceleratorGrossRewards.View.MemSetToZero(accelerator.Stream);
+                        #endregion
 
-                var batchOrganismCount = currentOrganismBatchEndIdx + 1 - currentOrganismBatchStartIdx;
-                Debug.Assert(batchOrganismCount > 0);
-                var batchScriptStarts = new Span<int>(accelerator.ScriptStarts, 0, batchOrganismCount); //scriptStarts[..batchOrganismCount];
-                var batchAllCommands = new Span<Command>(accelerator.AllCommands, 0, allCommandsIndex); //_allCommands[..allCommandsIndex];
-
-                currentOrganismBatchStartIdx = currentOrganismBatchEndIdx + 1;
-                #endregion
-
-                //if (first)
-                //{
-                //    first = false;
-                //    Output.WriteLineUnlessAtLineStart();
-                //    Output.WriteLine($"-executing batch: {batchOrganismCount:N0} x {accelerator.GroupSize:N0}");
-                //}
-                //else
-                //{
-                //    Output.WriteLineUnlessAtLineStart();
-                //    Output.WriteLine($"-executing additional batch: {batchOrganismCount:N0} x {accelerator.GroupSize:N0}");
-                //}
-
-                using (var acceleratorScriptStarts = accelerator.Accelerator.Allocate1D<int>(batchScriptStarts.Length))
-                {
-                    using (var acceleratorAllCommands = accelerator.Accelerator.Allocate1D<Command>(batchAllCommands.Length))
-                    {
-                        using (var acceleratorGrossRewards = accelerator.Accelerator.Allocate1D<int>(batchOrganismCount))
+                        #region Execute Kernel
+                        var groupStart = (uint)0;
+                        do
                         {
-                            #region Copy stuff that changes to GPU
-                            acceleratorScriptStarts.View.CopyFromCPU(stream, batchScriptStarts);
-                            acceleratorAllCommands.View.CopyFromCPU(stream, batchAllCommands);
-                            if (!FitFunc.UseCorrelationFit) acceleratorGrossRewards.View.MemSetToZero(stream);
-                            #endregion
+                            var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration - groupStart);
+                            var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
 
-                            #region Execute Kernel
-                            var groupStart = (uint)0;
-                            do
-                            {
-                                var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration - groupStart);
-                                var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
+                            accelerator.Kernel(accelerator.Stream, launchDimension, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputsMB.View, (uint)_inputLabels.Length, accelerator.CorrectOutputsMB.View, acceleratorGrossRewards.View, FitFunc);
+                            if (flashFileStream) Output.FlushFileStream();
+                            accelerator.Stream.Synchronize();
 
-                                accelerator.Kernel(stream, launchDimension, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputsMB.View, (uint)_inputLabels.Length, accelerator.CorrectOutputsMB.View, acceleratorGrossRewards.View, FitFunc);
-                                if (flashFileStream) Output.FlushFileStream();
-                                stream.Synchronize();
-
-                                groupStart += currentGroupSize;
-                            }
-                            while (groupStart < MLSetup.Current.ExperimentsPerGeneration);
-                            #endregion
-
-                            #region Get and return the results
-                            var grossRewardsThisAcceleratorThisBatch = grossRewardsThisAccelerator.Slice(scoresLogicalLength, batchOrganismCount);
-                            acceleratorGrossRewards.View.CopyToCPU(stream, grossRewardsThisAcceleratorThisBatch);
-                            scoresLogicalLength += batchOrganismCount;
-                            #endregion
+                            groupStart += currentGroupSize;
                         }
+                        while (groupStart < MLSetup.Current.ExperimentsPerGeneration);
+                        #endregion
+
+                        #region Get and return the results
+                        var grossRewardsThisAcceleratorThisBatch = grossRewardsThisAccelerator.Slice(scoresLogicalLength, batchOrganismCount);
+                        acceleratorGrossRewards.View.CopyToCPU(accelerator.Stream, grossRewardsThisAcceleratorThisBatch);
+                        scoresLogicalLength += batchOrganismCount;
+                        #endregion
                     }
                 }
             }
-            #endregion
         }
+        #endregion
     }
 
     protected void SaveColony()
