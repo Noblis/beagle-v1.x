@@ -217,7 +217,7 @@ public static class MainKernel
             //accumulate results
             //Atomic.Add(ref rewards[organismIdx], score);
 
-            var total = GroupExtensions.AllReduce<int, AddInt32>(score);
+            var total = GroupExtensions.Reduce<int, AddInt32>(score);
             if (Group.IsFirstThread) rewards[organismIdx] = total;
         }
     }
