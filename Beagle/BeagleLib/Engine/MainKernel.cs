@@ -4,7 +4,6 @@ using BeagleLib.VM;
 using ILGPU;
 using ILGPU.Algorithms;
 using ILGPU.Algorithms.ScanReduceOperations;
-using System.Diagnostics;
 
 namespace BeagleLib.Engine;
 
@@ -58,8 +57,8 @@ public static class MainKernel
 
             // Phase 1: calculate the means.
             int validCount = GroupExtensions.Reduce<int, AddInt32>(bothValid ? 1 : 0);
-            double sumOutput = GroupExtensions.Reduce<double, AddDouble>(bothValid ? (double)output : 0.0);
-            double sumCorrect = GroupExtensions.Reduce<double, AddDouble>(bothValid ? (double)correctOutput : 0.0);
+            double sumOutput = GroupExtensions.Reduce<double, AddDouble>(bothValid ? output : 0.0);
+            double sumCorrect = GroupExtensions.Reduce<double, AddDouble>(bothValid ? correctOutput : 0.0);
 
             // Only the first thread needs to publish the means.
             var means = SharedMemory.Allocate<double>(2);
