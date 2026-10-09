@@ -141,6 +141,71 @@ public static class MainKernel
                 }
                 rewards[organismIdx] = score;
             }
+
+            //Patch D: replace the shared-memory atomic + barrier dance with hierarchical group
+            //reductions. Per-thread partials -> warp/group reductions -> single score write per organism.
+            //double sumOut = 0, sumCorrect = 0;
+            //var countVV = 0;
+            //if (isOutputValid && isCorrectOutputValid)
+            //{
+            //    countVV = 1;
+            //    sumOut = output;
+            //    sumCorrect = correctOutput;
+            //}
+
+            //var countTotal = GroupExtensions.AllReduce<int, AddInt32>(countVV);
+            //var sumOutTotal = GroupExtensions.AllReduce<double, AddDouble>(sumOut);
+            //var sumCorrectTotal = GroupExtensions.AllReduce<double, AddDouble>(sumCorrect);
+
+            ////means: identical in every thread of the group
+            //var meanOut = countTotal != 0 ? sumOutTotal / countTotal : 0;
+            //var meanCorrect = countTotal != 0 ? sumCorrectTotal / countTotal : 0;
+
+            //double sxy = 0, sxx = 0, syy = 0;
+            //var mismatches = 0;
+            //var invMatches = 0;
+            //if (isOutputValid && isCorrectOutputValid)
+            //{
+            //    var outputDeltaVsMean = output - meanOut;
+            //    var correctOutputDeltaVsMean = correctOutput - meanCorrect;
+            //    sxy = outputDeltaVsMean * correctOutputDeltaVsMean;
+            //    sxx = outputDeltaVsMean * outputDeltaVsMean;
+            //    syy = correctOutputDeltaVsMean * correctOutputDeltaVsMean;
+            //}
+            //else
+            //{
+            //    //XOR returns true if values are different
+            //    if (isOutputValid ^ isCorrectOutputValid) mismatches = 1;
+            //    else invMatches = 1;
+            //}
+
+            //var sumXYTotal = GroupExtensions.AllReduce<double, AddDouble>(sxy);
+            //var sumXXTotal = GroupExtensions.AllReduce<double, AddDouble>(sxx);
+            //var sumYYTotal = GroupExtensions.AllReduce<double, AddDouble>(syy);
+            //var mismatchTotal = GroupExtensions.AllReduce<int, AddInt32>(mismatches);
+            //var invMatchTotal = GroupExtensions.AllReduce<int, AddInt32>(invMatches);
+
+            //if (Group.IsFirstThread)
+            //{
+            //    int score;
+            //    if (sumXYTotal.IsValidNumber() && sumXXTotal.IsValidNumber() && sumYYTotal.IsValidNumber())
+            //    {
+            //        var denominator = sumXXTotal * sumYYTotal;
+            //        float rSquared = 0;
+            //        if (denominator != 0) rSquared = (float)(sumXYTotal * sumXYTotal / denominator);
+
+            //        Debug.Assert(rSquared is <= 1 and >= 0);
+
+            //        //r can range from 0 to 1
+            //        //punishment is based on the percentage of mismatches, number of experiments cancels out
+            //        score = (int)(BConfig.MaxScore * (numberOfExperiments - (mismatchTotal + invMatchTotal)) * rSquared * rSquared) - BConfig.MaxScore * (mismatchTotal - invMatchTotal);
+            //    }
+            //    else
+            //    {
+            //        score = (int)(-BConfig.MaxScore * numberOfExperiments);
+            //    }
+            //    rewards[organismIdx] = score;
+            //}
         }
         else
         {
