@@ -142,6 +142,7 @@ public class Program
         if (runFeynmanFormula > 0)
         {
             using var mlEngine = FeynmanBenchmark.GetFeynmanMLEngineForFormula<CorrelationFitFunc>(runFeynmanFormula);
+            //using var mlEngine = FeynmanBenchmark.GetFeynmanMLEngineForFormula<StdFitFunc>(runFeynmanFormula);
             mlEngine.Train(stopAfterMin, stopAfterBirths, noEscMenu);
             return;
         }
@@ -150,7 +151,7 @@ public class Program
         {
             //new CsvGen<RydbergFormula>().CreateAndSaveCsvFile(5000); return;
 
-            using var mlEngine = new MLEngine<QuadraticEq, StdFitFunc>(useLibDevice: useLibDevice);
+            using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<AreaOfCircle, StdFitFunc>(useLibDevice: useLibDevice);
