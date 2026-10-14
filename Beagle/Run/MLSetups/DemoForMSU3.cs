@@ -6,7 +6,7 @@ namespace Run.MLSetups;
 public class DemoForMSU3 : MLSetup
 {
     #region Overrides
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
+    public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         var g = 1 + Rnd.Random.NextSingle();
         var m1 = 1 + Rnd.Random.NextSingle();
@@ -18,11 +18,11 @@ public class DemoForMSU3 : MLSetup
         //var z1 = 3 + Rnd.Random.NextSingle();
         //var z2 = 1 + Rnd.Random.NextSingle();
 
-        inputs[0] = g;
-        inputs[1] = m1;
-        inputs[2] = m2;
-        inputs[3] = x1;
-        inputs[4] = x2;
+        allInputs[inputSetIdx, 0] = g;
+        allInputs[inputSetIdx, 1] = m1;
+        allInputs[inputSetIdx, 2] = m2;
+        allInputs[inputSetIdx, 3] = x1;
+        allInputs[inputSetIdx, 4] = x2;
         //inputs[5] = y1;
         //inputs[6] = y2;
         //inputs[7] = z1;
@@ -34,7 +34,8 @@ public class DemoForMSU3 : MLSetup
 
         //var result = (g * m1 * m2)/(dx*dx + dy*dy + dz*dz);
         var result = (g * m1 * m2) / (dx * dx);
-        return (inputs, result);
+
+        return (allInputs, result);
     }
     public override string[] GetInputLabels()
     {

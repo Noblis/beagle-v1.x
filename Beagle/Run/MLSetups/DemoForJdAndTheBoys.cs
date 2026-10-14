@@ -6,14 +6,17 @@ namespace Run.MLSetups;
 public class DemoForJdAndTheBoys : MLSetup
 {
     #region Overrides
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
+        public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         var a = Rnd.Random.NextSingle() * 10 - 5;
         var b = Rnd.Random.NextSingle() * 10 - 5;
-        inputs[0] = a;
-        inputs[1] = b;
+
+        allInputs[inputSetIdx, 0] = a;
+        allInputs[inputSetIdx, 1] = b;
+        
         var output = 3 * a * a * MathF.Sin(b) + 1 / (a * a);
-        return (inputs, output);
+        
+        return (allInputs, output);
     }
     public override string[] GetInputLabels()
     {

@@ -6,18 +6,18 @@ namespace Run.MLSetups;
 public class QuadraticEq : MLSetup
 {
     #region Overrides
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
+        public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         var a = Rnd.Random.NextSingle()*20 - 10;
         var b = Rnd.Random.NextSingle()*20 - 10;
         var c = Rnd.Random.NextSingle()*20 - 10;
 
-        inputs[0] = a;
-        inputs[1] = b;
-        inputs[2] = c;
+        allInputs[inputSetIdx, 0] = a;
+        allInputs[inputSetIdx, 1] = b;
+        allInputs[inputSetIdx, 2] = c;
 
         var output = (-b + MathF.Sqrt(b*b - 4f*a*c)) / (2f*a);
-        return (inputs, output);
+        return (allInputs, output);
     }
     public override string[] GetInputLabels()
     {

@@ -6,20 +6,20 @@ namespace Run.MLSetups;
 public class DemoForMSU : MLSetup
 {
     #region Overrides
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
+        public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         var x1 = Rnd.Random.NextSingle() * 5;
         var x2 = Rnd.Random.NextSingle() * 5;
         var y1 = Rnd.Random.NextSingle() * 5;
         var y2 = Rnd.Random.NextSingle() * 5;
 
-        inputs[0] = x1;
-        inputs[1] = x2;
-        inputs[2] = y1;
-        inputs[3] = y2;
+        allInputs[inputSetIdx, 0] = x1;
+        allInputs[inputSetIdx, 1] = x2;
+        allInputs[inputSetIdx, 2] = y1;
+        allInputs[inputSetIdx, 3] = y2;
         
         var result = MathF.Sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-        return (inputs, result);
+        return (allInputs, result);
     }
     public override string[] GetInputLabels()
     {

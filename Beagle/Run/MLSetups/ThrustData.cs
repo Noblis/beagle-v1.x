@@ -10,7 +10,7 @@ public class ThrustData : MLSetup
     {
         return ["h", "M"];
     }
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputsToFill)
+    public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         while (true)
         {
@@ -20,9 +20,10 @@ public class ThrustData : MLSetup
             var output = _data[hIdx, mIdx];
             if (output.HasValue)
             {
-                inputsToFill[0] = _hs[hIdx]; 
-                inputsToFill[1] = _ms[mIdx];
-                return (inputsToFill, output.Value);
+                allInputs[inputSetIdx, 0] = _hs[hIdx]; 
+                allInputs[inputSetIdx, 1] = _ms[mIdx];
+
+                return (allInputs, output.Value);
             }
         }
     }

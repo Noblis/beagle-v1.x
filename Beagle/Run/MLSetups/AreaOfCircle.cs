@@ -6,11 +6,13 @@ namespace Run.MLSetups;
 public class AreaOfCircle : MLSetup
 {
     #region Overrides
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
+        public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         var r = Rnd.Random.NextSingle() * 25;
-        inputs[0] = r;
-        return (inputs, r*r*MathF.PI);
+
+        allInputs[inputSetIdx, 0] = r;
+        
+        return (allInputs, r*r*MathF.PI);
     }
     public override string[] GetInputLabels()
     {

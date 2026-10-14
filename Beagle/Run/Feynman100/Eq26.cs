@@ -5,16 +5,16 @@ namespace Run.Feynman100;
 public class Eq26 : FeynmanMLSetup
 {
     #region Overrides
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
+    public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         var n = 0 + Rnd.Random.NextSingle() * 1;
 	    var theta = 1 + Rnd.Random.NextSingle() * 4;
-        
-	    inputs[0] = n;
-	    inputs[1] = theta;
+
+        allInputs[inputSetIdx, 0] = n;
+	    allInputs[inputSetIdx, 1] = theta;
 
         var result = MathF.Asin(n * MathF.Sin(theta));
-        return (inputs, result);
+        return (allInputs, result);
     }
     public override string[] GetInputLabels()
     {

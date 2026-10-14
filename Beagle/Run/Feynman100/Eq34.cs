@@ -5,20 +5,20 @@ namespace Run.Feynman100;
 public class Eq34 : FeynmanMLSetup
 {
     #region Overrides
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
+        public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         var q = 1 + Rnd.Random.NextSingle() * 4;
 	    var v = 1 + Rnd.Random.NextSingle() * 4;
 	    var b = 1 + Rnd.Random.NextSingle() * 4;
 	    var p = 1 + Rnd.Random.NextSingle() * 4;
 	    
-	    inputs[0] = q;
-	    inputs[1] = v;
-	    inputs[2] = b;
-	    inputs[3] = p;
+	    allInputs[inputSetIdx, 0] = q;
+	    allInputs[inputSetIdx, 1] = v;
+	    allInputs[inputSetIdx, 2] = b;
+	    allInputs[inputSetIdx, 3] = p;
 	    
         var result = q*v*b/p;
-        return (inputs, result);
+        return (allInputs, result);
     }
     public override string[] GetInputLabels()
     {

@@ -6,13 +6,15 @@ namespace Run.MLSetups;
 public class AvgOf2 : MLSetup
 {
     #region Overrides
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
+        public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         var a = Rnd.Random.NextSingle() * 100;
         var b = Rnd.Random.NextSingle() * 100;
-        inputs[0] = a;
-        inputs[1] = b;
-        return (inputs, (a + b) / 2);
+
+        allInputs[inputSetIdx, 0] = a;
+        allInputs[inputSetIdx, 1] = b;
+        
+        return (allInputs, (a + b) / 2);
     }
     public override string[] GetInputLabels()
     {

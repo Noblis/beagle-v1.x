@@ -19,7 +19,7 @@ public abstract class MLSetup
 
     #region Abstract & Virtual Methods and Properties
     public abstract string[] GetInputLabels();
-    public abstract (float[], float) GetNextInputsAndCorrectOutput(float[] inputsToFill);
+    public abstract (float[,], float) GetNextInputsAndCorrectOutput(float[,] inputsToFill, ushort inputSetIdx);
 
     public virtual int CalcScriptLengthTax(int scriptLength) => scriptLength * ScriptLengthTaxRate;
     public virtual double SolutionFoundASRThreshold => 1.0;

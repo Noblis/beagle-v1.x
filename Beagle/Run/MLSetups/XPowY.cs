@@ -6,13 +6,15 @@ namespace Run.MLSetups;
 public class XPowY : MLSetup
 {
     #region Overrides
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
+        public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         var x = Rnd.Random.NextSingle() * 10;
         var y = Rnd.Random.NextSingle() * 5;
-        inputs[0] = x;
-        inputs[1] = y;
-        return (inputs, MathF.Pow(x, y));
+
+        allInputs[inputSetIdx, 0] = x;
+        allInputs[inputSetIdx, 1] = y;
+        
+        return (allInputs, MathF.Pow(x, y));
     }
     public override string[] GetInputLabels()
     {

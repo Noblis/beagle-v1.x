@@ -6,14 +6,17 @@ namespace Run.MLSetups;
 public class QuadraticEqNormalized : MLSetup
 {
     #region Overrides
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
+        public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         var b = Rnd.Random.NextSingle() * 200 - 100;
         var c = Rnd.Random.NextSingle() * 200 - 100;
-        inputs[0] = b;
-        inputs[1] = c;
+
+        allInputs[inputSetIdx, 0] = b;
+        allInputs[inputSetIdx, 1] = c;
+        
         var output = (MathF.Sqrt(b * b - 4 * c) - b) / 2;
-        return (inputs, output);
+        
+        return (allInputs, output);
     }
     public override string[] GetInputLabels()
     {

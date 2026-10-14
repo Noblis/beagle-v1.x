@@ -6,12 +6,15 @@ namespace Run.MLSetups;
 public class Benchmark : MLSetup
 {
     #region Overrides
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
+        public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         var x = Rnd.Random.NextSingle() * 2 * (float)Math.PI - (float)Math.PI;
-        inputs[0] = x;
+
+        allInputs[inputSetIdx, 0] = x;
+        
         var output = Rnd.Random.NextSingle() * 2 * (float)Math.PI - (float)Math.PI;
-        return (inputs, output);
+
+        return (allInputs, output);
     }
     public override string[] GetInputLabels()
     {

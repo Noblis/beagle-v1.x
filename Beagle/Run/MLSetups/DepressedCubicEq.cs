@@ -6,19 +6,20 @@ namespace Run.MLSetups;
 public class DepressedCubicEq : MLSetup
 {
     #region Overrides
-    public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
+        public override (float[,], float) GetNextInputsAndCorrectOutput(float[,] allInputs, ushort inputSetIdx)
     {
         var p = Rnd.Random.NextSingle() * 200 - 100;
         var q = Rnd.Random.NextSingle() * 200 - 100;
-        inputs[0] = p;
-        inputs[1] = p;
+
+        allInputs[inputSetIdx, 0] = p;
+        allInputs[inputSetIdx, 1] = p;
 
         var c = -q / 2;
         var d = MathF.Sqrt(q * q / 4 + p * p * p / 27);
 
         var answer = MathF.Cbrt(c + d) + MathF.Cbrt(c - d);
 
-        return (inputs, answer);
+        return (allInputs, answer);
     }
     public override string[] GetInputLabels()
     {
