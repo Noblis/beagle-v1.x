@@ -4,6 +4,7 @@ using BeagleLib.VM;
 using ILGPU;
 using ILGPU.Algorithms;
 using ILGPU.Algorithms.ScanReduceOperations;
+using ILGPU.Runtime;
 
 namespace BeagleLib.Engine;
 
@@ -14,8 +15,8 @@ public static class MainKernel
         uint numberOfExperiments,
         ArrayView<int> scriptStarts,
         ArrayView<Command> allCommands,
-        uint groupStart,
-        ArrayView<float> allInputs,
+        ushort groupStart,
+        ArrayView2D<float, Stride2D.DenseX> allInputs,
         uint inputsCount,
         ArrayView<float> correctOutputs,
 
@@ -29,7 +30,7 @@ public static class MainKernel
         //var organismIdx = index / numberOfExperiments;
         //var experimentIdx = index % numberOfExperiments;
         var organismIdx = Grid.IdxX;
-        var experimentIdx = Group.IdxX;
+        var experimentIdx = (ushort)Group.IdxX;
 
         //script start
         var myScriptStart = checked((uint)scriptStarts[organismIdx]);
@@ -39,9 +40,9 @@ public static class MainKernel
         var myScriptLength = checked((uint)(myScriptEnd - myScriptStart));
 
         //execute commands
-        var inputs = allInputs.SubView((uint)((groupStart + experimentIdx) * inputsCount), inputsCount);
+        //var inputs = allInputs.SubView((uint)((groupStart + experimentIdx) * inputsCount), inputsCount);
         var commands = allCommands.SubView(myScriptStart, myScriptLength);
-        var output = new CodeMachine().RunCommands(inputs, commands);
+        var output = new CodeMachine().RunCommands(allInputs, (ushort)(groupStart + experimentIdx), commands);
 
         //get correct output
         var correctOutput = correctOutputs[groupStart + experimentIdx];

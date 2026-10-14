@@ -8,8 +8,6 @@ using BeagleLib.Util;
 using BeagleLib.VM;
 using MathNet.Numerics;
 using Newtonsoft.Json;
-using Command = BeagleLib.VM.Command;
-using Output = BeagleLib.Util.Output;
 
 //using Command = BeagleLib.VM.Command;
 //using Output = BeagleLib.Util.Output;
@@ -83,13 +81,13 @@ public class Organism
     //This method circumvents the dead organism pool for both creating and destroying an organism.
     //It is meant to only be used for thread-safe data exchange between MLEngine and another thread.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Organism CloneForExport(float[][] inputsArray, float[] correctOutputs)
+    public Organism CloneForExport(float[,] allInputsArray, float[] correctOutputs)
     {
         Organism organism;
         //we check for this because, this, if true, GetFullCommands returns a deep copy bt if false, returns a reference to Commands array
         if (MLSetup.IsCorrelationFunctionRun) 
         {
-            var fullCommands = GetFullCommands(inputsArray, correctOutputs);
+            var fullCommands = GetFullCommands(allInputsArray, correctOutputs);
             organism = new Organism(fullCommands.ToArray());
         }
         else
@@ -378,11 +376,11 @@ public class Organism
         mutationCommands.Mutate(ref mutationCommandsLength, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
         return CreateByCopyingCommandsFromPartOfSpan(mutationCommands, mutationCommandsLength);
     }
-    public IEnumerable<Command> GetFullCommands(float[][] inputsArray, float[] correctOutputs)
+    public IEnumerable<Command> GetFullCommands(float[,] allInputsArray, float[] correctOutputs)
     {
         if (MLSetup.IsCorrelationFunctionRun)
         {
-            CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
+            CalcScaleAndOffsetIfNeeded(allInputsArray, correctOutputs);
             var commandsList = Commands.ToList();
 
             // ReSharper disable once CompareOfFloatsByEqualityOperator
@@ -405,11 +403,11 @@ public class Organism
             return Commands;
         }
     }
-    public int GetFullCommandsLength(float[][] inputsArray, float[] correctOutputs)
+    public int GetFullCommandsLength(float[,] allInputsArray, float[] correctOutputs)
     {
         if (MLSetup.IsCorrelationFunctionRun)
         {
-            CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
+            CalcScaleAndOffsetIfNeeded(allInputsArray, correctOutputs);
 
             var length = Commands.Length;
 
@@ -427,9 +425,9 @@ public class Organism
     #endregion
 
     #region Print and ToJson Commands
-    public void PrintCommands(string[] inputLabels, float[][] inputsArray, float[] correctOutputs)
+    public void PrintCommands(string[] inputLabels, float[,] allInputsArray, float[] correctOutputs)
     {
-        CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
+        CalcScaleAndOffsetIfNeeded(allInputsArray, correctOutputs);
         
         int addr;
         for (addr = 0; addr < Commands.Length; addr++)
@@ -461,9 +459,9 @@ public class Organism
             }
         }
     }
-    public void PrintCommandsInLine(string[] inputLabels, float[][] inputsArray, float[] correctOutputs)
+    public void PrintCommandsInLine(string[] inputLabels, float[,] allInputsArray, float[] correctOutputs)
     {
-        CalcScaleAndOffsetIfNeeded(inputsArray, correctOutputs);
+        CalcScaleAndOffsetIfNeeded(allInputsArray, correctOutputs);
 
         for (var addr = 0; addr < Commands.Length; addr++)
         {
@@ -497,9 +495,9 @@ public class Organism
         Output.WriteLine("");
     }
     
-    public string CommandsToJson(float[][] inputsArray, float[] correctOutputs)
+    public string CommandsToJson(float[,] allInputsArray, float[] correctOutputs)
     {
-        return JsonConvert.SerializeObject(GetFullCommands(inputsArray, correctOutputs));
+        return JsonConvert.SerializeObject(GetFullCommands(allInputsArray, correctOutputs));
     }
     #endregion
 
@@ -538,7 +536,7 @@ public class Organism
     #endregion
 
     #region Linear Regression Methods
-    public void CalcScaleAndOffsetIfNeeded(float[][] inputsArray, float[] correctOutputs)
+    public void CalcScaleAndOffsetIfNeeded(float[,] allInputsArray, float[] correctOutputs)
     {
         if (MLSetup.IsCorrelationFunctionRun && !LinearRegressionDone)
         {
@@ -546,14 +544,14 @@ public class Organism
             var dblOutputs = new List<double>();
 
             float total = 0;
-            for (var i = 0; i < correctOutputs.Length; i++)
+            for (ushort inputSetIdx = 0; inputSetIdx < correctOutputs.Length; inputSetIdx++)
             {
-                if (correctOutputs[i].IsValidNumber())
+                if (correctOutputs[inputSetIdx].IsValidNumber())
                 {
-                    var output = new CodeMachine().RunCommands(inputsArray[i], Commands);
+                    var output = new CodeMachine().RunCommands(allInputsArray, inputSetIdx, Commands);
                     if (output.IsValidNumber())
                     {
-                        dblCorrectOutputs.Add(correctOutputs[i]);
+                        dblCorrectOutputs.Add(correctOutputs[inputSetIdx]);
                         dblOutputs.Add(output);
                         total += output;
                     }

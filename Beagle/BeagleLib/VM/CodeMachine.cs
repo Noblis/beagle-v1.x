@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using BeagleLib.Util;
 using ILGPU;
+using ILGPU.Runtime;
 
 namespace BeagleLib.VM;
 
@@ -9,7 +10,7 @@ public struct CodeMachine
 {
     #region Methods
     [NotInsideKernel]
-    public float RunCommands(float[] inputsArr, Command[] commands)
+    public float RunCommands(float[,] inputsArr, ushort inputSetIdx, Command[] commands)
     {
         Stack = new float[BConfig.StackSize];
         StackPointer = 0;
@@ -18,24 +19,24 @@ public struct CodeMachine
         for (var i = 0; i < commands.Length; i++)
         {
             //we do special handling for Load command because we do not have ArrayView setup. Otherwise, we run normal Execute with no LibDevice
-            if (commands[i].Operation == OpEnum.Load) ExecuteLoadFromArray(inputsArr, commands[i].Idx);
-            else Execute(commands[i]);
+            if (commands[i].Operation == OpEnum.Load) ExecuteLoadFromArray(inputsArr, inputSetIdx, commands[i].Idx);
+            else Execute(commands[i], inputSetIdx);
         }
         Debug.Assert(StackPointer == 1);
         return StackPop();
     }
 
-    public float RunCommands(ArrayView<float> inputs, ArrayView<Command> commands)
+    public float RunCommands(ArrayView2D<float, Stride2D.DenseX> inputsArr, ushort inputSetIdx, ArrayView<Command> commands)
     {
         Stack = new float[BConfig.StackSize];
         StackPointer = 0;
         Clipboard = new ClipboardItem[BConfig.ClipboardSize];
-        
-        Inputs = inputs;
+
+        InputsArr = inputsArr;
 
         for (var i = 0; i < commands.Length; i++)
         {
-            Execute(commands[i]);
+            Execute(commands[i], inputSetIdx);
         }
         Debug.Assert(StackPointer == 1);
         return StackPop();
@@ -44,7 +45,7 @@ public struct CodeMachine
 
     #region Private Methods
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void Execute(Command command)
+    private void Execute(Command command, ushort inputSetIdx)
     {
         switch (command.Operation)
         {
@@ -53,7 +54,7 @@ public struct CodeMachine
             case OpEnum.Div: ExecuteDiv(); return;
             case OpEnum.Dup: ExecuteDup(); return;
             case OpEnum.Del: ExecuteDel(); return;
-            case OpEnum.Load: ExecuteLoad(command.Idx); return;
+            case OpEnum.Load: ExecuteLoad(inputSetIdx, command.Idx); return;
             case OpEnum.Mul: ExecuteMul(); return;
             case OpEnum.Sign: ExecuteSign(); return;
 
@@ -128,14 +129,14 @@ public struct CodeMachine
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ExecuteLoad(int idx)
+    private void ExecuteLoad(ushort inputSetIdx, int idx)
     {
-        StackPush(Inputs[idx]);
+        StackPush(InputsArr[inputSetIdx, idx]);
     }
     [MethodImpl(MethodImplOptions.AggressiveInlining), NotInsideKernel]
-    private void ExecuteLoadFromArray(float[] inputs, int idx)
+    private void ExecuteLoadFromArray(float[,] inputs, ushort inputSetIdx, int idx)
     {
-        StackPush(inputs[idx]);
+        StackPush(inputs[inputSetIdx, idx]);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -456,7 +457,7 @@ public struct CodeMachine
     #endregion
 
     #region Properties
-    public ArrayView<float> Inputs { get; private set; }
+    public ArrayView2D<float, Stride2D.DenseX> InputsArr { get; private set; }
 
     private float[] Stack { get; set; }
     private int StackPointer { get; set; }

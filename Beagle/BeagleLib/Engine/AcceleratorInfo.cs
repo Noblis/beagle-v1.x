@@ -25,11 +25,12 @@ public class AcceleratorInfo<TFitFunc> : IDisposable where TFitFunc : struct, IF
     public Command[] AllCommands { get; set; } = null!;
     public int[] ScriptStarts { get; set; } = null!;
 
-    public MemoryBuffer1D<float, Stride1D.Dense> AllInputsMB { get; set; } = null!;
+    //public MemoryBuffer1D<float, Stride1D.Dense> AllInputsMB { get; set; } = null!;
+    public MemoryBuffer2D<float, Stride2D.DenseX> AllInputsMB { get; set; } = null!;
     public MemoryBuffer1D<float, Stride1D.Dense> CorrectOutputsMB { get; set; } = null!;
 
     public AcceleratorStream Stream { get; set; } = null!;
 
-    public Action<AcceleratorStream, KernelConfig, uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc> Kernel { get; set; } = null!;
+    public Action<AcceleratorStream, KernelConfig, uint, ArrayView<int>, ArrayView<Command>, ushort, ArrayView2D<float, Stride2D.DenseX>, uint, ArrayView<float>, ArrayView<int>, TFitFunc> Kernel { get; set; } = null!;
     #endregion
 }

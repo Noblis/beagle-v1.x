@@ -55,8 +55,8 @@ namespace ExecuteGenome
             while (true)
             {
                 Console.WriteLine("Please enter inputs:");
-                var inputs = ReadInputsFromUser(inputLabels);
-                var output = new CodeMachine().RunCommands(inputs, organism.Commands);
+                var allInputsArr = ReadInputsFromUser(inputLabels);
+                var output = new CodeMachine().RunCommands(allInputsArr, 0, organism.Commands);
                 Console.WriteLine($"Output: {output}");
                 Console.WriteLine();
             }
@@ -80,13 +80,13 @@ namespace ExecuteGenome
             }
         }
 
-        static float[] ReadInputsFromUser(string[] inputLabels)
+        static float[,] ReadInputsFromUser(string[] inputLabels)
         {
-            var inputs = new float[inputLabels.Length];
+            var inputs = new float[1, inputLabels.Length];
             for (var i = 0; i < inputLabels.Length; i++)
             {
                 Console.Write($"Enter {inputLabels[i]}: ");
-                inputs[i] = ReadFloat();
+                inputs[0, i] = ReadFloat();
             }
             return inputs;
         }

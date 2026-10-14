@@ -39,7 +39,7 @@ public static class SyntheticDataHelper
         writer.Write(output);
     }
 
-    static string GenerateCsv(MLSetup mlSetup, int numOfValues)
+    static string GenerateCsv(MLSetup mlSetup, int numOfInputSets)
     {
         var buffer = new StringBuilder();
 
@@ -50,42 +50,37 @@ public static class SyntheticDataHelper
 
         buffer.Append("output\n");
 
-        for (int i = 0; i < numOfValues; i++)
+        float[,] allInputsToFill = new float[numOfInputSets, mlSetup.GetInputLabels().Length];
+        for (ushort inputSetIdx = 0; inputSetIdx < numOfInputSets; inputSetIdx++)
         {
-            float[] inputsToFill = new float[mlSetup.GetInputLabels().Length];
-            float output;
-            var output2 = mlSetup.GetNextInputsAndCorrectOutput(inputsToFill);
-            output = output2.Item2;
-
-            foreach (float input in inputsToFill)
+            var (_, output) = mlSetup.GetNextInputsAndCorrectOutput(allInputsToFill, inputSetIdx);
+            for(var i = 0; i < allInputsToFill.GetLength(1); i++)
             {
-                buffer.Append($"{input},");
+                buffer.Append($"{allInputsToFill[inputSetIdx, i]},");
             }
             buffer.Append($"{output}\n");
         }
 
         return buffer.ToString();
     }
-    static string GenerateJson(MLSetup mlSetup, int numOfValues)
+    static string GenerateJson(MLSetup mlSetup, int numOfInputSets)
     {
         var buffer = new StringBuilder();
 
+        float[,] allInputsToFill = new float[1, mlSetup.GetInputLabels().Length];
         buffer.Append("[\n");
-        for (int i = 0; i < numOfValues; i++)
+        for (ushort inputSetIdx = 0; inputSetIdx < numOfInputSets; inputSetIdx++)
         {
             buffer.Append("{");
-            float[] inputsToFill = new float[mlSetup.GetInputLabels().Length];
-            var output2 = mlSetup.GetNextInputsAndCorrectOutput(inputsToFill);
-            var output = output2.Item2;
-            for (int i2 = 0; i2 < mlSetup.GetInputLabels().Length; i2++)
+            var (_, output) = mlSetup.GetNextInputsAndCorrectOutput(allInputsToFill, inputSetIdx);
+            for (int i = 0; i < mlSetup.GetInputLabels().Length; i++)
             {
-
-                buffer.Append($"\"{mlSetup.GetInputLabels()[i2]}\": {inputsToFill[i2]},");
+                buffer.Append($"\"{mlSetup.GetInputLabels()[i]}\": {allInputsToFill[inputSetIdx, i]},");
             }
             buffer.Append($"\"output\": {output}");
             buffer.Append("}\n");
 
-            if (i + 1 < numOfValues)
+            if (inputSetIdx + 1 < numOfInputSets)
             {
                 buffer.Append(",");
             }

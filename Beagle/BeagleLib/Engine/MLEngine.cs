@@ -60,12 +60,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             #region Create Input and Output arrays
             _inputLabels = MLSetup.Current.GetInputLabels();
-            _inputsArray = new float[MLSetup.Current.ExperimentsPerGeneration][];
-            Parallel.For(0, _inputsArray.Length, i =>
-            {
-                _inputsArray[i] = new float[_inputLabels.Length];
-            });
-            _allInputs = new float[_inputLabels.Length * MLSetup.Current.ExperimentsPerGeneration];
+            _allInputsArray = new float[MLSetup.Current.ExperimentsPerGeneration, _inputLabels.Length];
+            //Parallel.For(0, _allInputsArray.Length, i =>
+            //{
+            //    _allInputsArray[i] = new float[_inputLabels.Length];
+            //});
+            //_allInputs = new float[MLSetup.Current.ExperimentsPerGeneration, _inputLabels.Length];
             _correctOutputs = new float[MLSetup.Current.ExperimentsPerGeneration];
             #endregion
 
@@ -138,12 +138,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _accelerators[i].AllCommands = new Command[_accelerators[i].MaxCommandBufferSize];
                 _accelerators[i].ScriptStarts = new int[(int)Math.Ceiling((double)MLSetup.Current.OrganismsArraySize / _accelerators.Length)];
 
-                _accelerators[i].AllInputsMB = _accelerators[i].Accelerator.Allocate1D<float>(_allInputs.Length);
+                _accelerators[i].AllInputsMB = _accelerators[i].Accelerator.Allocate2DDenseX<float>(new Index2D(_allInputsArray.GetLength(0), _allInputsArray.GetLength(1)));
                 _accelerators[i].CorrectOutputsMB = _accelerators[i].Accelerator.Allocate1D<float>(MLSetup.Current.ExperimentsPerGeneration);
 
                 _accelerators[i].Stream = _accelerators[i].Accelerator.CreateStream();
 
-                _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
+                _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<uint, ArrayView<int>, ArrayView<Command>, ushort, ArrayView2D<float, Stride2D.DenseX>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
             }
             #endregion
 
@@ -316,21 +316,21 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _generationWatch.Restart();
 
             //set up experiments (inputs and output), set correct output mean to 0
-            Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
+            Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, inputSetIdx =>
             {
-                (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+                (_allInputsArray, _correctOutputs[inputSetIdx]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_allInputsArray, (ushort)inputSetIdx);
             });
 
-            //convert inputs to one long array
-            Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
-            {
-                var inputs = _inputsArray[i];
-                // ReSharper disable once ForCanBeConvertedToForeach
-                for (var j = 0; j < inputs.Length; j++)
-                {
-                    _allInputs[i * inputs.Length + j] = inputs[j];
-                }
-            });
+            //convert inputs to one array
+            //Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
+            //{
+            //    var inputs = _allInputsArray[i];
+            //    // ReSharper disable once ForCanBeConvertedToForeach
+            //    for (var j = 0; j < inputs.Length; j++)
+            //    {
+            //        _allInputs[i, j] = inputs[j];
+            //    }
+            //});
         }
         #endregion
 
@@ -389,7 +389,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _shortestEverSatisfactoryOrganism = organism;
                 }
             }
-            if (!ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mlEngineNotificationsHandler?.HandleMostAccurateEverOrganismUpdated(_mostAccurateEverOrganism!.CloneForExport(_inputsArray, _correctOutputs), (uint)_currentGeneration);
+            if (!ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mlEngineNotificationsHandler?.HandleMostAccurateEverOrganismUpdated(_mostAccurateEverOrganism!.CloneForExport(_allInputsArray, _correctOutputs), (uint)_currentGeneration);
             if (_mlEngineNotificationsHandler?.Quit == true) return true;
 
             //we add the most accurate ones again with probability of 5%. It means approximately every 20 generations
@@ -559,7 +559,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         Output.Write("), length = ");
         Console.ForegroundColor = ConsoleColor.Red;
-        Output.Write($"{_mostAccurateEverOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
+        Output.Write($"{_mostAccurateEverOrganism.GetFullCommandsLength(_allInputsArray, _correctOutputs)}");
         Console.ForegroundColor = ConsoleColor.White;
         
         Output.Write(" from ");
@@ -574,7 +574,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Output.WriteLine(" total births");
         Console.ForegroundColor = ConsoleColor.White;
         
-        _mostAccurateEverOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
+        _mostAccurateEverOrganism.PrintCommandsInLine(_inputLabels, _allInputsArray, _correctOutputs);
         //Output.WriteLine(_mostAccurateEverOrganism.CommandsToJson());
 
         if (_mostAccurateOrganismsSinceLastColonyReset[0] != null && !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[0], _mostAccurateEverOrganism))
@@ -600,14 +600,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Console.ForegroundColor = ConsoleColor.White;
             Output.Write("), length = ");
             Console.ForegroundColor = ConsoleColor.Red;
-            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
+            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommandsLength(_allInputsArray, _correctOutputs)}");
             Console.ForegroundColor = ConsoleColor.White;
             Output.Write(" at ");
             Console.ForegroundColor = ConsoleColor.Red;
             Output.Write($"{_totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate:N0}");
             Console.ForegroundColor = ConsoleColor.White;
             Output.WriteLine(" total births");
-            _mostAccurateOrganismsSinceLastColonyReset[0]!.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
+            _mostAccurateOrganismsSinceLastColonyReset[0]!.PrintCommandsInLine(_inputLabels, _allInputsArray, _correctOutputs);
         }
         //Output.WriteLine($"Total births since last colony reset / reset after: {_totalBirthSinceLastColonyReset:N0}/{MLSetup.Current.TotalBirthsToResetColonyIfNoProgress:N0}");
         //Output.WriteLine(_mostAccurateOrganismSinceLastColonyReset!.CommandsToJson());
@@ -625,7 +625,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Output.WriteLine($"Satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00000}) Solution found. ASR = {_shortestEverSatisfactoryOrganism!.ASR:0.00000} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0})");
 
             //Output.WriteLine(_shortestEverSatisfactoryOrganism.CommandsToJson());
-            _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
+            _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels, _allInputsArray, _correctOutputs);
             Console.ResetColor();
 
             #if DEBUG
@@ -635,7 +635,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, experiment =>
             {
                 var codeMachineCPU = new CodeMachine();
-                outputs[experiment] = codeMachineCPU.RunCommands(_inputsArray[experiment], _shortestEverSatisfactoryOrganism.Commands);
+                outputs[experiment] = codeMachineCPU.RunCommands(_allInputsArray[experiment], _shortestEverSatisfactoryOrganism.Commands);
             });
 
             if (fitFunc.UseCorrelationFit)
@@ -750,8 +750,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (_shortestEverSatisfactoryOrganism != null)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Output.WriteLine($"Shortest satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00000}) solution found so far. ASR = {_shortestEverSatisfactoryOrganism.ASR:0.00000} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}), Length = {_shortestEverSatisfactoryOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
-                _shortestEverSatisfactoryOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
+                Output.WriteLine($"Shortest satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00000}) solution found so far. ASR = {_shortestEverSatisfactoryOrganism.ASR:0.00000} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}), Length = {_shortestEverSatisfactoryOrganism.GetFullCommandsLength(_allInputsArray, _correctOutputs)}");
+                _shortestEverSatisfactoryOrganism.PrintCommandsInLine(_inputLabels, _allInputsArray, _correctOutputs);
                 Console.ResetColor();
             }
         }
@@ -766,12 +766,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected void ScoreNewbornOrganismsOnSingleAccelerator(AcceleratorInfo<TFitFunc> accelerator, Span<Organism?> organisms, Span<int> grossRewardsThisAccelerator, bool flashFileStream)
     {
         #region Declare scores logical length and figure out if we use LibDevice, create stream
-        //var useLibDevice = accelerator.Accelerator.AcceleratorType == AcceleratorType.Cuda ? (byte)1 : (byte)0;
         var scoresLogicalLength = 0;
         #endregion
 
         #region Copy stuff that does not change between batches to GPU
-        accelerator.AllInputsMB.CopyFromCPU(accelerator.Stream, _allInputs);
+        accelerator.AllInputsMB.CopyFromCPU(accelerator.Stream, _allInputsArray);
         accelerator.CorrectOutputsMB.CopyFromCPU(accelerator.Stream, _correctOutputs);
         #endregion
 
@@ -807,6 +806,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             currentOrganismBatchStartIdx = currentOrganismBatchEndIdx + 1;
             #endregion
 
+            //Print batching info
             //if (first)
             //{
             //    first = false;
@@ -832,11 +832,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         #endregion
 
                         #region Execute Kernel
-                        var groupStart = (uint)0;
+                        var groupStart = (ushort)0;
                         do
                         {
-                            var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration - groupStart);
-                            var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
+                            var currentGroupSize = (ushort)Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration - groupStart);
+                            var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D(currentGroupSize));
 
                             accelerator.Kernel(accelerator.Stream, launchDimension, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputsMB.View, (uint)_inputLabels.Length, accelerator.CorrectOutputsMB.View, acceleratorGrossRewards.View, FitFunc);
                             if (flashFileStream) Output.FlushFileStream();
@@ -1054,7 +1054,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
     protected void DisplayModelAsLatex()
     {
-        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_inputsArray, _correctOutputs);
+        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_allInputsArray, _correctOutputs);
         var expr = MathExpr.FromCommands(fullCommands, MLSetup.Current.GetInputLabels());
         var url = $"https://arachnoid.com/latex/?equ={expr.AsLatexString()}";
         WebServer.OpenInBrowser(url);
@@ -1065,43 +1065,43 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Console.ForegroundColor = ConsoleColor.DarkGray;
         
         var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 4;
-        var inputsArray = new float[verificationExperimentsCount][];
-        Parallel.For(0, inputsArray.Length, i =>
-        {
-            inputsArray[i] = new float[_inputLabels.Length];
-        });
+        var allInputsArray = new float[verificationExperimentsCount, _inputLabels.Length];
+        //Parallel.For(0, inputsArray.Length, i =>
+        //{
+        //    inputsArray[i] = new float[_inputLabels.Length];
+        //});
         //var allInputs = new float[_inputLabels.Length * verificationExperimentsCount];
         var correctOutputs = new float[verificationExperimentsCount];
 
 
         //set up experiments (inputs and output), set correct output mean to 0
-        Parallel.For(0, verificationExperimentsCount, i =>
+        Parallel.For(0, verificationExperimentsCount, inputSetIdx =>
         {
-            (inputsArray[i], correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+            (allInputsArray, correctOutputs[inputSetIdx]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_allInputsArray, (ushort)inputSetIdx);
         });
 
-        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(inputsArray, correctOutputs).ToArray();
+        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(allInputsArray, correctOutputs).ToArray();
         var error = false;
         var currentForegroundColor = Console.ForegroundColor;
 
         Output.WriteLine();
         Output.Write("Model Genome: ");
-        _mostAccurateEverOrganism!.PrintCommandsInLine(_inputLabels, inputsArray, correctOutputs);
+        _mostAccurateEverOrganism!.PrintCommandsInLine(_inputLabels, allInputsArray, correctOutputs);
 
-        for (var i = 0; i < verificationExperimentsCount; i++)
+        for (ushort inputSetIdx = 0; inputSetIdx < verificationExperimentsCount; inputSetIdx++)
         {
             Output.Write("IN: ");
             for (var j = 0; j < _inputLabels.Length; j++)
             {
-                Output.Write($"{_inputLabels[j]}={inputsArray[i][j]}; ");
+                Output.Write($"{_inputLabels[j]}={allInputsArray[inputSetIdx,j]}; ");
             }
             
-            var output = new CodeMachine().RunCommands(inputsArray[i], fullCommands);
-            Output.Write($"OUT: {output} (model) vs. {correctOutputs[i]} (target)");
+            var output = new CodeMachine().RunCommands(allInputsArray, inputSetIdx, fullCommands);
+            Output.Write($"OUT: {output} (model) vs. {correctOutputs[inputSetIdx]} (target)");
 
-            if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
+            if (output.IsValidNumber() && correctOutputs[inputSetIdx].IsValidNumber())
             {
-                if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
+                if (Math.Abs(output / correctOutputs[inputSetIdx] - 1) > 0.001)
                 {
                     error = true;
                     Console.ForegroundColor = ConsoleColor.Red;
@@ -1111,7 +1111,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             }
             else
             {
-                if (output.IsValidNumber() ^ correctOutputs[i].IsValidNumber())
+                if (output.IsValidNumber() ^ correctOutputs[inputSetIdx].IsValidNumber())
                 {
                     //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
                     error = true;
@@ -1217,9 +1217,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected bool _showProfilingInfo;
     
     protected readonly string[] _inputLabels;
-    protected readonly float[][] _inputsArray;
+    protected float[,] _allInputsArray;
     protected readonly float[] _correctOutputs;
-    protected readonly float[] _allInputs;
+    //protected readonly float[,] _allInputs;
 
     protected readonly int[] _taxedScorePercentiles;
 
