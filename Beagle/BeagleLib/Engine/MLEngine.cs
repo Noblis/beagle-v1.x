@@ -487,7 +487,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     {
         // Fill array with random
         int fillCount = 0;
-        for (int i = 0; i < crossoverPartnerPoolSize; i++) //TODO: maybe parallelize with atomic counter
+        for (int i = 0; i < Math.Min(crossoverPartnerPoolSize,_organismsCount); i++) //TODO: maybe parallelize with atomic counter
         {
             int randIdx = Rnd.Random.Next(_organismsCount);
             if(_layers[randIdx]<=crossoverLayerThreshold && _scores[randIdx] > 0)
