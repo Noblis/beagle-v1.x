@@ -166,11 +166,12 @@ public class CodeMachineTests
     {
         var commands = new[]
         {
-            new Command(OpEnum.Const, MathF.PI/2),
+            new Command(OpEnum.Const, MathF.PI/4),
             new Command(OpEnum.Tan),
         };
         var result = _codeMachine.RunCommands(_inputs, 0, commands);
-        ClassicAssert.AreEqual(result, MathF.Tan(MathF.PI / 2));
+        var correctResult = MathF.Tan(MathF.PI / 4);
+        ClassicAssert.AreEqual(result, correctResult);
     }
     [Test]
     public void TestArccos()

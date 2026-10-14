@@ -632,10 +632,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             int score = 0;
             var fitFunc = new TFitFunc();
             float[] outputs = new float[MLSetup.Current.ExperimentsPerGeneration];
-            Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, experiment =>
+            Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, inputSetIdx =>
             {
                 var codeMachineCPU = new CodeMachine();
-                outputs[experiment] = codeMachineCPU.RunCommands(_allInputsArray[experiment], _shortestEverSatisfactoryOrganism.Commands);
+                outputs[inputSetIdx] = codeMachineCPU.RunCommands(_allInputsArray, (ushort)inputSetIdx, _shortestEverSatisfactoryOrganism.Commands);
             });
 
             if (fitFunc.UseCorrelationFit)
