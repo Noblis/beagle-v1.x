@@ -1,5 +1,5 @@
-set r=5 rem repeat times
-set s=10 rem run for ... minutes
+set r=5
+set s=10
 dotnet build -c release
 cd bin\Release\net10.0
 for /l %%i in (1, 1, %r%) do Run.exe StopAfterMin=%s% NoEscMenu
