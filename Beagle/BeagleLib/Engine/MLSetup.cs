@@ -47,9 +47,7 @@ public abstract class MLSetup
         var remainder = generation % 1500;
         if (remainder < 5) return 5_000_000;
         if (remainder < 10) return 3_000_000;
-        if (remainder < 15) return 1_000_000;
-        if (remainder < 20) return 500_000;
-        return 250_000;
+        return 1_000_000;
     }
     public int OrganismsArraySize
     {
