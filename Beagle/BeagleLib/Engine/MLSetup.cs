@@ -45,8 +45,9 @@ public abstract class MLSetup
     public virtual int TargetColonySize(int generation)
     {
         var remainder = generation % 1500;
-        if (remainder < 5) return 5_000_000;
-        if (remainder < 10) return 3_000_000;
+        if (remainder < 5) return 10_000_000;
+        if (remainder < 10) return 5_000_000;
+        if (remainder < 15) return 3_000_000;
         return 1_000_000;
     }
     public int OrganismsArraySize
