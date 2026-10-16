@@ -543,22 +543,26 @@ public class Organism
             var dblCorrectOutputs = new List<double>();
             var dblOutputs = new List<double>();
 
-            float total = 0;
-            for (ushort inputSetIdx = 0; inputSetIdx < correctOutputs.Length; inputSetIdx++)
+            int count = 0;
+            float total;
+            do
             {
-                if (correctOutputs[inputSetIdx].IsValidNumber())
+                if (++count > 10) throw new Exception("Unable to calculate Scale and offset in 10 attempts!");
+                total = 0;
+                for (ushort inputSetIdx = 0; inputSetIdx < correctOutputs.Length; inputSetIdx++)
                 {
-                    var output = new CodeMachine().RunCommands(allInputsArray, inputSetIdx, Commands);
-                    if (output.IsValidNumber())
+                    if (correctOutputs[inputSetIdx].IsValidNumber())
                     {
-                        dblCorrectOutputs.Add(correctOutputs[inputSetIdx]);
-                        dblOutputs.Add(output);
-                        total += output;
+                        var output = new CodeMachine().RunCommands(allInputsArray, inputSetIdx, Commands);
+                        if (output.IsValidNumber())
+                        {
+                            dblCorrectOutputs.Add(correctOutputs[inputSetIdx]);
+                            dblOutputs.Add(output);
+                            total += output;
+                        }
                     }
                 }
-            }
-            Debug.Assert(dblOutputs.Count == dblCorrectOutputs.Count);
-            Debug.Assert(dblOutputs.Count >= 2);
+            } while (dblOutputs.Count == dblCorrectOutputs.Count && dblOutputs.Count >= 2);
             float mean = total / dblOutputs.Count;
 
             (double, double) lineRegression = Fit.Line(dblOutputs.ToArray(), dblCorrectOutputs.ToArray());
