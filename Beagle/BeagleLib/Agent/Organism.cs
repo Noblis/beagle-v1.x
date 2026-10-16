@@ -548,6 +548,22 @@ public class Organism
             do
             {
                 if (++count > 10) throw new Exception("Unable to calculate scale and offset in 10 attempts!");
+
+                if (count > 1)
+                {
+                    allInputsArray = new float[allInputsArray.GetLength(0), allInputsArray.GetLength(1)];
+                    correctOutputs = new float[correctOutputs.Length];
+                    
+                    //this is just to prevent warning of accessing a captures variable ina closure
+                    var tmpCorrectOutputs = correctOutputs;
+                    var tmpAllInputsArray = allInputsArray;
+                    
+                    Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, inputSetIdx =>
+                    {
+                        (allInputsArray, tmpCorrectOutputs[inputSetIdx]) = MLSetup.Current.GetNextInputsAndCorrectOutput(tmpAllInputsArray, (ushort)inputSetIdx);
+                    });
+                }
+
                 total = 0;
                 for (ushort inputSetIdx = 0; inputSetIdx < correctOutputs.Length; inputSetIdx++)
                 {
