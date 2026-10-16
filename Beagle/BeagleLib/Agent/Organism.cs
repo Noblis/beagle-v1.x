@@ -545,22 +545,24 @@ public class Organism
             var dblCorrectOutputs = new List<double>();
             var dblOutputs = new List<double>();
 
-            float total = 0;
-            for (var i = 0; i < correctOutputs.Length; i++)
+            float total;
+            do
             {
-                if (correctOutputs[i].IsValidNumber())
+                total = 0;
+                for (var i = 0; i < correctOutputs.Length; i++)
                 {
-                    var output = new CodeMachine().RunCommands(inputsArray[i], Commands);
-                    if (output.IsValidNumber())
+                    if (correctOutputs[i].IsValidNumber())
                     {
-                        dblCorrectOutputs.Add(correctOutputs[i]);
-                        dblOutputs.Add(output);
-                        total += output;
+                        var output = new CodeMachine().RunCommands(inputsArray[i], Commands);
+                        if (output.IsValidNumber())
+                        {
+                            dblCorrectOutputs.Add(correctOutputs[i]);
+                            dblOutputs.Add(output);
+                            total += output;
+                        }
                     }
                 }
-            }
-            Debug.Assert(dblOutputs.Count == dblCorrectOutputs.Count);
-            Debug.Assert(dblOutputs.Count >= 2);
+            } while (dblOutputs.Count == dblCorrectOutputs.Count && dblOutputs.Count >= 2);
             float mean = total / dblOutputs.Count;
 
             (double, double) lineRegression = Fit.Line(dblOutputs.ToArray(), dblCorrectOutputs.ToArray());
