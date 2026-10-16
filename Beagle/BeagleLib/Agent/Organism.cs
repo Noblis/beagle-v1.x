@@ -546,8 +546,10 @@ public class Organism
             var dblOutputs = new List<double>();
 
             float total;
+            int count = 0;
             do
             {
+                if (++count > 10) throw new Exception("Unable to calculate scale and offset in 10 attempts!");
                 total = 0;
                 for (var i = 0; i < correctOutputs.Length; i++)
                 {
