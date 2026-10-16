@@ -6,6 +6,7 @@ import sympy as sym
 import pandas as pd
 import matplotlib.pyplot as plt
 import time
+import os
 try:
     from IPython.display import display, clear_output
 except:
@@ -217,20 +218,16 @@ class BeagleModel:
 class BeagleRegressor:
     """Scikit-learn–compatible wrapper around Beagle's API."""
 
-    def __init__(self, evaluation_limit=300*10**6, pop_size=None, time_limit=600, operator_set="default", experiments_per_generation=None, evaluations_to_colony_reset=None, run_feynman=None, stop_after_min=None, solution_threshold=None, terminate_on_solution = True, fitness_func = "Corr"):
+    def __init__(self, evaluation_limit=300*10**6, pop_size=None, experiments_per_generation=None, evaluations_to_colony_reset=None, run_feynman=None, stop_after_min=None, solution_threshold=None, terminate_on_solution = True, fitness_func = "Corr"):
         self.evaluation_limit = int(evaluation_limit) if evaluation_limit is not None else None
         self.pop_size = int(pop_size) if pop_size is not None else None
-        self.time_limit = int(time_limit) if time_limit is not None else None
         self.experiments_per_generation = int(experiments_per_generation) if experiments_per_generation is not None else None
         self.evaluations_to_colony_reset = int(evaluations_to_colony_reset) if evaluations_to_colony_reset is not None else None
-        self.operator_set = "allOps" if str(operator_set) == "allOps" else "default"
         self.stop_after_min = int(stop_after_min) if stop_after_min is not None else None
         self.run_feynman = int(run_feynman) if run_feynman is not None else None
         self.fitness_func = str(fitness_func) if fitness_func is not None else "Corr"
         self.terminate_on_solution = bool(terminate_on_solution)
         self.solution_threshold = max(min(1.0,float(solution_threshold)),0.0) if solution_threshold is not None else None
-        #self.models_ = None
-        #self.best_model_ = None
         self.n_features_in_ = None
         self.feature_names_ = None
         self.training_curve_ = []
@@ -502,6 +499,8 @@ public class PythonMLSetup : MLSetup
         return asr, complexity
 
     def _export_to_csv(self, X, y):
+        if not os.path.exists("AppOutput"):
+            os.makedirs("AppOutput")
         fileName = "AppOutput/PythonData.csv"
         df = pd.DataFrame(X)
         df['y'] = y
