@@ -44,10 +44,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             #endregion
 
             #region Set up Console 
-            Console.ResetColor();
-            Console.CursorVisible = false;
-            Console.Clear();
-            Console.Title = $"Beagle {BConfig.Version}: {MLSetup.Current.Name}-{typeof(TFitFunc).Name}";
+            if (!Console.IsOutputRedirected)
+            {
+                Console.ResetColor();
+
+                Console.CursorVisible = false;
+
+                Console.Clear();
+                Console.Title = $"Beagle {BConfig.Version}: {MLSetup.Current.Name}-{typeof(TFitFunc).Name}";
+            }
             #endregion
 
             #region Set up Json settings

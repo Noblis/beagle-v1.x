@@ -218,7 +218,7 @@ class BeagleModel:
 class BeagleRegressor:
     """Scikit-learn–compatible wrapper around Beagle's API."""
 
-    def __init__(self, evaluation_limit=300*10**6, pop_size=None, experiments_per_generation=None, evaluations_to_colony_reset=None, run_feynman=None, stop_after_min=None, solution_threshold=None, terminate_on_solution = True, fitness_func = "Corr"):
+    def __init__(self, evaluation_limit=300*10**6, pop_size=None, experiments_per_generation=512, evaluations_to_colony_reset=None, run_feynman=None, stop_after_min=None, solution_threshold=None, terminate_on_solution = False, fitness_func = "Corr"):
         self.evaluation_limit = int(evaluation_limit) if evaluation_limit is not None else None
         self.pop_size = int(pop_size) if pop_size is not None else None
         self.experiments_per_generation = int(experiments_per_generation) if experiments_per_generation is not None else None
