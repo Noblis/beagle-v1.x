@@ -243,11 +243,13 @@ class BeagleRegressor:
         arr = np.array(X, dtype=float)
         return [arr[:, i] for i in range(arr.shape[1])]
 
-    def fit(self, X, y, show_training_curve=False, live_tracking=False):
+    def fit(self, X=np.array([]), y=np.array([]), show_training_curve=False, live_tracking=False):
         self.training_curve_ = [0]
         self._program_setup()
         self._export_to_csv(X,y)
         if (self.run_feynman is None):
+            if (X.size == 0):
+                raise ValueError("No features provided for training.")
             self.n_features_in_ = X.shape[1]
         else:
             self.n_features_in_ = 9
