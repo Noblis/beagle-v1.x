@@ -550,6 +550,26 @@ public class Organism
             do
             {
                 if (++count > 10) throw new Exception("Unable to calculate scale and offset in 10 attempts!");
+
+                if (count > 1)
+                {
+                    var inputLabels = MLSetup.Current.GetInputLabels();
+                    inputsArray = new float[MLSetup.Current.ExperimentsPerGeneration][];
+                    Parallel.For(0, inputsArray.Length, i =>
+                    {
+                        // ReSharper disable once AccessToModifiedClosure
+                        inputsArray[i] = new float[inputLabels.Length];
+                    });
+                    correctOutputs = new float[MLSetup.Current.ExperimentsPerGeneration];
+
+                    Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, inputSetIdx =>
+                    {
+                        // ReSharper disable AccessToModifiedClosure
+                        (inputsArray[inputSetIdx], correctOutputs[inputSetIdx]) = MLSetup.Current.GetNextInputsAndCorrectOutput(inputsArray[inputSetIdx]);
+                        // ReSharper restore AccessToModifiedClosure
+                    });
+                }
+
                 total = 0;
                 for (var i = 0; i < correctOutputs.Length; i++)
                 {
