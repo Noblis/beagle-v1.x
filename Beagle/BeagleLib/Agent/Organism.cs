@@ -584,7 +584,7 @@ public class Organism
                         }
                     }
                 }
-            } while (dblOutputs.Count == dblCorrectOutputs.Count && dblOutputs.Count >= 2);
+            } while (dblOutputs.Count != dblCorrectOutputs.Count || dblOutputs.Count < 2);
             float mean = total / dblOutputs.Count;
 
             (double, double) lineRegression = Fit.Line(dblOutputs.ToArray(), dblCorrectOutputs.ToArray());
