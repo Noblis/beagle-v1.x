@@ -554,13 +554,11 @@ public class Organism
                     allInputsArray = new float[allInputsArray.GetLength(0), allInputsArray.GetLength(1)];
                     correctOutputs = new float[correctOutputs.Length];
                     
-                    //this is just to prevent warning of accessing a captures variable ina closure
-                    var tmpCorrectOutputs = correctOutputs;
-                    var tmpAllInputsArray = allInputsArray;
-                    
                     Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, inputSetIdx =>
                     {
-                        (allInputsArray, tmpCorrectOutputs[inputSetIdx]) = MLSetup.Current.GetNextInputsAndCorrectOutput(tmpAllInputsArray, (ushort)inputSetIdx);
+                        // ReSharper disable AccessToModifiedClosure
+                        (allInputsArray, correctOutputs[inputSetIdx]) = MLSetup.Current.GetNextInputsAndCorrectOutput(allInputsArray, (ushort)inputSetIdx);
+                        // ReSharper restore AccessToModifiedClosure
                     });
                 }
 
