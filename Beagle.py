@@ -247,7 +247,10 @@ class BeagleRegressor:
         self.training_curve_ = [0]
         self._program_setup()
         self._export_to_csv(X,y)
-        self.n_features_in_ = X.shape[1]
+        if (self.run_feynman is None):
+            self.n_features_in_ = X.shape[1]
+        else:
+            self.n_features_in_ = 9
         self._generateMLSetup()
         args = ['dotnet', 'run', '--configuration', 'Release', '--project', 'Beagle/Run', "NoEscMenu"]
         if self.evaluation_limit is not None:
