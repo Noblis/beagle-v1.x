@@ -76,7 +76,7 @@ from Beagle import \*
 
 \# y should be a 1D array (n\_samples)
 
-X = np.linspace(-5, 5, 100).reshape(-1, 2)
+X = np.linspace(-5, 5, 1000).reshape(-1, 2)
 
 y =   X\[:, 0] \*\* 2 + 3 \* X\[:, 1] + 2  # y = x0^2 + 3\*x1 + 2
 
