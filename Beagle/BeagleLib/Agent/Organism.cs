@@ -547,7 +547,7 @@ public class Organism
             float total;
             do
             {
-                if (++count > 10) throw new Exception("Unable to calculate Scale and offset in 10 attempts!");
+                if (++count > 10) throw new Exception("Unable to calculate scale and offset in 10 attempts!");
                 total = 0;
                 for (ushort inputSetIdx = 0; inputSetIdx < correctOutputs.Length; inputSetIdx++)
                 {
