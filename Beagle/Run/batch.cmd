@@ -1,4 +1,4 @@
-set r=10
+set r=100
 set s=10
 dotnet build -c release
 cd bin\Release\net10.0
