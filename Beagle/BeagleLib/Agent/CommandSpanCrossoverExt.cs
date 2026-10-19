@@ -143,8 +143,5 @@ public static class CommandSpanCrossoverExt
             me.Insert(ref length, crossoverStart+i,partner[i+partnerCrossoverStart]);
         }
     }
-
-
     #endregion
-
 }

@@ -47,14 +47,9 @@ namespace BeagleLib.Agent
         }
         public static void Insert(this Span<Command> me, ref int length, int addr, Command command)
         {
-             //catch?
-            //if (length >= 1000) return;
             for (var i = length; i > addr; i--)
             {
-                //if (i>90 || i<0)
-                //    Console.WriteLine("i");
                 me[i] = me[i - 1];
-
             }
             me[addr] = command;
             length++;
@@ -475,7 +470,6 @@ namespace BeagleLib.Agent
             return 1;
         }
         #endregion
-
 
         #region ToString Methods
         public static string ToString(this Span<Command> me, ref int length)
