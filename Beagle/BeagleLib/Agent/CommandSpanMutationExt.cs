@@ -54,8 +54,14 @@ public static class CommandSpanMutationExt
         var stackAtAddr = me.GetStackAt(addr);
 
         var mutationType = (MutationTypeEnum)Rnd.Random.Next(3) ;
-        if (addr == length) mutationType = MutationTypeEnum.Insert;
-        else if (addr == 0) mutationType = MutationTypeEnum.Replace;
+        if (addr == 0) mutationType = MutationTypeEnum.Replace;
+        else if (length > BConfig.MaxScriptLength - 10)
+        {
+            mutationType = MutationTypeEnum.Delete;
+            if (addr == length) return 0;
+        }
+        else if (addr == length) mutationType = MutationTypeEnum.Insert;
+        
 
         int stackEffect;
         int compensatingAddr;
@@ -252,6 +258,7 @@ public static class CommandSpanMutationExt
         
         if (mutationType == MutationTypeEnum.Insert)
         {
+            //if (length > BConfig.MaxScriptLength-10) return 0;
             var maxCopyIdx = me.GetMaxCopyIdx(length);
 
             //var newCommand = addr == 0 ? 

@@ -1,0 +1,2167 @@
+KILIMANJARO: Running PythonMLSetup-CorrelationFitFunc on 64 CPU(s) & 8 NVIDIA A16 GPU(s) @ 1.00000 target ASR
+create initial colony of 250,000 organisms... Done in 00:00:00.1254446.
+
+00:00:00.5477841: Generation 1 took 00:00:00.1225736/00:00:00.5453711
+Colony size: 250,120: (target: 250,000). Total births: 500,120
+Most accurate ever genome: ASR = 0.98287 (5,032,319/5,120,000), length = 10 from 00:00:00.2877717 at 250,000 total births
+LOAD x0:0; CONST 3; DIV; ARCTAN; LOAD x1:1; ADD; CONST 2.975; MUL; CONST 1.861; ADD; 
+
+00:00:00.9683778: Generation 2 took 00:00:00.0579332/00:00:00.4139236
+Colony size: 250,063: (target: 250,000). Total births: 750,183
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Satisfactory (ASR >= 1.00000) Solution found. ASR = 1.00000 (5,120,000/5,120,000)
+1: LOAD x0:0
+2: SQUARE
+3: CONST 3
+4: DIV
+5: LOAD x1:1
+6: ADD
+7: CONST 3
+8: MUL
+9: CONST 2
+10: ADD
+
+00:00:01.4370304: Generation 3 took 00:00:00.0591984/00:00:00.4477099
+Colony size: 250,240: (target: 250,000). Total births: 1,000,423
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:01.8687222: Generation 4 took 00:00:00.0612242/00:00:00.4311130
+Colony size: 250,000: (target: 250,000). Total births: 1,250,423
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:02.4441890: Generation 5 took 00:00:00.0605209/00:00:00.5752385
+Colony size: 249,827: (target: 250,000). Total births: 1,500,250
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:02.9134713: Generation 6 took 00:00:00.0601248/00:00:00.4687779
+Colony size: 250,069: (target: 250,000). Total births: 1,750,319
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:03.2999271: Generation 7 took 00:00:00.0598526/00:00:00.3861966
+Colony size: 249,763: (target: 250,000). Total births: 2,000,082
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:03.6611077: Generation 8 took 00:00:00.0831496/00:00:00.3608416
+Colony size: 250,130: (target: 250,000). Total births: 2,250,212
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:04.0312963: Generation 9 took 00:00:00.0594348/00:00:00.3699414
+Colony size: 250,114: (target: 250,000). Total births: 2,500,326
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:04.3583709: Generation 10 took 00:00:00.0603379/00:00:00.3266345
+Colony size: 250,086: (target: 250,000). Total births: 2,750,412
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:04.7373821: Generation 11 took 00:00:00.0594114/00:00:00.3788046
+Colony size: 250,025: (target: 250,000). Total births: 3,000,437
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:05.0778925: Generation 12 took 00:00:00.0743425/00:00:00.3401065
+Colony size: 250,132: (target: 250,000). Total births: 3,250,569
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:05.4725798: Generation 13 took 00:00:00.0753112/00:00:00.3942658
+Colony size: 250,169: (target: 250,000). Total births: 3,500,738
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:05.8442778: Generation 14 took 00:00:00.0920107/00:00:00.3714220
+Colony size: 250,188: (target: 250,000). Total births: 3,750,926
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:06.2973802: Generation 15 took 00:00:00.1366566/00:00:00.4528706
+Colony size: 249,950: (target: 250,000). Total births: 4,000,876
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:06.7137633: Generation 16 took 00:00:00.1274558/00:00:00.4160803
+Colony size: 250,025: (target: 250,000). Total births: 4,250,901
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:07.1240798: Generation 17 took 00:00:00.1107936/00:00:00.4100850
+Colony size: 249,981: (target: 250,000). Total births: 4,500,882
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:07.5485443: Generation 18 took 00:00:00.1247962/00:00:00.4241172
+Colony size: 249,999: (target: 250,000). Total births: 4,750,881
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:07.9606355: Generation 19 took 00:00:00.1207763/00:00:00.4119055
+Colony size: 249,849: (target: 250,000). Total births: 5,000,730
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:08.3837875: Generation 20 took 00:00:00.1583739/00:00:00.4228543
+Colony size: 250,067: (target: 250,000). Total births: 5,250,797
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:08.8470913: Generation 21 took 00:00:00.1835532/00:00:00.4630982
+Colony size: 250,084: (target: 250,000). Total births: 5,500,881
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:09.2941670: Generation 22 took 00:00:00.1629030/00:00:00.4467758
+Colony size: 250,005: (target: 250,000). Total births: 5,750,886
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:09.7203408: Generation 23 took 00:00:00.1100357/00:00:00.4259708
+Colony size: 250,039: (target: 250,000). Total births: 6,000,925
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:10.1041971: Generation 24 took 00:00:00.1303884/00:00:00.3835568
+Colony size: 250,121: (target: 250,000). Total births: 6,251,046
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:10.5472351: Generation 25 took 00:00:00.1130202/00:00:00.4428144
+Colony size: 249,980: (target: 250,000). Total births: 6,501,026
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:10.9439690: Generation 26 took 00:00:00.1233903/00:00:00.3964344
+Colony size: 249,964: (target: 250,000). Total births: 6,750,990
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:11.3669841: Generation 27 took 00:00:00.1392443/00:00:00.4227843
+Colony size: 249,916: (target: 250,000). Total births: 7,000,906
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:11.8178193: Generation 28 took 00:00:00.1779744/00:00:00.4505951
+Colony size: 249,766: (target: 250,000). Total births: 7,250,672
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:12.3525370: Generation 29 took 00:00:00.2444535/00:00:00.5345176
+Colony size: 250,041: (target: 250,000). Total births: 7,500,713
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:12.7916003: Generation 30 took 00:00:00.1816163/00:00:00.4387812
+Colony size: 249,806: (target: 250,000). Total births: 7,750,519
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:13.2086728: Generation 31 took 00:00:00.0935233/00:00:00.4168946
+Colony size: 249,900: (target: 250,000). Total births: 8,000,419
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:13.5908024: Generation 32 took 00:00:00.0948087/00:00:00.3817702
+Colony size: 250,134: (target: 250,000). Total births: 8,250,553
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:13.9948136: Generation 33 took 00:00:00.0924940/00:00:00.4038097
+Colony size: 249,913: (target: 250,000). Total births: 8,500,466
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:14.3750813: Generation 34 took 00:00:00.1019106/00:00:00.3800605
+Colony size: 250,100: (target: 250,000). Total births: 8,750,566
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:14.8079951: Generation 35 took 00:00:00.1290806/00:00:00.4327225
+Colony size: 250,103: (target: 250,000). Total births: 9,000,669
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:15.2050452: Generation 36 took 00:00:00.1371545/00:00:00.3967612
+Colony size: 250,096: (target: 250,000). Total births: 9,250,765
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:15.6685526: Generation 37 took 00:00:00.1284484/00:00:00.4633060
+Colony size: 250,035: (target: 250,000). Total births: 9,500,800
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:16.0815710: Generation 38 took 00:00:00.1490853/00:00:00.4127262
+Colony size: 249,940: (target: 250,000). Total births: 9,750,740
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:16.4906485: Generation 39 took 00:00:00.1011230/00:00:00.4088644
+Colony size: 249,692: (target: 250,000). Total births: 10,000,432
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:16.8867789: Generation 40 took 00:00:00.1162736/00:00:00.3958989
+Colony size: 250,199: (target: 250,000). Total births: 10,250,631
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:17.3047164: Generation 41 took 00:00:00.1170621/00:00:00.4177208
+Colony size: 249,964: (target: 250,000). Total births: 10,500,595
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:17.7255035: Generation 42 took 00:00:00.1253518/00:00:00.4205856
+Colony size: 249,942: (target: 250,000). Total births: 10,750,537
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:18.1545687: Generation 43 took 00:00:00.1345040/00:00:00.4289016
+Colony size: 249,991: (target: 250,000). Total births: 11,000,528
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:18.5570793: Generation 44 took 00:00:00.1345235/00:00:00.4022092
+Colony size: 250,092: (target: 250,000). Total births: 11,250,620
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:19.0471535: Generation 45 took 00:00:00.1900166/00:00:00.4899045
+Colony size: 250,007: (target: 250,000). Total births: 11,500,627
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:19.5370240: Generation 46 took 00:00:00.2223331/00:00:00.4895993
+Colony size: 250,000: (target: 250,000). Total births: 11,750,627
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:19.9460682: Generation 47 took 00:00:00.0866922/00:00:00.4088597
+Colony size: 250,150: (target: 250,000). Total births: 12,000,777
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:20.2970503: Generation 48 took 00:00:00.0867027/00:00:00.3507187
+Colony size: 249,855: (target: 250,000). Total births: 12,250,632
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:20.6904986: Generation 49 took 00:00:00.0848313/00:00:00.3932473
+Colony size: 250,109: (target: 250,000). Total births: 12,500,741
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:21.0848613: Generation 50 took 00:00:00.1103850/00:00:00.3941003
+Colony size: 250,062: (target: 250,000). Total births: 12,750,803
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:21.5000035: Generation 51 took 00:00:00.1338641/00:00:00.4149400
+Colony size: 249,910: (target: 250,000). Total births: 13,000,713
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:21.9019248: Generation 52 took 00:00:00.1157195/00:00:00.4016354
+Colony size: 249,943: (target: 250,000). Total births: 13,250,656
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:22.3213699: Generation 53 took 00:00:00.1300597/00:00:00.4192367
+Colony size: 250,095: (target: 250,000). Total births: 13,500,751
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:22.7426423: Generation 54 took 00:00:00.1393489/00:00:00.4209998
+Colony size: 249,893: (target: 250,000). Total births: 13,750,644
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:23.1802632: Generation 55 took 00:00:00.1359034/00:00:00.4374222
+Colony size: 250,101: (target: 250,000). Total births: 14,000,745
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:23.6430805: Generation 56 took 00:00:00.1630483/00:00:00.4625191
+Colony size: 250,102: (target: 250,000). Total births: 14,250,847
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:24.1126883: Generation 57 took 00:00:00.1916790/00:00:00.4694208
+Colony size: 250,113: (target: 250,000). Total births: 14,500,960
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:24.4999051: Generation 58 took 00:00:00.1125980/00:00:00.3869886
+Colony size: 249,944: (target: 250,000). Total births: 14,750,904
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:24.9047320: Generation 59 took 00:00:00.1073643/00:00:00.4046269
+Colony size: 249,901: (target: 250,000). Total births: 15,000,805
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:25.2998722: Generation 60 took 00:00:00.1240655/00:00:00.3948299
+Colony size: 249,770: (target: 250,000). Total births: 15,250,575
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:25.7472394: Generation 61 took 00:00:00.1166800/00:00:00.4471951
+Colony size: 250,022: (target: 250,000). Total births: 15,500,597
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:26.1186531: Generation 62 took 00:00:00.1220417/00:00:00.3711210
+Colony size: 250,117: (target: 250,000). Total births: 15,750,714
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:26.5453740: Generation 63 took 00:00:00.1380474/00:00:00.4265210
+Colony size: 250,058: (target: 250,000). Total births: 16,000,772
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:26.9563501: Generation 64 took 00:00:00.1211595/00:00:00.4107144
+Colony size: 250,054: (target: 250,000). Total births: 16,250,826
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:27.4007881: Generation 65 took 00:00:00.1581647/00:00:00.4442224
+Colony size: 249,883: (target: 250,000). Total births: 16,500,709
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:27.8776492: Generation 66 took 00:00:00.1962037/00:00:00.4765738
+Colony size: 250,031: (target: 250,000). Total births: 16,750,740
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:28.2870060: Generation 67 took 00:00:00.1218639/00:00:00.4091655
+Colony size: 249,653: (target: 250,000). Total births: 17,000,393
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:28.7048569: Generation 68 took 00:00:00.1178354/00:00:00.4175594
+Colony size: 250,238: (target: 250,000). Total births: 17,250,631
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:29.0869385: Generation 69 took 00:00:00.1182701/00:00:00.3818813
+Colony size: 249,957: (target: 250,000). Total births: 17,500,588
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:29.4845373: Generation 70 took 00:00:00.1246838/00:00:00.3973336
+Colony size: 249,874: (target: 250,000). Total births: 17,750,462
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:29.8908124: Generation 71 took 00:00:00.1291196/00:00:00.4061023
+Colony size: 250,193: (target: 250,000). Total births: 18,000,655
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:30.2986392: Generation 72 took 00:00:00.1342361/00:00:00.4075363
+Colony size: 250,109: (target: 250,000). Total births: 18,250,764
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:30.7557174: Generation 73 took 00:00:00.1214213/00:00:00.4568552
+Colony size: 249,784: (target: 250,000). Total births: 18,500,548
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:31.1759502: Generation 74 took 00:00:00.1335944/00:00:00.4199701
+Colony size: 249,912: (target: 250,000). Total births: 18,750,460
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:31.6617584: Generation 75 took 00:00:00.1800599/00:00:00.4855996
+Colony size: 249,953: (target: 250,000). Total births: 19,000,413
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:32.1121739: Generation 76 took 00:00:00.1889426/00:00:00.4501156
+Colony size: 249,809: (target: 250,000). Total births: 19,250,222
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:32.5136944: Generation 77 took 00:00:00.1096197/00:00:00.4013382
+Colony size: 249,910: (target: 250,000). Total births: 19,500,132
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:32.8830816: Generation 78 took 00:00:00.1101692/00:00:00.3691877
+Colony size: 249,924: (target: 250,000). Total births: 19,750,056
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:33.2861099: Generation 79 took 00:00:00.1171622/00:00:00.4028449
+Colony size: 249,969: (target: 250,000). Total births: 20,000,025
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:33.7068176: Generation 80 took 00:00:00.1271735/00:00:00.4204650
+Colony size: 250,075: (target: 250,000). Total births: 20,250,100
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:34.1228353: Generation 81 took 00:00:00.1217663/00:00:00.4158389
+Colony size: 250,205: (target: 250,000). Total births: 20,500,305
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:34.5273087: Generation 82 took 00:00:00.1189569/00:00:00.4042184
+Colony size: 250,122: (target: 250,000). Total births: 20,750,427
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:34.9706595: Generation 83 took 00:00:00.1358411/00:00:00.4431596
+Colony size: 249,957: (target: 250,000). Total births: 21,000,384
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:35.3778285: Generation 84 took 00:00:00.1334998/00:00:00.4069397
+Colony size: 250,149: (target: 250,000). Total births: 21,250,533
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:35.8097407: Generation 85 took 00:00:00.1364281/00:00:00.4317355
+Colony size: 250,070: (target: 250,000). Total births: 21,500,603
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:36.2290510: Generation 86 took 00:00:00.1501976/00:00:00.4190899
+Colony size: 249,989: (target: 250,000). Total births: 21,750,592
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:36.7206801: Generation 87 took 00:00:00.1972670/00:00:00.4914255
+Colony size: 250,012: (target: 250,000). Total births: 22,000,604
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:37.1846510: Generation 88 took 00:00:00.1636273/00:00:00.4636997
+Colony size: 250,142: (target: 250,000). Total births: 22,250,746
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:37.5869828: Generation 89 took 00:00:00.1381190/00:00:00.4021558
+Colony size: 250,130: (target: 250,000). Total births: 22,500,876
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:38.0078100: Generation 90 took 00:00:00.1298402/00:00:00.4205757
+Colony size: 250,037: (target: 250,000). Total births: 22,750,913
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:38.4332507: Generation 91 took 00:00:00.1357900/00:00:00.4252600
+Colony size: 249,934: (target: 250,000). Total births: 23,000,847
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:38.8718035: Generation 92 took 00:00:00.1517162/00:00:00.4382281
+Colony size: 250,106: (target: 250,000). Total births: 23,250,953
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:39.2847307: Generation 93 took 00:00:00.1152454/00:00:00.4127423
+Colony size: 250,028: (target: 250,000). Total births: 23,500,981
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:39.6925448: Generation 94 took 00:00:00.1198204/00:00:00.4075275
+Colony size: 249,995: (target: 250,000). Total births: 23,750,976
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:40.1137573: Generation 95 took 00:00:00.1114466/00:00:00.4210184
+Colony size: 249,967: (target: 250,000). Total births: 24,000,943
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:40.5247386: Generation 96 took 00:00:00.1225514/00:00:00.4105438
+Colony size: 249,902: (target: 250,000). Total births: 24,250,845
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:40.9874655: Generation 97 took 00:00:00.1249846/00:00:00.4625343
+Colony size: 249,860: (target: 250,000). Total births: 24,500,705
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:41.4423118: Generation 98 took 00:00:00.1376174/00:00:00.4545744
+Colony size: 249,936: (target: 250,000). Total births: 24,750,641
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:41.8464221: Generation 99 took 00:00:00.1370903/00:00:00.4039080
+Colony size: 249,895: (target: 250,000). Total births: 25,000,536
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:42.2612820: Generation 100 took 00:00:00.1154627/00:00:00.4145902
+Colony size: 250,174: (target: 250,000). Total births: 25,250,710
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:42.6551525: Generation 101 took 00:00:00.1195658/00:00:00.3936755
+Colony size: 249,943: (target: 250,000). Total births: 25,500,653
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:43.0533818: Generation 102 took 00:00:00.1147763/00:00:00.3979755
+Colony size: 250,204: (target: 250,000). Total births: 25,750,857
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:43.4497361: Generation 103 took 00:00:00.1197684/00:00:00.3961712
+Colony size: 249,856: (target: 250,000). Total births: 26,000,713
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:43.8624033: Generation 104 took 00:00:00.1337811/00:00:00.4124163
+Colony size: 249,895: (target: 250,000). Total births: 26,250,608
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:44.3276996: Generation 105 took 00:00:00.1478545/00:00:00.4651090
+Colony size: 250,134: (target: 250,000). Total births: 26,500,742
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:44.7662594: Generation 106 took 00:00:00.1230833/00:00:00.4382891
+Colony size: 249,925: (target: 250,000). Total births: 26,750,667
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:45.1563966: Generation 107 took 00:00:00.1296147/00:00:00.3899505
+Colony size: 249,814: (target: 250,000). Total births: 27,000,481
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:45.5681145: Generation 108 took 00:00:00.1402479/00:00:00.4114867
+Colony size: 249,698: (target: 250,000). Total births: 27,250,179
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:46.0185422: Generation 109 took 00:00:00.1849147/00:00:00.4502247
+Colony size: 250,178: (target: 250,000). Total births: 27,500,357
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:46.4706175: Generation 110 took 00:00:00.1756735/00:00:00.4518433
+Colony size: 249,969: (target: 250,000). Total births: 27,750,326
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:46.8892500: Generation 111 took 00:00:00.1110306/00:00:00.4184522
+Colony size: 249,974: (target: 250,000). Total births: 28,000,300
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:47.2502414: Generation 112 took 00:00:00.1196818/00:00:00.3607820
+Colony size: 249,915: (target: 250,000). Total births: 28,250,215
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:47.6514386: Generation 113 took 00:00:00.1207786/00:00:00.4010092
+Colony size: 249,988: (target: 250,000). Total births: 28,500,203
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:48.0203145: Generation 114 took 00:00:00.1193761/00:00:00.3686076
+Colony size: 250,222: (target: 250,000). Total births: 28,750,425
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:48.4414373: Generation 115 took 00:00:00.1257426/00:00:00.4209454
+Colony size: 249,773: (target: 250,000). Total births: 29,000,198
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:48.8269409: Generation 116 took 00:00:00.1294100/00:00:00.3851855
+Colony size: 250,185: (target: 250,000). Total births: 29,250,383
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:49.2317191: Generation 117 took 00:00:00.1402496/00:00:00.4045794
+Colony size: 250,162: (target: 250,000). Total births: 29,500,545
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:49.6926214: Generation 118 took 00:00:00.1486527/00:00:00.4606687
+Colony size: 249,897: (target: 250,000). Total births: 29,750,442
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:50.1920970: Generation 119 took 00:00:00.1675203/00:00:00.4992870
+Colony size: 249,930: (target: 250,000). Total births: 30,000,372
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:50.5577981: Generation 120 took 00:00:00.1144781/00:00:00.3653938
+Colony size: 249,928: (target: 250,000). Total births: 30,250,300
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:50.9653161: Generation 121 took 00:00:00.1199064/00:00:00.4072745
+Colony size: 250,229: (target: 250,000). Total births: 30,500,529
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:51.3917165: Generation 122 took 00:00:00.1511690/00:00:00.4261836
+Colony size: 250,024: (target: 250,000). Total births: 30,750,553
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:51.8843515: Generation 123 took 00:00:00.2165486/00:00:00.4924750
+Colony size: 249,999: (target: 250,000). Total births: 31,000,552
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:52.2556906: Generation 124 took 00:00:00.1168205/00:00:00.3710299
+Colony size: 250,087: (target: 250,000). Total births: 31,250,639
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:52.6676831: Generation 125 took 00:00:00.1046302/00:00:00.4117916
+Colony size: 249,918: (target: 250,000). Total births: 31,500,557
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:53.0761335: Generation 126 took 00:00:00.1251782/00:00:00.4081569
+Colony size: 249,764: (target: 250,000). Total births: 31,750,321
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:53.4806392: Generation 127 took 00:00:00.1177324/00:00:00.4043217
+Colony size: 249,935: (target: 250,000). Total births: 32,000,256
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:53.8966729: Generation 128 took 00:00:00.1373411/00:00:00.4157065
+Colony size: 249,754: (target: 250,000). Total births: 32,250,010
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:54.3246386: Generation 129 took 00:00:00.1431993/00:00:00.4277802
+Colony size: 249,985: (target: 250,000). Total births: 32,499,995
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:54.7183664: Generation 130 took 00:00:00.1186373/00:00:00.3934701
+Colony size: 249,587: (target: 250,000). Total births: 32,749,582
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:55.1357829: Generation 131 took 00:00:00.1382855/00:00:00.4172594
+Colony size: 249,899: (target: 250,000). Total births: 32,999,481
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:55.5204939: Generation 132 took 00:00:00.1382288/00:00:00.3845114
+Colony size: 249,815: (target: 250,000). Total births: 33,249,296
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:55.9543483: Generation 133 took 00:00:00.1575827/00:00:00.4336809
+Colony size: 250,287: (target: 250,000). Total births: 33,499,583
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:56.4330061: Generation 134 took 00:00:00.1814221/00:00:00.4784283
+Colony size: 249,975: (target: 250,000). Total births: 33,749,558
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:56.9465760: Generation 135 took 00:00:00.2241261/00:00:00.5134224
+Colony size: 250,016: (target: 250,000). Total births: 33,999,574
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:57.3285144: Generation 136 took 00:00:00.1207048/00:00:00.3816550
+Colony size: 250,228: (target: 250,000). Total births: 34,249,802
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:57.7069897: Generation 137 took 00:00:00.1098691/00:00:00.3782733
+Colony size: 250,033: (target: 250,000). Total births: 34,499,835
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:58.0606627: Generation 138 took 00:00:00.1109605/00:00:00.3534500
+Colony size: 249,754: (target: 250,000). Total births: 34,749,589
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:58.4607437: Generation 139 took 00:00:00.1051999/00:00:00.3998962
+Colony size: 250,072: (target: 250,000). Total births: 34,999,661
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:58.8273141: Generation 140 took 00:00:00.1031049/00:00:00.3663246
+Colony size: 249,927: (target: 250,000). Total births: 35,249,588
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:59.1906149: Generation 141 took 00:00:00.1073114/00:00:00.3631262
+Colony size: 249,961: (target: 250,000). Total births: 35,499,549
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:00:59.5950116: Generation 142 took 00:00:00.1405559/00:00:00.4041449
+Colony size: 249,726: (target: 250,000). Total births: 35,749,275
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:00.0217115: Generation 143 took 00:00:00.1511868/00:00:00.4264739
+Colony size: 249,951: (target: 250,000). Total births: 35,999,226
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:00.4428599: Generation 144 took 00:00:00.1650523/00:00:00.4208578
+Colony size: 249,929: (target: 250,000). Total births: 36,249,155
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:00.8730621: Generation 145 took 00:00:00.1597098/00:00:00.4300165
+Colony size: 250,133: (target: 250,000). Total births: 36,499,288
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:01.2755668: Generation 146 took 00:00:00.1507034/00:00:00.4022832
+Colony size: 249,993: (target: 250,000). Total births: 36,749,281
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:01.6528934: Generation 147 took 00:00:00.1203533/00:00:00.3771175
+Colony size: 249,846: (target: 250,000). Total births: 36,999,127
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:02.0714915: Generation 148 took 00:00:00.1333326/00:00:00.4183403
+Colony size: 250,005: (target: 250,000). Total births: 37,249,132
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:02.4905633: Generation 149 took 00:00:00.1502988/00:00:00.4189022
+Colony size: 250,186: (target: 250,000). Total births: 37,499,318
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:02.8951046: Generation 150 took 00:00:00.1304574/00:00:00.4042838
+Colony size: 249,930: (target: 250,000). Total births: 37,749,248
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:03.2892104: Generation 151 took 00:00:00.1204558/00:00:00.3939280
+Colony size: 249,801: (target: 250,000). Total births: 37,999,049
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:03.6500630: Generation 152 took 00:00:00.1210503/00:00:00.3605633
+Colony size: 250,048: (target: 250,000). Total births: 38,249,097
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:04.0557245: Generation 153 took 00:00:00.1328670/00:00:00.4054664
+Colony size: 249,896: (target: 250,000). Total births: 38,498,993
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:04.4445251: Generation 154 took 00:00:00.1234526/00:00:00.3886304
+Colony size: 249,943: (target: 250,000). Total births: 38,748,936
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:04.8247369: Generation 155 took 00:00:00.1234122/00:00:00.3800003
+Colony size: 249,999: (target: 250,000). Total births: 38,998,935
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:05.1871709: Generation 156 took 00:00:00.1060406/00:00:00.3622017
+Colony size: 249,780: (target: 250,000). Total births: 39,248,715
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:05.6276751: Generation 157 took 00:00:00.1278984/00:00:00.4403400
+Colony size: 250,053: (target: 250,000). Total births: 39,498,768
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:06.0324187: Generation 158 took 00:00:00.1318931/00:00:00.4044666
+Colony size: 250,044: (target: 250,000). Total births: 39,748,812
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:06.4190974: Generation 159 took 00:00:00.1161707/00:00:00.3865237
+Colony size: 250,061: (target: 250,000). Total births: 39,998,873
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:06.8565555: Generation 160 took 00:00:00.1218964/00:00:00.4371704
+Colony size: 250,044: (target: 250,000). Total births: 40,248,917
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:07.2610370: Generation 161 took 00:00:00.1410008/00:00:00.4042929
+Colony size: 249,921: (target: 250,000). Total births: 40,498,838
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:07.6721251: Generation 162 took 00:00:00.1413200/00:00:00.4108315
+Colony size: 249,908: (target: 250,000). Total births: 40,748,746
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:08.0558002: Generation 163 took 00:00:00.1180937/00:00:00.3834854
+Colony size: 249,978: (target: 250,000). Total births: 40,998,724
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:08.4423178: Generation 164 took 00:00:00.1225256/00:00:00.3862485
+Colony size: 250,158: (target: 250,000). Total births: 41,248,882
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:08.8567324: Generation 165 took 00:00:00.1350403/00:00:00.4142347
+Colony size: 249,917: (target: 250,000). Total births: 41,498,799
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:09.2618504: Generation 166 took 00:00:00.1545326/00:00:00.4049134
+Colony size: 249,569: (target: 250,000). Total births: 41,748,368
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:09.6912285: Generation 167 took 00:00:00.1325711/00:00:00.4291909
+Colony size: 249,749: (target: 250,000). Total births: 41,998,117
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:10.1355557: Generation 168 took 00:00:00.1494117/00:00:00.4440608
+Colony size: 250,318: (target: 250,000). Total births: 42,248,435
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:10.5407906: Generation 169 took 00:00:00.1258695/00:00:00.4050291
+Colony size: 249,752: (target: 250,000). Total births: 42,498,187
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:10.9930989: Generation 170 took 00:00:00.1753957/00:00:00.4520815
+Colony size: 250,093: (target: 250,000). Total births: 42,748,280
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:11.4558468: Generation 171 took 00:00:00.1968022/00:00:00.4625552
+Colony size: 249,975: (target: 250,000). Total births: 42,998,255
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:11.8667210: Generation 172 took 00:00:00.1492807/00:00:00.4106778
+Colony size: 250,002: (target: 250,000). Total births: 43,248,257
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:12.2731837: Generation 173 took 00:00:00.1262811/00:00:00.4062822
+Colony size: 249,880: (target: 250,000). Total births: 43,498,137
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:12.7135787: Generation 174 took 00:00:00.1533315/00:00:00.4401858
+Colony size: 249,934: (target: 250,000). Total births: 43,748,071
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:13.1191707: Generation 175 took 00:00:00.1107888/00:00:00.4053946
+Colony size: 249,956: (target: 250,000). Total births: 43,998,027
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:13.4965163: Generation 176 took 00:00:00.1292357/00:00:00.3771514
+Colony size: 250,000: (target: 250,000). Total births: 44,248,027
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:13.9049144: Generation 177 took 00:00:00.1364938/00:00:00.4082243
+Colony size: 250,127: (target: 250,000). Total births: 44,498,154
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:14.2753511: Generation 178 took 00:00:00.1213801/00:00:00.3701990
+Colony size: 249,985: (target: 250,000). Total births: 44,748,139
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:14.6787387: Generation 179 took 00:00:00.1230018/00:00:00.4031916
+Colony size: 250,104: (target: 250,000). Total births: 44,998,243
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:15.0787525: Generation 180 took 00:00:00.1312470/00:00:00.3997298
+Colony size: 249,931: (target: 250,000). Total births: 45,248,174
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:15.5153894: Generation 181 took 00:00:00.1365709/00:00:00.4364496
+Colony size: 249,873: (target: 250,000). Total births: 45,498,047
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:15.9074402: Generation 182 took 00:00:00.1420282/00:00:00.3917677
+Colony size: 250,152: (target: 250,000). Total births: 45,748,199
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:16.3162072: Generation 183 took 00:00:00.1327333/00:00:00.4085771
+Colony size: 249,858: (target: 250,000). Total births: 45,998,057
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:16.7694746: Generation 184 took 00:00:00.1388293/00:00:00.4530506
+Colony size: 250,131: (target: 250,000). Total births: 46,248,188
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:17.2067639: Generation 185 took 00:00:00.1318981/00:00:00.4371199
+Colony size: 249,969: (target: 250,000). Total births: 46,498,157
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:17.6679663: Generation 186 took 00:00:00.1425438/00:00:00.4610018
+Colony size: 250,291: (target: 250,000). Total births: 46,748,448
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:18.0628275: Generation 187 took 00:00:00.1208775/00:00:00.3946746
+Colony size: 250,088: (target: 250,000). Total births: 46,998,536
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:18.4968768: Generation 188 took 00:00:00.1114941/00:00:00.4337876
+Colony size: 249,685: (target: 250,000). Total births: 47,248,221
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:18.9073011: Generation 189 took 00:00:00.1222498/00:00:00.4102504
+Colony size: 250,118: (target: 250,000). Total births: 47,498,339
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:19.2886811: Generation 190 took 00:00:00.1268567/00:00:00.3810984
+Colony size: 250,113: (target: 250,000). Total births: 47,748,452
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:19.7029238: Generation 191 took 00:00:00.1231956/00:00:00.4140575
+Colony size: 249,870: (target: 250,000). Total births: 47,998,322
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:20.0881451: Generation 192 took 00:00:00.1265571/00:00:00.3849886
+Colony size: 249,984: (target: 250,000). Total births: 48,248,306
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:20.4793353: Generation 193 took 00:00:00.1202569/00:00:00.3910199
+Colony size: 250,070: (target: 250,000). Total births: 48,498,376
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:20.8568442: Generation 194 took 00:00:00.1269433/00:00:00.3773057
+Colony size: 250,110: (target: 250,000). Total births: 48,748,486
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:21.2608606: Generation 195 took 00:00:00.1273673/00:00:00.4038415
+Colony size: 249,827: (target: 250,000). Total births: 48,998,313
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:21.6869218: Generation 196 took 00:00:00.1211281/00:00:00.4258169
+Colony size: 249,816: (target: 250,000). Total births: 49,248,129
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:22.1171963: Generation 197 took 00:00:00.1320920/00:00:00.4300777
+Colony size: 250,135: (target: 250,000). Total births: 49,498,264
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:22.5311483: Generation 198 took 00:00:00.1356634/00:00:00.4137123
+Colony size: 249,812: (target: 250,000). Total births: 49,748,076
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:22.9258246: Generation 199 took 00:00:00.1286312/00:00:00.3944676
+Colony size: 250,185: (target: 250,000). Total births: 49,998,261
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:23.3719863: Generation 200 took 00:00:00.1578089/00:00:00.4458682
+Colony size: 249,833: (target: 250,000). Total births: 50,248,094
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:23.8070697: Generation 201 took 00:00:00.1736710/00:00:00.4348999
+Colony size: 250,246: (target: 250,000). Total births: 50,498,340
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:24.2680581: Generation 202 took 00:00:00.1591084/00:00:00.4607600
+Colony size: 249,815: (target: 250,000). Total births: 50,748,155
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:24.6852021: Generation 203 took 00:00:00.1098548/00:00:00.4169725
+Colony size: 249,914: (target: 250,000). Total births: 50,998,069
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:25.1134934: Generation 204 took 00:00:00.1307202/00:00:00.4280778
+Colony size: 250,120: (target: 250,000). Total births: 51,248,189
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:25.5238052: Generation 205 took 00:00:00.1234357/00:00:00.4101443
+Colony size: 250,008: (target: 250,000). Total births: 51,498,197
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:25.8976313: Generation 206 took 00:00:00.1264713/00:00:00.3735686
+Colony size: 249,913: (target: 250,000). Total births: 51,748,110
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:26.3431490: Generation 207 took 00:00:00.1492055/00:00:00.4453296
+Colony size: 250,096: (target: 250,000). Total births: 51,998,206
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:26.7718046: Generation 208 took 00:00:00.1630145/00:00:00.4284533
+Colony size: 250,099: (target: 250,000). Total births: 52,248,305
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:27.2431413: Generation 209 took 00:00:00.2240017/00:00:00.4711303
+Colony size: 250,159: (target: 250,000). Total births: 52,498,464
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:27.7063076: Generation 210 took 00:00:00.1148609/00:00:00.4629602
+Colony size: 250,169: (target: 250,000). Total births: 52,748,633
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:28.0904220: Generation 211 took 00:00:00.1276017/00:00:00.3839178
+Colony size: 250,040: (target: 250,000). Total births: 52,998,673
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:28.4578120: Generation 212 took 00:00:00.0952550/00:00:00.3671098
+Colony size: 249,927: (target: 250,000). Total births: 53,248,600
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:28.8584218: Generation 213 took 00:00:00.1142268/00:00:00.4004275
+Colony size: 250,150: (target: 250,000). Total births: 53,498,750
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:29.2589409: Generation 214 took 00:00:00.1211714/00:00:00.4002264
+Colony size: 250,016: (target: 250,000). Total births: 53,748,766
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:29.7097222: Generation 215 took 00:00:00.1259394/00:00:00.4505842
+Colony size: 250,135: (target: 250,000). Total births: 53,998,901
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:30.1224517: Generation 216 took 00:00:00.1393207/00:00:00.4124978
+Colony size: 249,700: (target: 250,000). Total births: 54,248,601
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:30.5371725: Generation 217 took 00:00:00.1326563/00:00:00.4145396
+Colony size: 250,136: (target: 250,000). Total births: 54,498,737
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:30.9754575: Generation 218 took 00:00:00.1683220/00:00:00.4380738
+Colony size: 249,956: (target: 250,000). Total births: 54,748,693
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:31.4430733: Generation 219 took 00:00:00.2036135/00:00:00.4674104
+Colony size: 250,027: (target: 250,000). Total births: 54,998,720
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:31.8565025: Generation 220 took 00:00:00.1421512/00:00:00.4131589
+Colony size: 250,126: (target: 250,000). Total births: 55,248,846
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:32.2301371: Generation 221 took 00:00:00.1100132/00:00:00.3734532
+Colony size: 249,982: (target: 250,000). Total births: 55,498,828
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:32.6429806: Generation 222 took 00:00:00.1162839/00:00:00.4125864
+Colony size: 249,938: (target: 250,000). Total births: 55,748,766
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:33.0107696: Generation 223 took 00:00:00.1146057/00:00:00.3675506
+Colony size: 249,828: (target: 250,000). Total births: 55,998,594
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:33.4008159: Generation 224 took 00:00:00.1272413/00:00:00.3898055
+Colony size: 249,940: (target: 250,000). Total births: 56,248,534
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:33.8551431: Generation 225 took 00:00:00.1501601/00:00:00.4541600
+Colony size: 249,946: (target: 250,000). Total births: 56,498,480
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:34.3716925: Generation 226 took 00:00:00.2074144/00:00:00.5162748
+Colony size: 249,957: (target: 250,000). Total births: 56,748,437
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:34.7869382: Generation 227 took 00:00:00.1114096/00:00:00.4150566
+Colony size: 250,133: (target: 250,000). Total births: 56,998,570
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:35.1849384: Generation 228 took 00:00:00.1059826/00:00:00.3977218
+Colony size: 249,827: (target: 250,000). Total births: 57,248,397
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:35.6043674: Generation 229 took 00:00:00.1125667/00:00:00.4192442
+Colony size: 249,997: (target: 250,000). Total births: 57,498,394
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:36.0076084: Generation 230 took 00:00:00.1150513/00:00:00.4030368
+Colony size: 250,175: (target: 250,000). Total births: 57,748,569
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:36.4541494: Generation 231 took 00:00:00.1817557/00:00:00.4463651
+Colony size: 250,150: (target: 250,000). Total births: 57,998,719
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:36.8497696: Generation 232 took 00:00:00.0959834/00:00:00.3954280
+Colony size: 250,161: (target: 250,000). Total births: 58,248,880
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:37.2712542: Generation 233 took 00:00:00.1040777/00:00:00.4212841
+Colony size: 250,131: (target: 250,000). Total births: 58,499,011
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:37.6743460: Generation 234 took 00:00:00.1305746/00:00:00.4028712
+Colony size: 249,838: (target: 250,000). Total births: 58,748,849
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:38.0661975: Generation 235 took 00:00:00.1229199/00:00:00.3916849
+Colony size: 249,920: (target: 250,000). Total births: 58,998,769
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:38.5070142: Generation 236 took 00:00:00.1201589/00:00:00.4405676
+Colony size: 250,045: (target: 250,000). Total births: 59,248,814
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:38.9605188: Generation 237 took 00:00:00.1220945/00:00:00.4533254
+Colony size: 249,963: (target: 250,000). Total births: 59,498,777
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:39.3582561: Generation 238 took 00:00:00.1281046/00:00:00.3975089
+Colony size: 250,193: (target: 250,000). Total births: 59,748,970
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:39.8194826: Generation 239 took 00:00:00.1401610/00:00:00.4610402
+Colony size: 250,052: (target: 250,000). Total births: 59,999,022
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:40.2037953: Generation 240 took 00:00:00.1305857/00:00:00.3840442
+Colony size: 249,854: (target: 250,000). Total births: 60,248,876
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:40.6246732: Generation 241 took 00:00:00.1208399/00:00:00.4206900
+Colony size: 250,277: (target: 250,000). Total births: 60,499,153
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:41.0146405: Generation 242 took 00:00:00.1273959/00:00:00.3897477
+Colony size: 250,034: (target: 250,000). Total births: 60,749,187
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:41.4082064: Generation 243 took 00:00:00.1127837/00:00:00.3934132
+Colony size: 250,014: (target: 250,000). Total births: 60,999,201
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:41.8523820: Generation 244 took 00:00:00.1375448/00:00:00.4439175
+Colony size: 249,714: (target: 250,000). Total births: 61,248,915
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:42.2628711: Generation 245 took 00:00:00.1391055/00:00:00.4102832
+Colony size: 250,157: (target: 250,000). Total births: 61,499,072
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:42.6564893: Generation 246 took 00:00:00.1083249/00:00:00.3933809
+Colony size: 249,937: (target: 250,000). Total births: 61,749,009
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:43.0479230: Generation 247 took 00:00:00.1232780/00:00:00.3912652
+Colony size: 249,874: (target: 250,000). Total births: 61,998,883
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:43.4568284: Generation 248 took 00:00:00.1173691/00:00:00.4086111
+Colony size: 249,962: (target: 250,000). Total births: 62,248,845
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:43.8319224: Generation 249 took 00:00:00.1140005/00:00:00.3748982
+Colony size: 250,058: (target: 250,000). Total births: 62,498,903
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:44.2017500: Generation 250 took 00:00:00.1220966/00:00:00.3695787
+Colony size: 250,094: (target: 250,000). Total births: 62,748,997
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:44.6188195: Generation 251 took 00:00:00.1206348/00:00:00.4168890
+Colony size: 249,993: (target: 250,000). Total births: 62,998,990
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:45.0263588: Generation 252 took 00:00:00.1502056/00:00:00.4072296
+Colony size: 250,024: (target: 250,000). Total births: 63,249,014
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:45.4751896: Generation 253 took 00:00:00.1887434/00:00:00.4486470
+Colony size: 249,911: (target: 250,000). Total births: 63,498,925
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:45.8627811: Generation 254 took 00:00:00.1229312/00:00:00.3873407
+Colony size: 250,029: (target: 250,000). Total births: 63,748,954
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:46.2650181: Generation 255 took 00:00:00.1202743/00:00:00.4020738
+Colony size: 249,985: (target: 250,000). Total births: 63,998,939
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:46.6640850: Generation 256 took 00:00:00.1257212/00:00:00.3988743
+Colony size: 250,172: (target: 250,000). Total births: 64,249,111
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:47.0777667: Generation 257 took 00:00:00.1270283/00:00:00.4135152
+Colony size: 250,023: (target: 250,000). Total births: 64,499,134
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:47.4713626: Generation 258 took 00:00:00.1269352/00:00:00.3933444
+Colony size: 250,090: (target: 250,000). Total births: 64,749,224
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:47.8952487: Generation 259 took 00:00:00.1298060/00:00:00.4237132
+Colony size: 250,109: (target: 250,000). Total births: 64,999,333
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:48.2754512: Generation 260 took 00:00:00.1319412/00:00:00.3799342
+Colony size: 250,078: (target: 250,000). Total births: 65,249,411
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:48.7203620: Generation 261 took 00:00:00.1299147/00:00:00.4447147
+Colony size: 250,160: (target: 250,000). Total births: 65,499,571
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:49.1402436: Generation 262 took 00:00:00.1398258/00:00:00.4196128
+Colony size: 250,072: (target: 250,000). Total births: 65,749,643
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:49.5902160: Generation 263 took 00:00:00.1402459/00:00:00.4497764
+Colony size: 249,967: (target: 250,000). Total births: 65,999,610
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:50.0224704: Generation 264 took 00:00:00.1404499/00:00:00.4320410
+Colony size: 249,960: (target: 250,000). Total births: 66,249,570
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:50.4369570: Generation 265 took 00:00:00.1477744/00:00:00.4142808
+Colony size: 250,124: (target: 250,000). Total births: 66,499,694
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:50.8332828: Generation 266 took 00:00:00.1015246/00:00:00.3960427
+Colony size: 249,931: (target: 250,000). Total births: 66,749,625
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:51.2443610: Generation 267 took 00:00:00.1267586/00:00:00.4109166
+Colony size: 250,127: (target: 250,000). Total births: 66,999,752
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:51.6531278: Generation 268 took 00:00:00.1213976/00:00:00.4085296
+Colony size: 249,805: (target: 250,000). Total births: 67,249,557
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:52.0729789: Generation 269 took 00:00:00.1406494/00:00:00.4196812
+Colony size: 250,069: (target: 250,000). Total births: 67,499,626
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:52.4498055: Generation 270 took 00:00:00.1199878/00:00:00.3765271
+Colony size: 249,933: (target: 250,000). Total births: 67,749,559
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:52.8516759: Generation 271 took 00:00:00.1287334/00:00:00.4016671
+Colony size: 250,060: (target: 250,000). Total births: 67,999,619
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:53.2437242: Generation 272 took 00:00:00.1287959/00:00:00.3917408
+Colony size: 250,034: (target: 250,000). Total births: 68,249,653
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:53.7112033: Generation 273 took 00:00:00.1340883/00:00:00.4673113
+Colony size: 249,988: (target: 250,000). Total births: 68,499,641
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:54.1518867: Generation 274 took 00:00:00.1505948/00:00:00.4403990
+Colony size: 250,087: (target: 250,000). Total births: 68,749,728
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:54.5699913: Generation 275 took 00:00:00.1387880/00:00:00.4179181
+Colony size: 250,289: (target: 250,000). Total births: 69,000,017
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:54.9682048: Generation 276 took 00:00:00.1321865/00:00:00.3979476
+Colony size: 249,890: (target: 250,000). Total births: 69,249,907
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:55.3740304: Generation 277 took 00:00:00.1274065/00:00:00.4056363
+Colony size: 249,941: (target: 250,000). Total births: 69,499,848
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:55.7757834: Generation 278 took 00:00:00.1378209/00:00:00.4014680
+Colony size: 249,982: (target: 250,000). Total births: 69,749,830
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:56.2001775: Generation 279 took 00:00:00.1528038/00:00:00.4242256
+Colony size: 249,873: (target: 250,000). Total births: 69,999,703
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:56.6319351: Generation 280 took 00:00:00.1672349/00:00:00.4315345
+Colony size: 250,036: (target: 250,000). Total births: 70,249,739
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:57.0321342: Generation 281 took 00:00:00.1366939/00:00:00.4000425
+Colony size: 250,143: (target: 250,000). Total births: 70,499,882
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:57.4657964: Generation 282 took 00:00:00.1675970/00:00:00.4333984
+Colony size: 250,212: (target: 250,000). Total births: 70,750,094
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:57.8472077: Generation 283 took 00:00:00.1167296/00:00:00.3811938
+Colony size: 250,176: (target: 250,000). Total births: 71,000,270
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:58.2210875: Generation 284 took 00:00:00.1136173/00:00:00.3736115
+Colony size: 249,930: (target: 250,000). Total births: 71,250,200
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:58.6094407: Generation 285 took 00:00:00.1286164/00:00:00.3881823
+Colony size: 249,999: (target: 250,000). Total births: 71,500,199
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:58.9864919: Generation 286 took 00:00:00.1121268/00:00:00.3767929
+Colony size: 249,764: (target: 250,000). Total births: 71,749,963
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:59.3783864: Generation 287 took 00:00:00.1346720/00:00:00.3917166
+Colony size: 250,084: (target: 250,000). Total births: 72,000,047
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:01:59.8299560: Generation 288 took 00:00:00.1538552/00:00:00.4512917
+Colony size: 250,117: (target: 250,000). Total births: 72,250,164
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+00:02:00.2365917: Generation 289 took 00:00:00.1346312/00:00:00.4064499
+Colony size: 249,971: (target: 250,000). Total births: 72,500,135
+Most accurate ever genome: ASR = 1.00000 (5,120,000/5,120,000), length = 10 from 00:00:00.7234226 at 500,120 total births
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+Shortest satisfactory (ASR >= 1.00000) solution found so far. ASR = 1.00000 (5,120,000/5,120,000), Length = 10
+LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+
+Allotted time exceeded
+
+Model Genome: LOAD x0:0; SQUARE; CONST 3; DIV; LOAD x1:1; ADD; CONST 3; MUL; CONST 2; ADD; 
+IN: x0=0.85556376; x1=0.4413953; OUT: 4.056175 (model) vs. 4.056175 (target)
+IN: x0=0.3709002; x1=0.3205758; OUT: 3.0992944 (model) vs. 3.0992944 (target)
+IN: x0=0.07046405; x1=0.11633794; OUT: 2.353979 (model) vs. 2.353979 (target)
+IN: x0=0.34442282; x1=0.40789574; OUT: 3.3423142 (model) vs. 3.3423142 (target)
+IN: x0=0.44433758; x1=0.037660185; OUT: 2.3104165 (model) vs. 2.3104165 (target)
+IN: x0=0.054753415; x1=0.19368218; OUT: 2.5840445 (model) vs. 2.5840445 (target)
+IN: x0=0.07046405; x1=0.11633794; OUT: 2.353979 (model) vs. 2.353979 (target)
+IN: x0=0.008367035; x1=0.66829735; OUT: 4.004962 (model) vs. 4.004962 (target)
+IN: x0=0.9599501; x1=0.017354233; OUT: 2.973567 (model) vs. 2.973567 (target)
+IN: x0=0.76465297; x1=0.6384777; OUT: 4.5001273 (model) vs. 4.5001273 (target)
+IN: x0=0.18537089; x1=0.4733897; OUT: 3.4545314 (model) vs. 3.4545314 (target)
+IN: x0=0.20064647; x1=0.8091979; OUT: 4.4678526 (model) vs. 4.4678526 (target)
+IN: x0=0.25176534; x1=0.11426349; OUT: 2.4061763 (model) vs. 2.4061763 (target)
+IN: x0=0.20064647; x1=0.8091979; OUT: 4.4678526 (model) vs. 4.4678526 (target)
+IN: x0=0.006513122; x1=0.047095336; OUT: 2.1413283 (model) vs. 2.1413283 (target)
+IN: x0=0.42460552; x1=0.12839411; OUT: 2.5654721 (model) vs. 2.5654721 (target)
+IN: x0=0.8939167; x1=0.14022404; OUT: 3.2197592 (model) vs. 3.2197592 (target)
+IN: x0=0.1611195; x1=0.14822772; OUT: 2.4706426 (model) vs. 2.4706426 (target)
+IN: x0=0.6808149; x1=0.5233988; OUT: 4.0337057 (model) vs. 4.033705 (target)
+IN: x0=0.40887812; x1=0.37173867; OUT: 3.2823973 (model) vs. 3.2823973 (target)
+IN: x0=0.7994929; x1=0.4548592; OUT: 4.0037665 (model) vs. 4.0037665 (target)
+IN: x0=0.84531295; x1=0.5455062; OUT: 4.3510723 (model) vs. 4.351073 (target)
+IN: x0=0.85556376; x1=0.4413953; OUT: 4.056175 (model) vs. 4.056175 (target)
+IN: x0=0.34496096; x1=0.94146276; OUT: 4.943386 (model) vs. 4.9433866 (target)
+IN: x0=0.09260062; x1=0.01730102; OUT: 2.060478 (model) vs. 2.060478 (target)
+IN: x0=0.20064647; x1=0.8091979; OUT: 4.4678526 (model) vs. 4.4678526 (target)
+IN: x0=0.07133462; x1=0.8581069; OUT: 4.5794096 (model) vs. 4.579409 (target)
+IN: x0=0.085012354; x1=0.6259454; OUT: 3.8850632 (model) vs. 3.8850632 (target)
+IN: x0=0.85556376; x1=0.4413953; OUT: 4.056175 (model) vs. 4.056175 (target)
+IN: x0=0.2199497; x1=0.36206502; OUT: 3.134573 (model) vs. 3.134573 (target)
+IN: x0=0.21750715; x1=0.7341252; OUT: 4.249685 (model) vs. 4.249685 (target)
+IN: x0=0.34496096; x1=0.94146276; OUT: 4.943386 (model) vs. 4.9433866 (target)
+IN: x0=0.1302691; x1=0.35004082; OUT: 3.0670924 (model) vs. 3.0670924 (target)
+IN: x0=0.6808149; x1=0.5233988; OUT: 4.0337057 (model) vs. 4.033705 (target)
+IN: x0=0.84027165; x1=0.77722144; OUT: 5.0377207 (model) vs. 5.0377207 (target)
+IN: x0=0.84085894; x1=0.45599538; OUT: 4.07503 (model) vs. 4.07503 (target)
+IN: x0=0.42460552; x1=0.12839411; OUT: 2.5654721 (model) vs. 2.5654721 (target)
+IN: x0=0.8886705; x1=0.061226375; OUT: 2.9734144 (model) vs. 2.9734144 (target)
+IN: x0=0.38836676; x1=0.15628974; OUT: 2.619698 (model) vs. 2.619698 (target)
+IN: x0=0.71476465; x1=0.07298757; OUT: 2.7298512 (model) vs. 2.7298512 (target)
+IN: x0=0.38836676; x1=0.15628974; OUT: 2.619698 (model) vs. 2.619698 (target)
+IN: x0=0.9713403; x1=0.48450738; OUT: 4.397024 (model) vs. 4.397024 (target)
+IN: x0=0.52767384; x1=0.4418342; OUT: 3.6039424 (model) vs. 3.6039424 (target)
+IN: x0=0.7012497; x1=0.835038; OUT: 4.9968653 (model) vs. 4.9968653 (target)
+IN: x0=0.9240532; x1=0.35490695; OUT: 3.9185953 (model) vs. 3.918595 (target)
+IN: x0=0.08422804; x1=0.9649402; OUT: 4.901915 (model) vs. 4.901915 (target)
+IN: x0=0.0908467; x1=0.68042976; OUT: 4.0495424 (model) vs. 4.0495424 (target)
+IN: x0=0.9032245; x1=0.17383681; OUT: 3.3373249 (model) vs. 3.337325 (target)
+IN: x0=0.09260062; x1=0.01730102; OUT: 2.060478 (model) vs. 2.060478 (target)
+IN: x0=0.8699815; x1=0.9549049; OUT: 5.6215825 (model) vs. 5.6215825 (target)
+IN: x0=0.29015583; x1=0.37902144; OUT: 3.2212548 (model) vs. 3.2212546 (target)
+IN: x0=0.84085894; x1=0.45599538; OUT: 4.07503 (model) vs. 4.07503 (target)
+IN: x0=0.041538198; x1=0.4213718; OUT: 3.2658408 (model) vs. 3.2658408 (target)
+IN: x0=0.1611195; x1=0.14822772; OUT: 2.4706426 (model) vs. 2.4706426 (target)
+IN: x0=0.07895654; x1=0.31173703; OUT: 2.9414454 (model) vs. 2.941445 (target)
+IN: x0=0.041538198; x1=0.4213718; OUT: 3.2658408 (model) vs. 3.2658408 (target)
+IN: x0=0.054753415; x1=0.19368218; OUT: 2.5840445 (model) vs. 2.5840445 (target)
+IN: x0=0.71476465; x1=0.07298757; OUT: 2.7298512 (model) vs. 2.7298512 (target)
+IN: x0=0.79508656; x1=0.7220538; OUT: 4.798324 (model) vs. 4.798324 (target)
+IN: x0=0.42460552; x1=0.12839411; OUT: 2.5654721 (model) vs. 2.5654721 (target)
+IN: x0=0.059254017; x1=0.42457592; OUT: 3.2772388 (model) vs. 3.2772388 (target)
+IN: x0=0.006513122; x1=0.047095336; OUT: 2.1413283 (model) vs. 2.1413283 (target)
+IN: x0=0.88942647; x1=0.3668612; OUT: 3.891663 (model) vs. 3.891663 (target)
+IN: x0=0.14336914; x1=0.20996757; OUT: 2.6504574 (model) vs. 2.6504574 (target)
+IN: x0=0.42460552; x1=0.12839411; OUT: 2.5654721 (model) vs. 2.5654721 (target)
+IN: x0=0.84085894; x1=0.45599538; OUT: 4.07503 (model) vs. 4.07503 (target)
+IN: x0=0.9299965; x1=0.83198863; OUT: 5.3608594 (model) vs. 5.3608594 (target)
+IN: x0=0.4896057; x1=0.42386281; OUT: 3.511302 (model) vs. 3.5113022 (target)
+IN: x0=0.38836676; x1=0.15628974; OUT: 2.619698 (model) vs. 2.619698 (target)
+IN: x0=0.8482876; x1=0.8271075; OUT: 5.2009144 (model) vs. 5.2009144 (target)
+IN: x0=0.34442282; x1=0.40789574; OUT: 3.3423142 (model) vs. 3.3423142 (target)
+IN: x0=0.8939167; x1=0.14022404; OUT: 3.2197592 (model) vs. 3.2197592 (target)
+IN: x0=0.008367035; x1=0.66829735; OUT: 4.004962 (model) vs. 4.004962 (target)
+IN: x0=0.098819286; x1=0.71363914; OUT: 4.1506824 (model) vs. 4.1506824 (target)
+IN: x0=0.52120304; x1=0.89588577; OUT: 4.9593096 (model) vs. 4.95931 (target)
+IN: x0=0.4128466; x1=0.55395854; OUT: 3.8323178 (model) vs. 3.8323178 (target)
+IN: x0=0.37147152; x1=0.07791258; OUT: 2.371729 (model) vs. 2.371729 (target)
+IN: x0=0.56977516; x1=0.3932084; OUT: 3.5042691 (model) vs. 3.5042691 (target)
+IN: x0=0.21750715; x1=0.7341252; OUT: 4.249685 (model) vs. 4.249685 (target)
+IN: x0=0.744814; x1=0.059542295; OUT: 2.7333748 (model) vs. 2.7333748 (target)
+IN: x0=0.15931322; x1=0.27415043; OUT: 2.847832 (model) vs. 2.847832 (target)
+IN: x0=0.29015583; x1=0.37902144; OUT: 3.2212548 (model) vs. 3.2212546 (target)
+IN: x0=0.08818236; x1=0.3928709; OUT: 3.186389 (model) vs. 3.186389 (target)
+IN: x0=0.34442282; x1=0.40789574; OUT: 3.3423142 (model) vs. 3.3423142 (target)
+IN: x0=0.21750715; x1=0.7341252; OUT: 4.249685 (model) vs. 4.249685 (target)
+IN: x0=0.5873249; x1=0.4714076; OUT: 3.7591734 (model) vs. 3.7591734 (target)
+IN: x0=0.7272295; x1=0.06569249; OUT: 2.7259402 (model) vs. 2.7259402 (target)
+IN: x0=0.52120304; x1=0.89588577; OUT: 4.9593096 (model) vs. 4.95931 (target)
+IN: x0=0.25044483; x1=0.10901171; OUT: 2.3897576 (model) vs. 2.3897576 (target)
+IN: x0=0.7012497; x1=0.835038; OUT: 4.9968653 (model) vs. 4.9968653 (target)
+IN: x0=0.014545027; x1=0.17112003; OUT: 2.5135717 (model) vs. 2.5135717 (target)
+IN: x0=0.70025563; x1=0.18903784; OUT: 3.0574715 (model) vs. 3.0574715 (target)
+IN: x0=0.56548965; x1=0.16597424; OUT: 2.8177013 (model) vs. 2.8177013 (target)
+IN: x0=0.24682571; x1=0.1751798; OUT: 2.5864623 (model) vs. 2.5864623 (target)
+IN: x0=0.4457799; x1=0.37298602; OUT: 3.3176777 (model) vs. 3.3176777 (target)
+IN: x0=0.75936353; x1=0.18834338; OUT: 3.141663 (model) vs. 3.141663 (target)
+IN: x0=0.041538198; x1=0.4213718; OUT: 3.2658408 (model) vs. 3.2658408 (target)
+IN: x0=0.1611195; x1=0.14822772; OUT: 2.4706426 (model) vs. 2.4706426 (target)
+IN: x0=0.24682571; x1=0.1751798; OUT: 2.5864623 (model) vs. 2.5864623 (target)
+IN: x0=0.014545027; x1=0.17112003; OUT: 2.5135717 (model) vs. 2.5135717 (target)
+IN: x0=0.95220375; x1=0.47696158; OUT: 4.337577 (model) vs. 4.337577 (target)
+IN: x0=0.84531295; x1=0.5455062; OUT: 4.3510723 (model) vs. 4.351073 (target)
+IN: x0=0.07895654; x1=0.31173703; OUT: 2.9414454 (model) vs. 2.941445 (target)
+IN: x0=0.3709002; x1=0.3205758; OUT: 3.0992944 (model) vs. 3.0992944 (target)
+IN: x0=0.09260062; x1=0.01730102; OUT: 2.060478 (model) vs. 2.060478 (target)
+IN: x0=0.21058223; x1=0.52671975; OUT: 3.624504 (model) vs. 3.624504 (target)
+IN: x0=0.21750715; x1=0.7341252; OUT: 4.249685 (model) vs. 4.249685 (target)
+IN: x0=0.88942647; x1=0.3668612; OUT: 3.891663 (model) vs. 3.891663 (target)
+IN: x0=0.9599501; x1=0.017354233; OUT: 2.973567 (model) vs. 2.973567 (target)
+IN: x0=0.25044483; x1=0.10901171; OUT: 2.3897576 (model) vs. 2.3897576 (target)
+IN: x0=0.62676454; x1=0.90212494; OUT: 5.0992084 (model) vs. 5.0992084 (target)
+IN: x0=0.098819286; x1=0.71363914; OUT: 4.1506824 (model) vs. 4.1506824 (target)
+IN: x0=0.35970855; x1=0.2051776; OUT: 2.744923 (model) vs. 2.744923 (target)
+IN: x0=0.52767384; x1=0.4418342; OUT: 3.6039424 (model) vs. 3.6039424 (target)
+IN: x0=0.7994929; x1=0.4548592; OUT: 4.0037665 (model) vs. 4.0037665 (target)
+IN: x0=0.9032245; x1=0.17383681; OUT: 3.3373249 (model) vs. 3.337325 (target)
+IN: x0=0.006513122; x1=0.047095336; OUT: 2.1413283 (model) vs. 2.1413283 (target)
+IN: x0=0.006513122; x1=0.047095336; OUT: 2.1413283 (model) vs. 2.1413283 (target)
+IN: x0=0.008367035; x1=0.66829735; OUT: 4.004962 (model) vs. 4.004962 (target)
+IN: x0=0.44433758; x1=0.037660185; OUT: 2.3104165 (model) vs. 2.3104165 (target)
+IN: x0=0.9240532; x1=0.35490695; OUT: 3.9185953 (model) vs. 3.918595 (target)
+IN: x0=0.18537089; x1=0.4733897; OUT: 3.4545314 (model) vs. 3.4545314 (target)
+IN: x0=0.7597078; x1=0.56606555; OUT: 4.2753525 (model) vs. 4.2753525 (target)
+IN: x0=0.4186411; x1=0.20105162; OUT: 2.7784152 (model) vs. 2.7784152 (target)
+IN: x0=0.21058223; x1=0.52671975; OUT: 3.624504 (model) vs. 3.624504 (target)
+IN: x0=0.25176534; x1=0.11426349; OUT: 2.4061763 (model) vs. 2.4061763 (target)
+IN: x0=0.6772905; x1=0.6203461; OUT: 4.319761 (model) vs. 4.319761 (target)
+IN: x0=0.9240532; x1=0.35490695; OUT: 3.9185953 (model) vs. 3.918595 (target)
+
+PythonMLSetup-CorrelationFitFunc Model Validated to Tolerance of 1/10 of 1% using 128 new data points (~25% of 512 experiments)
+

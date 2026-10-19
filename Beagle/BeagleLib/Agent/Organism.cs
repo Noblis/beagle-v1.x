@@ -302,7 +302,7 @@ public class Organism
     protected Organism(int commandsLength) :this(new Command[commandsLength]) { }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected Organism(Command[] commands)
+    internal Organism(Command[] commands)
     {
         ResetPropertiesForNewOrganism();
         Commands = commands;
@@ -378,6 +378,36 @@ public class Organism
         mutationCommands.Mutate(ref mutationCommandsLength, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
         return CreateByCopyingCommandsFromPartOfSpan(mutationCommands, mutationCommandsLength);
     }
+
+    public Organism? ProduceCrossoverChild(Organism[] organisms, int organismsCount, Organism partner)
+    {
+        Span<Command> crossoverCommands = stackalloc Command[BConfig.MaxScriptLength];
+        var crossoverCommandsLength = Commands.Length;
+
+        Commands.CopyTo(crossoverCommands);
+
+        #if DEBUG //Verify that it copied correctly
+        if (Commands.Length != crossoverCommandsLength) ReportInvalidScriptAndBreak();
+        
+        for (var i = 0; i < Commands.Length; i++)
+        {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (Commands[i].Operation != crossoverCommands[i].Operation ||
+                Commands[i].CommandType == CommandTypeEnum.CommandPlusFloat && Commands[i].ConstValue != crossoverCommands[i].ConstValue ||
+                Commands[i].CommandType == CommandTypeEnum.CommandPlusIndex && Commands[i].Idx != crossoverCommands[i].Idx)
+            {
+                ReportInvalidScriptAndBreak();
+            }
+        }
+        #endif
+
+
+        crossoverCommands.Crossover(ref crossoverCommandsLength, partner);
+        if (crossoverCommandsLength == -1) return null; // returns null if crossover failed
+        return CreateByCopyingCommandsFromPartOfSpan(crossoverCommands, crossoverCommandsLength);
+
+    }
+
     public IEnumerable<Command> GetFullCommands(float[][] inputsArray, float[] correctOutputs)
     {
         if (MLSetup.IsCorrelationFunctionRun)
