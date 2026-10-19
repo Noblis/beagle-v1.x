@@ -20,8 +20,7 @@ public abstract class FeynmanMLSetup : MLSetup
         if (remainder < 5) return 5_000_000;
         if (remainder < 10) return 3_000_000;
         if (remainder < 15) return 1_000_000;
-        if (remainder < 20) return 500_000;
-        return 250_000;
+        return 500_000;
     }
 
     public sealed override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
