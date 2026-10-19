@@ -2,7 +2,7 @@ set r=10
 set s=10
 dotnet build -c release
 cd bin\Release\net10.0
-for /l %%i in (1, 1, %r%) do Run.exe StopAfterMin=%s% NoEscMenu
+for /l %%i in (1, 1, %r%) do Run.exe StopAfterMin=%s% RunFeynman=5 NoEscMenu
 
 pause 
 rem for /l %%i in (1, 1, %r%) do Run.exe RunFeynman=5 StopAfterMin=%s% NoEscMenu

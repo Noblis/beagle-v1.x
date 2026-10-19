@@ -54,7 +54,6 @@ public static class CommandSpanCrossoverExt
             stackEffect += me[i].StackEffect;
         }
     }
-
     public static void IdentifyCrossoverChunk(this Span<Command> me, int crossoverEnd, ref int crossoverStart)
     {
         int[] numbers = new int[crossoverEnd+1];
@@ -79,7 +78,6 @@ public static class CommandSpanCrossoverExt
         // for generalizability to select one if we find multiple
         crossoverStart = numbers[Rnd.Random.Next(validCrossCount)];
     }
-
     public static void IdentifyPartnerCrossoverChunk(ref Span<Command> partner, ref int partnerLength, ref int crossoverEnd, ref int crossoverStart)
     {
         int[] numbers = new int[crossoverEnd+1];
@@ -130,7 +128,6 @@ public static class CommandSpanCrossoverExt
         // for generalizability to select one if we find multiple
         crossoverStart = numbers[Rnd.Random.Next(validCrossCount)];
     }
-
     public static void InsertCrossoverChunk(this Span<Command> me, Span<Command> partner, ref int length, int crossoverEnd, int crossoverStart, int partnerCrossoverEnd, int partnerCrossoverStart)
     {
         // remove old chunk and then drop in new chunk

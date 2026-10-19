@@ -302,7 +302,7 @@ public class Organism
     protected Organism(int commandsLength) :this(new Command[commandsLength]) { }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Organism(Command[] commands)
+    protected Organism(Command[] commands)
     {
         ResetPropertiesForNewOrganism();
         Commands = commands;
@@ -401,11 +401,9 @@ public class Organism
         }
         #endif
 
-
         crossoverCommands.Crossover(ref crossoverCommandsLength, partner);
         if (crossoverCommandsLength == -1) return null; // returns null if crossover failed
         return CreateByCopyingCommandsFromPartOfSpan(crossoverCommands, crossoverCommandsLength);
-
     }
 
     public IEnumerable<Command> GetFullCommands(float[][] inputsArray, float[] correctOutputs)
