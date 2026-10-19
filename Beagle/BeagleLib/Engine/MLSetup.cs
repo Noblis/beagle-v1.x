@@ -85,6 +85,8 @@ public abstract class MLSetup
     public virtual bool KeepOptimizingAfterSolutionFound => false;
 
     public virtual bool RemoveRedundantCommandsAfterMutation => true;
+
+    public virtual double CrossoverRate => 0.3;
     #endregion
 
     #region Settings Proprties
