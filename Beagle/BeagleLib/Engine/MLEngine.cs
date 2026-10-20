@@ -5,12 +5,13 @@ using BeagleLib.Util;
 using BeagleLib.VM;
 using ILGPU;
 using ILGPU.Runtime;
+using ILGPU.Runtime.Cuda;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Runtime;
 using System.Runtime.CompilerServices;
-using ILGPU.Runtime.Cuda;
 using WebMonk;
+//using WebMonk.RazorSharp.HtmlTags;
 
 namespace BeagleLib.Engine;
 
@@ -43,10 +44,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             #endregion
 
             #region Set up Console 
-            Console.ResetColor();
-            Console.CursorVisible = false;
-            Console.Clear();
-            Console.Title = $"Beagle {BConfig.Version}: {MLSetup.Current.Name}-{typeof(TFitFunc).Name}";
+            if (!Console.IsOutputRedirected)
+            {
+                Console.ResetColor();
+
+                Console.CursorVisible = false;
+
+                Console.Clear();
+                Console.Title = $"Beagle {BConfig.Version}: {MLSetup.Current.Name}-{typeof(TFitFunc).Name}";
+            }
             #endregion
 
             #region Set up Json settings
@@ -152,7 +158,18 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _organisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _newbornOrganisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _scores = new int[MLSetup.Current.OrganismsArraySize];
-            _taxedScorePercentiles = new int[100];
+            _layers = new int[MLSetup.Current.OrganismsArraySize];
+            _taxedScorePercentiles = new int[ParetoSample];
+            //additions for NSGA selection
+            _scoreLayers = new int[ParetoSample];
+            _sizeLayers = new int[ParetoSample];
+            _layerNumbers = new int[ParetoSample];
+            _layerOffspringTargets = new float[ParetoSample];
+            _layerSizes = new int[ParetoSample];
+            _crossoverPartners = new Organism[CrossoverPartnerPoolSize];
+
+            // True Pareto front + elitism support
+            _isFrontZero = new bool[MLSetup.Current.OrganismsArraySize];
 
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
@@ -307,6 +324,187 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
     }
 
+    public bool DominatesQ(int size, int score, int sizeRef, int scoreRef)
+    {
+        return (size <= sizeRef) && (score >= scoreRef) && (size < sizeRef || score > scoreRef);
+    }
+
+    // Identify which layer an organism from the whole population belongs to using sampled layers
+    public int GetParetoLayer(int[] sizeLayersRef, int[] scoreLayersRef, int[] layerNumbersRef, int score, int size)
+    {
+        bool dominated = false;
+        int currentLayer = 0;
+        //TODO: Does this early termination on 0 and subzero scores help
+        if (score <= 0) return layerNumbersRef[ParetoSample-1];
+
+        for (int i = 0; i < ParetoSample; i++)
+        {
+            if (layerNumbersRef[i] > currentLayer)
+            {
+                if (dominated == false) return currentLayer;
+                currentLayer++;
+                dominated = false;
+            }
+
+
+            if (DominatesQ(sizeLayersRef[i], scoreLayersRef[i], size, score))
+            {
+                dominated = true;
+            }
+
+        }
+
+        return currentLayer;
+    }
+
+    // Identify the next front layer from sampled individuals
+    public void FrontSelect(int[] sizeLayersRef, int[] scoreLayersRef, int[] frontIndices, ref int frontCount, bool[] selectedQ)
+    {
+        bool[] onFrontQ = new bool[ParetoSample];
+        for (int i = 0; i < ParetoSample; i++) onFrontQ[i] = false;
+        for (int i = 0; i < ParetoSample; i++) if (!selectedQ[i]) onFrontQ[i] = true;
+        for (int i = 0; i < ParetoSample; i++)
+        {
+            if (onFrontQ[i] && !selectedQ[i])
+            {
+                for (int j = 0; j < ParetoSample; j++)
+                {
+                    if ((i != j) && !selectedQ[j] && onFrontQ[j] && sizeLayersRef[i] <= sizeLayersRef[j] &&
+                        scoreLayersRef[i] > scoreLayersRef[j])
+                    {
+                        onFrontQ[j] = false;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < ParetoSample; i++)
+        {
+            if (onFrontQ[i])
+            {
+                frontIndices[frontCount] = i;
+                frontCount++;
+            }
+        }
+
+
+    }
+
+    // Group sampled individuals into layers
+    public void ParetoLayers(int[] layerNumbersRef, int[] sizeLayersRef, int[] scoreLayersRef)
+    {
+        int[] frontIndices = new int[ParetoSample];
+        int frontCount = 0;
+        bool[] selectedQ = new bool[ParetoSample];
+        for (int i = 0; i < ParetoSample; i++) selectedQ[i] = false;
+        int lastIndex = 0;
+        int layerNumber = 0;
+        int[] sizeLayersTmp = new int[ParetoSample];
+        int[] scoreLayersTmp = new int[ParetoSample];
+        int[] layerNumbersTmp = new int[ParetoSample];
+        while (frontCount < ParetoSample)
+        {
+            FrontSelect(sizeLayersRef, scoreLayersRef, frontIndices, ref frontCount, selectedQ);
+            for (int i = lastIndex; i < frontCount; i++)
+            {
+                selectedQ[frontIndices[i]] = true;
+                sizeLayersTmp[i] = sizeLayersRef[frontIndices[i]];
+                scoreLayersTmp[i] = scoreLayersRef[frontIndices[i]];
+                layerNumbersTmp[i] = layerNumber;
+            }
+
+            lastIndex = frontCount;
+            layerNumber++;
+        }
+
+        for (int i = 0; i < ParetoSample; i++)
+        {
+            sizeLayersRef[i] = sizeLayersTmp[i];
+            scoreLayersRef[i] = scoreLayersTmp[i];
+            layerNumbersRef[i] = layerNumbersTmp[i];
+        }
+
+    }
+
+    // Identifies the true Pareto front (front-0) of current population.
+    protected void ParetoFrontSweep(bool[] isFrontZero)
+    {
+        _frontCount = 0;
+
+        // Group by Commands.Length
+        var bucketStart = new int[BConfig.MaxScriptLength + 1];
+        var bucketSize = new int[BConfig.MaxScriptLength + 1];
+        var sizeBuckets = new int[_organismsCount];
+
+        // Count organisms per length bucket
+        for (int i = 0; i < _organismsCount; i++)
+        {
+            if (_organisms[i] == null) continue;
+            int len = _organisms[i]!.Commands.Length;
+            bucketSize[len]++;
+        }
+
+        // Compute start positions for each bucket
+        int startPos = 0;
+        for (int l = 1; l <= BConfig.MaxScriptLength; l++)
+        {
+            bucketStart[l] = startPos;
+            startPos += bucketSize[l];
+        }
+
+        // Place organism indices into buckets
+        for (int i = 0; i < _organismsCount; i++)
+        {
+            if (_organisms[i] == null) continue;
+            int len = _organisms[i]!.Commands.Length;
+            sizeBuckets[bucketStart[len]++] = i;
+        }
+
+        // Sweep from shortest to longest length to identify front
+        int bestScoreForShorter = 1;
+
+        startPos = 0;
+        for (int l = 1; l <= BConfig.MaxScriptLength; l++)
+        {
+            if (bucketSize[l] == 0) continue;
+            int endPos = startPos + bucketSize[l];
+
+            for (int pos = startPos; pos < endPos; pos++)
+            {
+                int orgIdx = sizeBuckets[pos];
+                if (_organisms[orgIdx] == null) continue;
+                if (_organisms[orgIdx]!.Score > bestScoreForShorter)
+                {
+                    isFrontZero[orgIdx] = true;
+                    bestScoreForShorter = _organisms[orgIdx]!.Score;
+                }
+                else
+                {
+                    isFrontZero[orgIdx] = false;
+                }
+            }
+            startPos = endPos;
+        }
+    }
+
+    protected int FindCrossoverPartnerArray()
+    {
+        // Fill array with random
+        int fillCount = 0;
+        for (int i = 0; i < Math.Min(CrossoverPartnerPoolSize,_organismsCount); i++) //TODO: maybe parallelize with atomic counter
+        {
+            int randIdx = Rnd.Random.Next(_organismsCount);
+            if(_layers[randIdx]<=CrossoverLayerThreshold && _scores[randIdx] > 0)
+            {
+                _crossoverPartners[fillCount] = _organisms[randIdx]!;
+                fillCount++;
+            }
+            
+        }
+
+        return fillCount;
+    }
+
     protected bool TrainingLoopBody()
     {
         #region reset stuff for new generation, set up experiments (inputs/output), convert inputs to one long array
@@ -403,24 +601,19 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         #endregion
 
-        #region set up and sort the percentiles array
-        using (new ConsoleTimer("set up and sort the percentiles array", _showProfilingInfo))
-        {
-            Parallel.For(0, 100, i => { _taxedScorePercentiles[i] = _organisms[Rnd.Random.Next(_organismsCount)]!.TaxedScore; });
-            Array.Sort(_taxedScorePercentiles);
-        }
-        #endregion
 
-        #region calculate offset percentiles based on colony size vis-a-vis target colony size
-        sbyte taxedScorePercentilesIdxOffset; //positive offset makes organisms die more
-        using (new ConsoleTimer("calculate offset percentiles based on colony size vis-a-vis target colony size", _showProfilingInfo))
-        {
-            var ratio = (double)MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset) / _organismsCount;
-            if (ratio > 1) taxedScorePercentilesIdxOffset = (sbyte)Math.Round(-Math.Min(10.0, (ratio - 1.0) * 10.0));
-            else taxedScorePercentilesIdxOffset = (sbyte)Math.Round(Math.Min(10.0, (1.0 / ratio - 1.0) * 10.0));
-        }
-        #endregion
+        // Pareto front identification of the full population
+        ParetoFrontSweep(_isFrontZero);
 
+        // Small sample approximation for non-front layer estimates
+        Parallel.For(0, ParetoSample, i =>
+        {
+            int pick = Rnd.Random.Next(_organismsCount);
+            _sizeLayers[i] = _organisms[pick]!.Commands.Length;
+            _scoreLayers[i] = _organisms[pick]!.Score;
+            _layerSizes[i] = 0;
+        });
+        ParetoLayers(_layerNumbers, _sizeLayers, _scoreLayers);
         #region births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays
         using (new ConsoleTimer("births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays", _showProfilingInfo))
         {
@@ -472,61 +665,107 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             else
             {
                 _newbornOrganismsCount = -1;
+
+                // Record per-organism layer + tier for offspring targets
+                Parallel.For(0, _organismsCount, i =>
+                {
+                    _layers[i] = GetParetoLayer(_sizeLayers, _scoreLayers, _layerNumbers, _scores[i], _organisms[i]!.Commands.Length);
+                    if (!_isFrontZero[i]) Interlocked.Increment(ref _layerSizes[_layers[i]]);
+                });
+
+                // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute offspring across layers
+                int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
+                float frontTargetPerMember;
+                if (_turboParetoSearch)
+                {
+                    frontTargetPerMember = (_frontCount > 0)
+                        ? (1.0f * targetColonySize) / _frontCount
+                        : 0.0f;
+                }
+                else
+                {
+                    frontTargetPerMember = (_frontCount > 0)
+                        ? (0.5f * targetColonySize) / _frontCount
+                        : 0.0f;
+                }
+
+                // Non-front: geometric decay across layers, divided by layer size
+                int maxLayer = 0;
+                for (int i = 0; i < _organismsCount; i++)
+                {
+                    if (_layers[i] > maxLayer) maxLayer = _layers[i];
+                }
+                float nonFrontTarget = 0.5f * targetColonySize;
+                for (int l = 0; l <= maxLayer; l++)
+                {
+                    if (_turboParetoSearch)
+                    {
+                        _layerOffspringTargets[l] = 0.0f;
+                    }
+                    else
+                    {
+                        _layerOffspringTargets[l] = nonFrontTarget / (MathF.Pow(2f, l + 1)) / _layerSizes[l];
+                    }
+                }
+                int partnerCandidateCounter = FindCrossoverPartnerArray();
+
+                // Offspring generation
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
+                    float pctProb = _isFrontZero[i] ? frontTargetPerMember : _layerOffspringTargets[_layers[i]];
 
-                    var step = 100 / _pctProbs.Length; Debug.Assert(100 % _pctProbs.Length == 0);
-                    for (var pctProbsIdx = 0; pctProbsIdx < _pctProbs.Length; pctProbsIdx++)
+                    do
                     {
-                        var taxedScorePercentilesIdx = step * (pctProbsIdx + 1);
-                        var offsetTaxedScorePercentilesIdx = FixTaxedScorePercentilesIdx(taxedScorePercentilesIdx + taxedScorePercentilesIdxOffset);
-                        var taxedScorePercentile = _taxedScorePercentiles[offsetTaxedScorePercentilesIdx];
-
-                        //if last or less than taxedScorePercentile
-                        var isStrictInequality = !Rnd.RandomBoolWithChance(1.0/pctProbsIdx);
-                        if (pctProbsIdx == _pctProbs.Length - 1 ||
-                            isStrictInequality && organism.TaxedScore < taxedScorePercentile ||
-                            !isStrictInequality && organism.TaxedScore <= taxedScorePercentile)
+                        if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
                         {
-                            //decide how many children (if any) based on percentile probabilities
-                            var pctProb = _pctProbs[pctProbsIdx];
+                            var idx = Interlocked.Increment(ref _newbornOrganismsCount);
 
-                            do
+                            #if DEBUG
+                            if (idx >= _newbornOrganisms.Length)
                             {
-                                if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
+                                Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+                                Debugger.Break();
+                            }
+                            #endif
+
+                            if (Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
+                            {
+                                _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_organisms!, _organismsCount, _crossoverPartners[Rnd.Random.Next(partnerCandidateCounter)]);
+                                if (_newbornOrganisms[idx] == null ) // if crossover fails, do mutation instead
                                 {
-                                    var idx = Interlocked.Increment(ref _newbornOrganismsCount);
-
-                                    #if DEBUG
-                                    if (idx >= _newbornOrganisms.Length)
-                                    {
-                                        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
-                                        Debugger.Break();
-                                    }
-                                    #endif
-
                                     _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                                 }
-
-                                pctProb--;
                             }
-                            while (pctProb > 0);
-
-                            break; //if we found the right percentile, we are done!
+                            else
+                            {
+                                _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                            }
                         }
+
+                        pctProb--;
                     }
+                    while (pctProb > 0);
 
                     //death (100% chance)
-                    if (!ReferenceEquals(organism, _mostAccurateEverOrganism) && 
+                    if (!ReferenceEquals(organism, _mostAccurateEverOrganism) &&
                         !ReferenceEquals(organism, _shortestEverSatisfactoryOrganism) &&
                         !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
                     {
                         Organism.SaveOrganismToDeadPool(organism);
                     }
+                    //this has been commented out for crossover to be able to find a passive partner organism in the current colony
+                    //_organisms[i] = null; 
+                });
+
+                //TODO: see if this could be made to only run in debug
+                Parallel.For(0, _organismsCount, i =>
+                {
                     _organisms[i] = null;
                 });
+
                 _newbornOrganismsCount++;
+
             }
 
             _totalBirths += _newbornOrganismsCount;
@@ -628,7 +867,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
             Console.ResetColor();
 
-            #if DEBUG
+#if DEBUG
             int score = 0;
             var fitFunc = new TFitFunc();
             float[] outputs = new float[MLSetup.Current.ExperimentsPerGeneration];
@@ -731,7 +970,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: Invalid shortest satisfactory organism score on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                 Debugger.Break();
             }
-            #endif
+#endif
 
             Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Found Satisfactory Solution on {Environment.MachineName}", $"Beagle {BConfig.Version}: {MLSetup.Current.Name} completed in {_totalTimeWatch.Elapsed:c} on {Environment.MachineName}\n\n{_shortestEverSatisfactoryOrganism.ToString(_inputLabels)}");
             if (!MLSetup.Current.KeepOptimizingAfterSolutionFound)
@@ -1207,12 +1446,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         _mostAccurateOrganismsSinceLastColonyReset[idx] = organism;
     }
-    #endregion
+#endregion
 
 
     #region Readonly Fields Set in Constructor
     //percentile probabilities
-    private readonly double[] _pctProbs = [0.01, 0.03, 0.06, 0.15, 0.25, 0.5, 1, 1.5, 2.5, 4]; //min 80%, max 160%
 
     protected bool _showProfilingInfo;
     
@@ -1222,6 +1460,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly float[] _allInputs;
 
     protected readonly int[] _taxedScorePercentiles;
+    //NSGA selection parameters
+    protected readonly int[] _scoreLayers;
+    protected readonly int[] _sizeLayers;
+    protected readonly int[] _layerNumbers;
+    protected readonly int[] _layerSizes;
+    protected readonly float[] _layerOffspringTargets;
+    protected readonly Organism[] _crossoverPartners;
 
     protected readonly Context _context;
     protected readonly AcceleratorInfo<TFitFunc>[] _accelerators;
@@ -1244,6 +1489,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected int _newbornOrganismsCount;
 
     protected int[] _scores;
+    protected int[] _layers;
     #endregion
 
     #region Total & Generation Counters
@@ -1268,6 +1514,19 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected long _totalBirthAtLastMostAccurateEverOrganism;
 
     protected Organism? _shortestEverSatisfactoryOrganism;
+    #endregion
+
+    #region Pareto Selection
+    private readonly bool[] _isFrontZero;
+    private int _frontCount;
+
+    #pragma warning disable IDE0044
+    public bool _turboParetoSearch = false;             //toggle for extreme greedy Pareto front search
+    #pragma warning restore IDE0044
+
+    public const int ParetoSample = 100;                //toggle for different sample sizes
+    public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
+    public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
     #endregion
 
     //#region External Thread-Safe Interface
