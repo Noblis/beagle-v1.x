@@ -161,11 +161,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _layers = new int[MLSetup.Current.OrganismsArraySize];
 
             //additions for NSGA selection
-            _scoreLayers = new int[ParetoMicrocosmSize];
-            _sizeLayers = new int[ParetoMicrocosmSize];
-            _layerNumbers = new int[ParetoMicrocosmSize];
-            _layerOffspringTargets = new float[ParetoMicrocosmSize];
-            _layerSizes = new int[ParetoMicrocosmSize];
+            _microcosmOrganismScores = new int[ParetoMicrocosmSize];
+            _microcosmOrganismLengths = new int[ParetoMicrocosmSize];
+            _microcosmOrganismLayerNumbers = new int[ParetoMicrocosmSize];
+
+            _perLayerOffspringTargets = new float[ParetoMicrocosmSize];
+            _perLayerSizes = new int[ParetoMicrocosmSize];
+
             _crossoverPartners = new Organism[CrossoverPartnerPoolSize];
 
             // True Pareto front + elitism support
@@ -488,22 +490,39 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
     }
 
-    protected int FindCrossoverPartnerArray()
+    //protected void FindCrossoverPartnerArray()
+    //{
+    //    // Fill array with random
+    //    _crossoverPartnersCount = 0;
+
+    //    //TODO: maybe parallelize with atomic counter
+    //    var maxPoolSize = Math.Min(CrossoverPartnerPoolSize, _organismsCount);
+    //    for (int i = 0; i < maxPoolSize; i++)
+    //    {
+    //        int randIdx = Rnd.Random.Next(_organismsCount);
+    //        if (_layers[randIdx] <= CrossoverLayerThreshold && _scores[randIdx] > 0)
+    //        {
+    //            _crossoverPartners[_crossoverPartnersCount] = _organisms[randIdx]!;
+    //            _crossoverPartnersCount++;
+    //        }
+    //    }
+    //}
+
+    protected void FindCrossoverPartnerArray()
     {
         // Fill array with random
-        int fillCount = 0;
-        for (int i = 0; i < Math.Min(CrossoverPartnerPoolSize,_organismsCount); i++) //TODO: maybe parallelize with atomic counter
+        _crossoverPartnersCount = -1; //we set this to -1 because we use the count AFTER the increment
+        var maxPoolSize = Math.Min(CrossoverPartnerPoolSize, _organismsCount);
+
+        Parallel.For(0, maxPoolSize, _ =>
         {
             int randIdx = Rnd.Random.Next(_organismsCount);
-            if(_layers[randIdx]<=CrossoverLayerThreshold && _scores[randIdx] > 0)
+            if (_layers[randIdx] <= CrossoverLayerThreshold && _scores[randIdx] > 0)
             {
-                _crossoverPartners[fillCount] = _organisms[randIdx]!;
-                fillCount++;
+                _crossoverPartners[Interlocked.Increment(ref _crossoverPartnersCount)] = _organisms[randIdx]!;
             }
-            
-        }
-
-        return fillCount;
+        });
+        _crossoverPartnersCount++;
     }
 
     protected bool TrainingLoopBody()
@@ -610,11 +629,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Parallel.For(0, ParetoMicrocosmSize, i =>
         {
             int pick = Rnd.Random.Next(_organismsCount);
-            _sizeLayers[i] = _organisms[pick]!.Commands.Length;
-            _scoreLayers[i] = _organisms[pick]!.Score;
-            _layerSizes[i] = 0;
+            _microcosmOrganismLengths[i] = _organisms[pick]!.Commands.Length;
+            _microcosmOrganismScores[i] = _organisms[pick]!.Score;
+            _perLayerSizes[i] = 0;
         });
-        ParetoLayers(_layerNumbers, _sizeLayers, _scoreLayers);
+        ParetoLayers(_microcosmOrganismLayerNumbers, _microcosmOrganismLengths, _microcosmOrganismScores);
         #region births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays
         using (new ConsoleTimer("births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays", _showProfilingInfo))
         {
@@ -670,8 +689,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 // Record per-organism layer + tier for offspring targets
                 Parallel.For(0, _organismsCount, i =>
                 {
-                    _layers[i] = GetParetoLayer(_sizeLayers, _scoreLayers, _layerNumbers, _scores[i], _organisms[i]!.Commands.Length);
-                    if (!_isFrontZero[i]) Interlocked.Increment(ref _layerSizes[_layers[i]]);
+                    _layers[i] = GetParetoLayer(_microcosmOrganismLengths, _microcosmOrganismScores, _microcosmOrganismLayerNumbers, _scores[i], _organisms[i]!.Commands.Length);
+                    if (!_isFrontZero[i]) Interlocked.Increment(ref _perLayerSizes[_layers[i]]);
                 });
 
                 // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute offspring across layers
@@ -701,20 +720,20 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 {
                     if (_turboParetoSearch)
                     {
-                        _layerOffspringTargets[l] = 0.0f;
+                        _perLayerOffspringTargets[l] = 0.0f;
                     }
                     else
                     {
-                        _layerOffspringTargets[l] = nonFrontTarget / MathF.Pow(2f, l + 1) / _layerSizes[l];
+                        _perLayerOffspringTargets[l] = nonFrontTarget / MathF.Pow(2f, l + 1) / _perLayerSizes[l];
                     }
                 }
-                int partnerCandidateCounter = FindCrossoverPartnerArray();
+                FindCrossoverPartnerArray();
 
                 // Offspring generation
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
-                    float pctProb = _isFrontZero[i] ? frontTargetPerMember : _layerOffspringTargets[_layers[i]];
+                    float pctProb = _isFrontZero[i] ? frontTargetPerMember : _perLayerOffspringTargets[_layers[i]];
 
                     do
                     {
@@ -732,7 +751,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                             if (Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
                             {
-                                _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_organisms!, _organismsCount, _crossoverPartners[Rnd.Random.Next(partnerCandidateCounter)]);
+                                _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_organisms!, _organismsCount, _crossoverPartners[Rnd.Random.Next(_crossoverPartnersCount)]);
                                 if (_newbornOrganisms[idx] == null ) // if crossover fails, do mutation instead
                                 {
                                     _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
@@ -1451,12 +1470,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly float[] _allInputs;
 
     //NSGA selection parameters
-    protected readonly int[] _scoreLayers;
-    protected readonly int[] _sizeLayers;
-    protected readonly int[] _layerNumbers;
-    protected readonly int[] _layerSizes;
-    protected readonly float[] _layerOffspringTargets;
+    protected readonly int[] _microcosmOrganismScores;
+    protected readonly int[] _microcosmOrganismLengths;
+    protected readonly int[] _microcosmOrganismLayerNumbers;
+
+    protected readonly int[] _perLayerSizes;
+    protected readonly float[] _perLayerOffspringTargets;
+    
     protected readonly Organism[] _crossoverPartners;
+    protected int _crossoverPartnersCount;
 
     protected readonly Context _context;
     protected readonly AcceleratorInfo<TFitFunc>[] _accelerators;
