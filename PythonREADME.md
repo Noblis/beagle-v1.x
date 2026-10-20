@@ -66,73 +66,73 @@ Here is a simple example of how to use the `BeagleRegressor` to find a symbolic 
 
 ```python
 
-from Beagle import \*
+from Beagle import *
 
 
 
-\# 1. Prepare your data
+# 1. Prepare your data
 
-\# X should be a 2D array (n\_samples, n\_features)
+# X should be a 2D array (n_samples, n_features)
 
-\# y should be a 1D array (n\_samples)
+# y should be a 1D array (n_samples)
 
 X = np.random.rand(100,2)
 
-y =   X\[:, 0] \*\* 2 + 3 \* X\[:, 1] + 2  # y = x0^2 + 3\*x1 + 2
+y =   X[:, 0]** 2 + 3 * X[:, 1] + 2  # y = x0^2 + 3*x1 + 2
 
 
 
-\# 2. Initialize the BeagleRegressor
+# 2. Initialize the BeagleRegressor
 
-\# You can tune parameters to control the search process
+# You can tune parameters to control the search process
 
 model = BeagleRegressor(
 
-&#x20;   stop\_after\_min=2,      # Total number of evaluations allowed
+    stop_after_min=2,      # Total number of evaluations allowed
 
-&#x20;   pop\_size=250000,               # Target population size
+    pop_size=250000,               # Target population size
 
-&#x20;   fitness\_func="Corr",          # 'Corr' for correlation, 'Pt' for other metrics
+    fitness_func="Corr",          # 'Corr' for correlation, 'Pt' for other metrics
 
-&#x20;   terminate\_on\_solution=False   # Continue searching even if a good solution is found
+    terminate_on_solution=False   # Continue searching even if a good solution is found
 
 )
 
 
 
-\# 3. Fit the model
+# 3. Fit the model
 
-\# Setting live\_tracking=True will display a real-time matplotlib plot 
+# Setting live_tracking=True will display a real-time matplotlib plot 
 
-\# of the best fitness found per generation.
+# of the best fitness found per generation.
 
-model.fit(X, y, live\_tracking=True)
+model.fit(X, y, live_tracking=True)
 
 
 
-\# 4. Make predictions
+# 4. Make predictions
 
-X\_test = np.array(\[\[0.0, 2.0], \[1.0, 3.0], \[-1.0, 1.5]])
+X_test = np.array([[0.0, 2.0], [1.0, 3.0], [-1.0, 1.5]])
 
-predictions = model.predict(X\_test)
+predictions = model.predict(X_test)
 
 print(f"Predictions: {predictions}")
 
 
 
-\# 5. Inspect the discovered symbolic expression
+# 5. Inspect the discovered symbolic expression
 
-\# This returns the model as a symbolic expression
+# This returns the model as a symbolic expression
 
 expression = model.modelExpression()
 
-print(f"Best Symbolic Expression: {expression\[0]}")
+print(f"Best Symbolic Expression: {expression[0]}")
 
 ```
 
 
 
-\## API Reference
+## API Reference
 
 
 
@@ -140,7 +140,7 @@ Below is an overview of what features are available in the Python wrapper.
 
 
 
-\### `BeagleRegressor`
+### `BeagleRegressor`
 
 
 
@@ -148,7 +148,7 @@ The object representation for the symbolic regression engine.
 
 
 
-\#### `\_\_init\_\_(...)`
+#### `__init__(...)`
 
 Initializes the regressor with various search constraints.
 
@@ -158,55 +158,55 @@ Initializes the regressor with various search constraints.
 
 | :--- | :--- | :--- | :--- |
 
-| `evaluation\_limit` | `int` | `None` | Maximum number of evaluations before stopping |
+| `evaluation_limit` | `int` | `None` | Maximum number of evaluations before stopping |
 
-| `pop\_size` | `int` | `None` | The target population size |
+| `pop_size` | `int` | `None` | The target population size |
 
-| `experiments\_per\_generation` | `int` | `512` | Number of experiments to run in each generation |
+| `experiments_per_generation` | `int` | `512` | Number of experiments to run in each generation |
 
-| `evaluations\_to\_colony\_reset` | `int` | `None` | Number of total births before resetting the colony if no progress is made |
+| `evaluations_to_colony_reset` | `int` | `None` | Number of total births before resetting the colony if no progress is made |
 
-| `run\_feynman` | `int` | `None` | If set, enables Feynman benchmark search mode |
+| `run_feynman` | `int` | `None` | If set, enables Feynman benchmark search mode |
 
-| `stop\_after\_min` | `int` | `None` | Maximum runtime in minutes |
+| `stop_after_min` | `int` | `None` | Maximum runtime in minutes |
 
-| `solution\_threshold` | `float` | `None` | A fitness threshold (0.0 to 1.0] that, if reached, signals a found solution |
+| `solution_threshold` | `float` | `None` | A fitness threshold (0.0 to 1.0] that, if reached, signals a found solution |
 
-| `terminate\_on\_solution` | `bool` | `False` | If `True`, stops immediately once `solution\_threshold` is met |
+| `terminate_on_solution` | `bool` | `False` | If `True`, stops immediately once `solution\_threshold` is met |
 
-| `fitness\_func` | `str` | `"Corr"` | The fitness function to use: `"Corr"` (Correlation) or `"Pt"` |
+| `fitness_func` | `str` | `"Corr"` | The fitness function to use: `"Corr"` (Correlation) or `"Pt"` |
 
 
 
-\#### `fit(X, y, show\_training\_curve=False, live\_tracking=False)`
+#### `fit(X, y, show_training_curve=False, live_tracking=False)`
 
 Executes the symbolic regression search.
 
 
 
-\- `X`: Training input data (`n\_samples`, `n\_features`).
+- `X`: Training input data (`n_samples`, `n_features`).
 
-\- `y`: Training target data (`n\_samples`).
+- `y`: Training target data (`n_samples`).
 
-\- `show\_training\_curve`: If `True`, displays a static plot of the training curve after fitting.
+- `show_training_curve`: If `True`, displays a static plot of the training curve after fitting.
 
-\- `live\_tracking`: If `True`, provides a real-time updating plot of the best fitness per generation during the search.
+- `live_tracking`: If `True`, provides a real-time updating plot of the best fitness per generation during the search.
 
 
 
-\#### `predict(X)`
+#### `predict(X)`
 
 Returns the predicted values for the input `X` using the best discovered expression.
 
 
 
-\#### `modelExpression()`
+#### `modelExpression()`
 
 Returns the symbolic representation of the best-found model as a list of `sympy` objects.
 
 
 
-\### `BeagleModel`
+### `BeagleModel`
 
 
 
@@ -214,7 +214,7 @@ A representation of a single model from Beagle. Can be used to explore a model i
 
 
 
-\####`\_\_init\_\_(expression)`
+####`__init__(expression)`
 
 
 
@@ -222,13 +222,13 @@ Create a Python object for a given expression.
 
 
 
-\#### `evalute(X)`
+#### `evalute(X)`
 
 Evaluates the model using input data `X`
 
 
 
-\#### `modelExpression(n\_features)`
+#### `modelExpression(n_features)`
 
 Prints the symbolic expression provided the number of total input features available. 
 
