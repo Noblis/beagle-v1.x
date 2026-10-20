@@ -111,7 +111,6 @@ public class Organism
         organism._offset = Offset;
 
         organism.Score = Score;
-        organism.TaxedScore = TaxedScore;
         organism._asr = _asr;
 
         return organism;
@@ -315,7 +314,7 @@ public class Organism
         _scale = 1;
         _offset = 0;
 
-        Score = TaxedScore = 0;
+        Score = 0;
         _asr = null;
     }
 
@@ -330,7 +329,7 @@ public class Organism
     public string ToString(string[] inputLabels)
     {
         _sb.Clear();
-        _sb.Append($"Length: {Commands.Length} TaxedScore: {TaxedScore}: Score: {Score} | ");
+        _sb.Append($"Length: {Commands.Length} Score: {Score} | ");
         for (var addr = 0; addr < Commands.Length; addr++)
         {
             _sb = Commands[addr].AppendToStringBuilder(inputLabels, _sb);
@@ -341,7 +340,7 @@ public class Organism
     public override string ToString()
     {
         _sb.Clear();
-        _sb.Append($"Length: {Commands.Length} TaxedScore: {TaxedScore}: Score: {Score} | ");
+        _sb.Append($"Length: {Commands.Length} Score: {Score} | ");
         for (var addr = 0; addr < Commands.Length; addr++)
         {
             _sb.Append($"{Commands[addr].ToString()}; ");
@@ -666,7 +665,8 @@ public class Organism
 
     public Command[] Commands { get; protected set; }
     public int Score { get; set; }
-    public int TaxedScore { get; set; }
+    //public int TaxedScore { get; set; }
+    public int Layer { get; set; } = -1;
 
     public double ASR
     {

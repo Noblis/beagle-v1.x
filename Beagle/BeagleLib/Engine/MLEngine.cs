@@ -158,7 +158,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _organisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _newbornOrganisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _scores = new int[MLSetup.Current.OrganismsArraySize];
-            _layers = new int[MLSetup.Current.OrganismsArraySize];
 
             //additions for NSGA selection
             _microcosmOrganismScores = new int[ParetoMicrocosmSize];
@@ -323,37 +322,39 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
     }
 
-    public bool DominatesQ(int size, int score, int sizeRef, int scoreRef)
+    public bool DoesDominateOtherQ(int mySize, int myScore, int otherSize, int otherScore)
     {
-        return (size <= sizeRef) && (score >= scoreRef) && (size < sizeRef || score > scoreRef);
+        return mySize <= otherSize && myScore >= otherScore && (mySize < otherSize || myScore > otherScore);
     }
 
     // Identify which layer an organism from the whole population belongs to using sampled layers
-    public int GetParetoLayer(int[] sizeLayersRef, int[] scoreLayersRef, int[] layerNumbersRef, int score, int size)
+    public void CalcParetoLayerForOrganism(Organism organism)
     {
         bool dominated = false;
         int currentLayer = 0;
+        
         //TODO: Does this early termination on 0 and subzero scores help
-        if (score <= 0) return layerNumbersRef[ParetoMicrocosmSize-1];
+        if (organism.Score <= 0)
+        {
+            organism.Layer = _microcosmOrganismLayerNumbers[ParetoMicrocosmSize - 1];
+            return;
+        }
 
         for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
-            if (layerNumbersRef[i] > currentLayer)
+            if (_microcosmOrganismLayerNumbers[i] > currentLayer)
             {
-                if (dominated == false) return currentLayer;
+                if (dominated == false)
+                {
+                    organism.Layer = currentLayer;
+                    return;
+                }
                 currentLayer++;
                 dominated = false;
             }
 
-
-            if (DominatesQ(sizeLayersRef[i], scoreLayersRef[i], size, score))
-            {
-                dominated = true;
-            }
-
+            if (DoesDominateOtherQ(_microcosmOrganismLengths[i], _microcosmOrganismScores[i], organism.Commands.Length, organism.Score)) dominated = true;
         }
-
-        return currentLayer;
     }
 
     // Identify the next front layer from sampled individuals
@@ -494,7 +495,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     //    for (int i = 0; i < maxPoolSize; i++)
     //    {
     //        int randIdx = Rnd.Random.Next(_organismsCount);
-    //        if (_layers[randIdx] <= CrossoverLayerThreshold && _scores[randIdx] > 0)
+    //        var organism = _organisms[randIdx]!;
+    //        if (organism.Layer <= CrossoverLayerThreshold/* && organism.Score > 0*/) //we probably don't need the commented out code
     //        {
     //            _crossoverPartners[_crossoverPartnersCount] = _organisms[randIdx]!;
     //            _crossoverPartnersCount++;
@@ -511,7 +513,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Parallel.For(0, maxPoolSize, _ =>
         {
             int randIdx = Rnd.Random.Next(_organismsCount);
-            if (_layers[randIdx] <= CrossoverLayerThreshold && _scores[randIdx] > 0)
+            var organism = _organisms[randIdx]!;
+            if (organism.Layer <= CrossoverLayerThreshold/* && organism.Score > 0*/) //we probably don't need the commented out code
             {
                 _crossoverPartners[Interlocked.Increment(ref _crossoverPartnersCount)] = _organisms[randIdx]!;
             }
@@ -570,15 +573,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         //Console.ResetColor();
         #endregion
 
-        #region set scores on _organisms array, apply taxes, inject _mostAccurateOrganismSinceLastColonyReset with probability
-        using (new ConsoleTimer("set scores on _organisms array, apply taxes, inject _mostAccurateOrganismSinceLastColonyReset with probability", _showProfilingInfo))
+        #region set scores on _organisms array
+        using (new ConsoleTimer("set scores on _organisms array", _showProfilingInfo))
         {
             Parallel.For(0, _organismsCount, i =>
             {
                 Debug.Assert(Math.Abs(_scores[i]) <= BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration);
                 
                 _organisms[i]!.Score = _scores[i];
-                _organisms[i]!.TaxedScore = _scores[i] - MLSetup.Current.CalcScriptLengthTax(_organisms[i]!.Commands.Length);
+                //_organisms[i]!.TaxedScore = _scores[i] - MLSetup.Current.CalcScriptLengthTax(_organisms[i]!.Commands.Length);
             });
         }
         #endregion
@@ -683,8 +686,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 // Record per-organism layer + tier for offspring targets
                 Parallel.For(0, _organismsCount, i =>
                 {
-                    _layers[i] = GetParetoLayer(_microcosmOrganismLengths, _microcosmOrganismScores, _microcosmOrganismLayerNumbers, _scores[i], _organisms[i]!.Commands.Length);
-                    if (!_organisms[i]!.IsInParetoFrontZero) Interlocked.Increment(ref _perLayerSizes[_layers[i]]);
+                    var organism = _organisms[i]!;
+                    CalcParetoLayerForOrganism(organism);
+                    if (!_organisms[i]!.IsInParetoFrontZero) Interlocked.Increment(ref _perLayerSizes[organism.Layer]);
                 });
 
                 // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute offspring across layers
@@ -704,22 +708,19 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 }
 
                 // Non-front: geometric decay across layers, divided by layer size
-                int maxLayer = 0;
-                for (int i = 0; i < _organismsCount; i++)
-                {
-                    if (_layers[i] > maxLayer) maxLayer = _layers[i];
-                }
+                //int maxLayer = 0;
+                //for (int i = 0; i < _organismsCount; i++)
+                //{
+                //    if (_layers[i] > maxLayer) maxLayer = _layers[i];
+                //}
+
+                // Non-front: geometric decay across layers, divided by layer size
+                int maxLayer = new ArraySegment<Organism>(_organisms!, 0, _organismsCount).AsParallel().Max(x => x.Layer);
                 float nonFrontTarget = 0.5f * targetColonySize;
                 for (int l = 0; l <= maxLayer; l++)
                 {
-                    if (_turboParetoSearch)
-                    {
-                        _perLayerOffspringTargets[l] = 0.0f;
-                    }
-                    else
-                    {
-                        _perLayerOffspringTargets[l] = nonFrontTarget / MathF.Pow(2f, l + 1) / _perLayerSizes[l];
-                    }
+                    if (_turboParetoSearch) _perLayerOffspringTargets[l] = 0.0f;
+                    else _perLayerOffspringTargets[l] = nonFrontTarget / MathF.Pow(2f, l + 1) / _perLayerSizes[l];
                 }
                 FindCrossoverPartnerArray();
 
@@ -727,7 +728,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
-                    float pctProb = organism.IsInParetoFrontZero ? frontTargetPerMember : _perLayerOffspringTargets[_layers[i]];
+                    float pctProb = organism.IsInParetoFrontZero ? frontTargetPerMember : _perLayerOffspringTargets[organism.Layer];
 
                     do
                     {
@@ -881,7 +882,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
             Console.ResetColor();
 
-#if DEBUG
+            #if DEBUG
             int score = 0;
             var fitFunc = new TFitFunc();
             float[] outputs = new float[MLSetup.Current.ExperimentsPerGeneration];
@@ -984,7 +985,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: Invalid shortest satisfactory organism score on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                 Debugger.Break();
             }
-#endif
+            #endif
 
             Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Found Satisfactory Solution on {Environment.MachineName}", $"Beagle {BConfig.Version}: {MLSetup.Current.Name} completed in {_totalTimeWatch.Elapsed:c} on {Environment.MachineName}\n\n{_shortestEverSatisfactoryOrganism.ToString(_inputLabels)}");
             if (!MLSetup.Current.KeepOptimizingAfterSolutionFound)
@@ -1495,7 +1496,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected int _newbornOrganismsCount;
 
     protected int[] _scores;
-    protected int[] _layers;
     #endregion
 
     #region Total & Generation Counters

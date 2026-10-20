@@ -21,7 +21,7 @@ public abstract class MLSetup
     public abstract string[] GetInputLabels();
     public abstract (float[], float) GetNextInputsAndCorrectOutput(float[] inputsToFill);
 
-    public virtual int CalcScriptLengthTax(int scriptLength) => scriptLength * ScriptLengthTaxRate;
+    //public virtual int CalcScriptLengthTax(int scriptLength) => scriptLength * ScriptLengthTaxRate;
     public virtual double SolutionFoundASRThreshold => 1.0;
     #endregion
 
@@ -71,17 +71,17 @@ public abstract class MLSetup
     public virtual uint ExperimentsPerGeneration => 512;
     public virtual long TotalBirthsToResetColonyIfNoProgress => 25_000_000_000;
 
-    protected int ScriptLengthTaxRate
-    {
-        get
-        {
-            _scriptLengthTaxRate ??= ScriptLengthTaxRateInternal;
-            return _scriptLengthTaxRate.Value;
-        }
-    }
-    private int? _scriptLengthTaxRate;
+    //protected int ScriptLengthTaxRate
+    //{
+    //    get
+    //    {
+    //        _scriptLengthTaxRate ??= ScriptLengthTaxRateInternal;
+    //        return _scriptLengthTaxRate.Value;
+    //    }
+    //}
+    //private int? _scriptLengthTaxRate;
     
-    protected virtual int ScriptLengthTaxRateInternal => BConfig.MaxScore * (int)ExperimentsPerGeneration / 85;
+    //protected virtual int ScriptLengthTaxRateInternal => BConfig.MaxScore * (int)ExperimentsPerGeneration / 85;
     public virtual bool KeepOptimizingAfterSolutionFound => false;
     public virtual bool RemoveRedundantCommandsAfterMutation => true;
     public virtual double CrossoverRate => 0.3;    
