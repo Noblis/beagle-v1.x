@@ -80,15 +80,11 @@ public abstract class MLSetup
         }
     }
     private int? _scriptLengthTaxRate;
+    
     protected virtual int ScriptLengthTaxRateInternal => BConfig.MaxScore * (int)ExperimentsPerGeneration / 85;
-
     public virtual bool KeepOptimizingAfterSolutionFound => false;
-
     public virtual bool RemoveRedundantCommandsAfterMutation => true;
-
-    public virtual double CrossoverRate => 0.3;
-    public virtual double CrossoverPartnerDelta => 0.2;
-    public virtual int CrossoverPartnerLayerMax => 1;
+    public virtual double CrossoverRate => 0.3;    
     #endregion
 
     #region Settings Proprties

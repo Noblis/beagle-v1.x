@@ -471,7 +471,6 @@ namespace BeagleLib.Agent
         }
         #endregion
 
-
         #region ToString Methods
         public static string ToString(this Span<Command> me, ref int length)
         {

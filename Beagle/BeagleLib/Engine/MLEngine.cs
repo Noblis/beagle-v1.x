@@ -705,7 +705,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                     else
                     {
-                        _layerOffspringTargets[l] = nonFrontTarget / (MathF.Pow(2f, l + 1)) / _layerSizes[l];
+                        _layerOffspringTargets[l] = nonFrontTarget / MathF.Pow(2f, l + 1) / _layerSizes[l];
                     }
                 }
                 int partnerCandidateCounter = FindCrossoverPartnerArray();

@@ -302,7 +302,7 @@ public class Organism
     protected Organism(int commandsLength) :this(new Command[commandsLength]) { }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Organism(Command[] commands)
+    protected Organism(Command[] commands)
     {
         ResetPropertiesForNewOrganism();
         Commands = commands;
