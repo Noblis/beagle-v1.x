@@ -361,16 +361,19 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public void FrontSelect(int[] sizeLayersRef, int[] scoreLayersRef, int[] frontIndices, ref int frontCount, bool[] selectedQ)
     {
         bool[] onFrontQ = new bool[ParetoMicrocosmSize];
-        for (int i = 0; i < ParetoMicrocosmSize; i++) onFrontQ[i] = false;
-        for (int i = 0; i < ParetoMicrocosmSize; i++) if (!selectedQ[i]) onFrontQ[i] = true;
+
+        for (int i = 0; i < ParetoMicrocosmSize; i++)
+        {
+            onFrontQ[i] = !selectedQ[i];
+        }
+        
         for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
             if (onFrontQ[i] && !selectedQ[i])
             {
                 for (int j = 0; j < ParetoMicrocosmSize; j++)
                 {
-                    if ((i != j) && !selectedQ[j] && onFrontQ[j] && sizeLayersRef[i] <= sizeLayersRef[j] &&
-                        scoreLayersRef[i] > scoreLayersRef[j])
+                    if (i != j && !selectedQ[j] && onFrontQ[j] && sizeLayersRef[i] <= sizeLayersRef[j] && scoreLayersRef[i] > scoreLayersRef[j])
                     {
                         onFrontQ[j] = false;
                     }
@@ -386,12 +389,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 frontCount++;
             }
         }
-
-
     }
 
     // Group sampled individuals into layers
-    public void ParetoLayers(int[] layerNumbersRef, int[] sizeLayersRef, int[] scoreLayersRef)
+    public void EstimateParetoLayersFromMicrocosm()
     {
         int[] frontIndices = new int[ParetoMicrocosmSize];
         int frontCount = 0;
@@ -404,12 +405,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         int[] layerNumbersTmp = new int[ParetoMicrocosmSize];
         while (frontCount < ParetoMicrocosmSize)
         {
-            FrontSelect(sizeLayersRef, scoreLayersRef, frontIndices, ref frontCount, selectedQ);
+            FrontSelect(_microcosmOrganismLengths, _microcosmOrganismScores, frontIndices, ref frontCount, selectedQ);
             for (int i = lastIndex; i < frontCount; i++)
             {
                 selectedQ[frontIndices[i]] = true;
-                sizeLayersTmp[i] = sizeLayersRef[frontIndices[i]];
-                scoreLayersTmp[i] = scoreLayersRef[frontIndices[i]];
+                sizeLayersTmp[i] = _microcosmOrganismLengths[frontIndices[i]];
+                scoreLayersTmp[i] = _microcosmOrganismScores[frontIndices[i]];
                 layerNumbersTmp[i] = layerNumber;
             }
 
@@ -419,9 +420,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
-            sizeLayersRef[i] = sizeLayersTmp[i];
-            scoreLayersRef[i] = scoreLayersTmp[i];
-            layerNumbersRef[i] = layerNumbersTmp[i];
+            _microcosmOrganismLengths[i] = sizeLayersTmp[i];
+            _microcosmOrganismScores[i] = scoreLayersTmp[i];
+            _microcosmOrganismLayerNumbers[i] = layerNumbersTmp[i];
         }
 
     }
@@ -630,8 +631,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _microcosmOrganismScores[i] = _organisms[pick]!.Score;
             _perLayerSizes[i] = 0;
         });
-        ParetoLayers(_microcosmOrganismLayerNumbers, _microcosmOrganismLengths, _microcosmOrganismScores);
+        EstimateParetoLayersFromMicrocosm();
         #region births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays
+
         using (new ConsoleTimer("births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays", _showProfilingInfo))
         {
             if (MLSetup.Current.TotalBirthsToResetColonyIfNoProgress > 0 && _totalBirths - _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate >= MLSetup.Current.TotalBirthsToResetColonyIfNoProgress)
