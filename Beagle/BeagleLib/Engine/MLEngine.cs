@@ -397,7 +397,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         int[] frontIndices = new int[ParetoMicrocosmSize];
         int frontCount = 0;
         bool[] selectedQ = new bool[ParetoMicrocosmSize];
-        for (int i = 0; i < ParetoMicrocosmSize; i++) selectedQ[i] = false;
+
+        for (int i = 0; i < ParetoMicrocosmSize; i++)
+        {
+            selectedQ[i] = false;
+        }
         int lastIndex = 0;
         int layerNumber = 0;
         int[] sizeLayersTmp = new int[ParetoMicrocosmSize];
