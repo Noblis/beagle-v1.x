@@ -355,6 +355,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             if (DoesDominateOtherQ(_microcosmOrganismLengths[i], _microcosmOrganismScores[i], organism.Commands.Length, organism.Score)) dominated = true;
         }
+
+        organism.Layer = currentLayer;
     }
 
     // Identify the next front layer from sampled individuals
