@@ -101,7 +101,7 @@ public static class SolutionMaker
             solutionFileContent = solutionFileContent.DeleteLinesContaining("{AF40EEB6-FADC-5F3A-7280-EEDDF7B41BBA}", 5);
 
             Directory.Delete(CombineAndAdjustPaths(path, @"XXYXX\Server\WebMVC"), true);
-            Directory.Delete(CombineAndAdjustPaths(path, @"XXYXX\Server\BatchApiClientMVC"), true);
+            Directory.Delete(CombineAndAdjustPaths(path, @"XXYXX\Client\BatchApiClientMVC"), true);
             Directory.Delete(CombineAndAdjustPaths(path, @"XXYXX\Util\ModelGeneratorMVC"), true);
         }
         else
@@ -120,7 +120,7 @@ public static class SolutionMaker
             solutionFileContent = solutionFileContent.DeleteLinesContaining("{75BD2AD6-E020-4DFC-8101-A8E5D36AED2C}", 5);
 
             Directory.Delete(CombineAndAdjustPaths(path, @"XXYXX\Server\WebWM"), true);
-            Directory.Delete(CombineAndAdjustPaths(path, @"XXYXX\Server\BatchApiClientWM"), true);
+            Directory.Delete(CombineAndAdjustPaths(path, @"XXYXX\Client\BatchApiClientWM"), true);
             Directory.Delete(CombineAndAdjustPaths(path, @"XXYXX\Util\ModelGeneratorWM"), true);
         }
 
