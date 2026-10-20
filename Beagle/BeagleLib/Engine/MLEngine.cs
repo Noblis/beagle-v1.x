@@ -476,6 +476,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 if (_organisms[orgIdx]!.Score > bestScoreForShorter)
                 {
                     isFrontZero[orgIdx] = true;
+                    _frontCount++;
                     bestScoreForShorter = _organisms[orgIdx]!.Score;
                 }
                 else
