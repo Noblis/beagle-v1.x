@@ -159,13 +159,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _newbornOrganisms = new Organism[MLSetup.Current.OrganismsArraySize];
             _scores = new int[MLSetup.Current.OrganismsArraySize];
             _layers = new int[MLSetup.Current.OrganismsArraySize];
-            _taxedScorePercentiles = new int[ParetoSample];
+
             //additions for NSGA selection
-            _scoreLayers = new int[ParetoSample];
-            _sizeLayers = new int[ParetoSample];
-            _layerNumbers = new int[ParetoSample];
-            _layerOffspringTargets = new float[ParetoSample];
-            _layerSizes = new int[ParetoSample];
+            _scoreLayers = new int[ParetoMicrocosmSize];
+            _sizeLayers = new int[ParetoMicrocosmSize];
+            _layerNumbers = new int[ParetoMicrocosmSize];
+            _layerOffspringTargets = new float[ParetoMicrocosmSize];
+            _layerSizes = new int[ParetoMicrocosmSize];
             _crossoverPartners = new Organism[CrossoverPartnerPoolSize];
 
             // True Pareto front + elitism support
@@ -335,9 +335,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         bool dominated = false;
         int currentLayer = 0;
         //TODO: Does this early termination on 0 and subzero scores help
-        if (score <= 0) return layerNumbersRef[ParetoSample-1];
+        if (score <= 0) return layerNumbersRef[ParetoMicrocosmSize-1];
 
-        for (int i = 0; i < ParetoSample; i++)
+        for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
             if (layerNumbersRef[i] > currentLayer)
             {
@@ -360,14 +360,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     // Identify the next front layer from sampled individuals
     public void FrontSelect(int[] sizeLayersRef, int[] scoreLayersRef, int[] frontIndices, ref int frontCount, bool[] selectedQ)
     {
-        bool[] onFrontQ = new bool[ParetoSample];
-        for (int i = 0; i < ParetoSample; i++) onFrontQ[i] = false;
-        for (int i = 0; i < ParetoSample; i++) if (!selectedQ[i]) onFrontQ[i] = true;
-        for (int i = 0; i < ParetoSample; i++)
+        bool[] onFrontQ = new bool[ParetoMicrocosmSize];
+        for (int i = 0; i < ParetoMicrocosmSize; i++) onFrontQ[i] = false;
+        for (int i = 0; i < ParetoMicrocosmSize; i++) if (!selectedQ[i]) onFrontQ[i] = true;
+        for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
             if (onFrontQ[i] && !selectedQ[i])
             {
-                for (int j = 0; j < ParetoSample; j++)
+                for (int j = 0; j < ParetoMicrocosmSize; j++)
                 {
                     if ((i != j) && !selectedQ[j] && onFrontQ[j] && sizeLayersRef[i] <= sizeLayersRef[j] &&
                         scoreLayersRef[i] > scoreLayersRef[j])
@@ -378,7 +378,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             }
         }
 
-        for (int i = 0; i < ParetoSample; i++)
+        for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
             if (onFrontQ[i])
             {
@@ -393,16 +393,16 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     // Group sampled individuals into layers
     public void ParetoLayers(int[] layerNumbersRef, int[] sizeLayersRef, int[] scoreLayersRef)
     {
-        int[] frontIndices = new int[ParetoSample];
+        int[] frontIndices = new int[ParetoMicrocosmSize];
         int frontCount = 0;
-        bool[] selectedQ = new bool[ParetoSample];
-        for (int i = 0; i < ParetoSample; i++) selectedQ[i] = false;
+        bool[] selectedQ = new bool[ParetoMicrocosmSize];
+        for (int i = 0; i < ParetoMicrocosmSize; i++) selectedQ[i] = false;
         int lastIndex = 0;
         int layerNumber = 0;
-        int[] sizeLayersTmp = new int[ParetoSample];
-        int[] scoreLayersTmp = new int[ParetoSample];
-        int[] layerNumbersTmp = new int[ParetoSample];
-        while (frontCount < ParetoSample)
+        int[] sizeLayersTmp = new int[ParetoMicrocosmSize];
+        int[] scoreLayersTmp = new int[ParetoMicrocosmSize];
+        int[] layerNumbersTmp = new int[ParetoMicrocosmSize];
+        while (frontCount < ParetoMicrocosmSize)
         {
             FrontSelect(sizeLayersRef, scoreLayersRef, frontIndices, ref frontCount, selectedQ);
             for (int i = lastIndex; i < frontCount; i++)
@@ -417,7 +417,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             layerNumber++;
         }
 
-        for (int i = 0; i < ParetoSample; i++)
+        for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
             sizeLayersRef[i] = sizeLayersTmp[i];
             scoreLayersRef[i] = scoreLayersTmp[i];
@@ -607,7 +607,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         ParetoFrontSweep(_isFrontZero);
 
         // Small sample approximation for non-front layer estimates
-        Parallel.For(0, ParetoSample, i =>
+        Parallel.For(0, ParetoMicrocosmSize, i =>
         {
             int pick = Rnd.Random.Next(_organismsCount);
             _sizeLayers[i] = _organisms[pick]!.Commands.Length;
@@ -1383,16 +1383,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    protected int FixTaxedScorePercentilesIdx(int idx)
-    {
-        var max = _taxedScorePercentiles.Length - 1;
-
-        if (idx < 0) return 0;
-        if (idx > max) return max;
-        return idx;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected int GetMostAccurateOrganismsSinceLastColonyResetCount()
     {
         for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
@@ -1460,7 +1450,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly float[] _correctOutputs;
     protected readonly float[] _allInputs;
 
-    protected readonly int[] _taxedScorePercentiles;
     //NSGA selection parameters
     protected readonly int[] _scoreLayers;
     protected readonly int[] _sizeLayers;
@@ -1525,7 +1514,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public bool _turboParetoSearch = false;             //toggle for extreme greedy Pareto front search
     #pragma warning restore IDE0044
 
-    public const int ParetoSample = 100;                //toggle for different sample sizes
+    public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
     public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
     #endregion
