@@ -678,6 +678,8 @@ public class Organism
     }
     private double? _asr;
 
+    public bool IsInParetoFrontZero { get; set; }
+
     private static StringBuilder _sb = new(8192); //buffer to build strings
     #endregion
 }

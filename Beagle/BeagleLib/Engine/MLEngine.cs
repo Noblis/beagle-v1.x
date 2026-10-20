@@ -170,9 +170,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             _crossoverPartners = new Organism[CrossoverPartnerPoolSize];
 
-            // True Pareto front + elitism support
-            _isFrontZero = new bool[MLSetup.Current.OrganismsArraySize];
-
             using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
                 //Create new organisms in multithreaded fashion
@@ -429,9 +426,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
 
     // Identifies the true Pareto front (front-0) of current population.
-    protected void ParetoFrontSweep(bool[] isFrontZero)
+    protected void ParetoFrontSweep()
     {
-        _frontCount = 0;
+        _paretoFrontZeroCount = 0;
 
         // Group by Commands.Length
         var bucketStart = new int[BConfig.MaxScriptLength + 1];
@@ -475,15 +472,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             {
                 int orgIdx = sizeBuckets[pos];
                 if (_organisms[orgIdx] == null) continue;
-                if (_organisms[orgIdx]!.Score > bestScoreForShorter)
+                
+                _organisms[orgIdx]!.IsInParetoFrontZero = _organisms[orgIdx]!.Score > bestScoreForShorter;
+                if (_organisms[orgIdx]!.IsInParetoFrontZero)
                 {
-                    isFrontZero[orgIdx] = true;
-                    _frontCount++;
+                    _paretoFrontZeroCount++;
                     bestScoreForShorter = _organisms[orgIdx]!.Score;
-                }
-                else
-                {
-                    isFrontZero[orgIdx] = false;
                 }
             }
             startPos = endPos;
@@ -623,7 +617,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
 
         // Pareto front identification of the full population
-        ParetoFrontSweep(_isFrontZero);
+        ParetoFrontSweep();
 
         // Small sample approximation for non-front layer estimates
         Parallel.For(0, ParetoMicrocosmSize, i =>
@@ -690,7 +684,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Parallel.For(0, _organismsCount, i =>
                 {
                     _layers[i] = GetParetoLayer(_microcosmOrganismLengths, _microcosmOrganismScores, _microcosmOrganismLayerNumbers, _scores[i], _organisms[i]!.Commands.Length);
-                    if (!_isFrontZero[i]) Interlocked.Increment(ref _perLayerSizes[_layers[i]]);
+                    if (!_organisms[i]!.IsInParetoFrontZero) Interlocked.Increment(ref _perLayerSizes[_layers[i]]);
                 });
 
                 // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute offspring across layers
@@ -698,14 +692,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 float frontTargetPerMember;
                 if (_turboParetoSearch)
                 {
-                    frontTargetPerMember = (_frontCount > 0)
-                        ? (1.0f * targetColonySize) / _frontCount
+                    frontTargetPerMember = (_paretoFrontZeroCount > 0)
+                        ? 1.0f * targetColonySize / _paretoFrontZeroCount
                         : 0.0f;
                 }
                 else
                 {
-                    frontTargetPerMember = (_frontCount > 0)
-                        ? (0.5f * targetColonySize) / _frontCount
+                    frontTargetPerMember = (_paretoFrontZeroCount > 0)
+                        ? 0.5f * targetColonySize / _paretoFrontZeroCount
                         : 0.0f;
                 }
 
@@ -733,7 +727,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
-                    float pctProb = _isFrontZero[i] ? frontTargetPerMember : _perLayerOffspringTargets[_layers[i]];
+                    float pctProb = organism.IsInParetoFrontZero ? frontTargetPerMember : _perLayerOffspringTargets[_layers[i]];
 
                     do
                     {
@@ -1529,8 +1523,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     #endregion
 
     #region Pareto Selection
-    private readonly bool[] _isFrontZero;
-    private int _frontCount;
+    private int _paretoFrontZeroCount;
 
     #pragma warning disable IDE0044
     public bool _turboParetoSearch = false;             //toggle for extreme greedy Pareto front search
