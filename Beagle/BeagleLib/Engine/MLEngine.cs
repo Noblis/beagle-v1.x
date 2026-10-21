@@ -444,59 +444,34 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         (_microcosmOrganisms, _tmpMicrocosmOrganisms) = (_tmpMicrocosmOrganisms, _microcosmOrganisms);
     }
 
-    protected void MarkTrueParetoFrontOrganismsInColony3()
+    protected void MarkTrueParetoFrontOrganismsInColony()
     {
-        //Parallel.For(0, _organismsCount, i =>
-        for(var i = 0; i < _organismsCount; i++)
-        {
-            var organism = _organisms[i]!;
-            var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
-
-            //lock (_bucketLocks[organismBucketIdx])
-            {
-                if (_mostAccurateInLengthBucketOrganisms[organismBucketIdx] == null ||
-                    organism.Score > _mostAccurateInLengthBucketOrganisms[organismBucketIdx]!.Score)
-                {
-                    _mostAccurateInLengthBucketOrganisms[organismBucketIdx] = organism;
-                }
-            }
-        }//);
-
         _paretoFrontZeroCount = 0;
-        var previousScore = int.MinValue;
         for (var i = 0; i < BConfig.MaxScriptLength; i++)
         {
-            var mostAccurateInCurrentBucket = _mostAccurateInLengthBucketOrganisms[i];
-            if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
-            {
-                mostAccurateInCurrentBucket.IsInParetoFrontZero = true;
-                _paretoFrontZeroCount++;
-                previousScore = mostAccurateInCurrentBucket.Score;
-            }
+            _mostAccurateInLengthBucketOrganisms[i] = null;
         }
-    }
 
-    protected void MarkTrueParetoFrontOrganismsInColony2()
-    {
-        Parallel.For(0, _organismsCount, i =>
+        for(var i = 0; i < _organismsCount; i++)
         {
             var organism = _organisms[i]!;
             var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
 
             lock (_bucketLocks[organismBucketIdx])
             {
-                if (_mostAccurateInLengthBucketOrganisms[organismBucketIdx] == null ||
-                    organism.Score > _mostAccurateInLengthBucketOrganisms[organismBucketIdx]!.Score)
+                if (organism.Score > 1 &&
+                    (_mostAccurateInLengthBucketOrganisms[organismBucketIdx] == null ||
+                     organism.Score > _mostAccurateInLengthBucketOrganisms[organismBucketIdx]!.Score))
                 {
                     _mostAccurateInLengthBucketOrganisms[organismBucketIdx] = organism;
                 }
             }
-        });
+        }
 
-        _paretoFrontZeroCount = 0;
-        var previousScore = int.MinValue;
+        var previousScore = 1;
         for (var i = 0; i < BConfig.MaxScriptLength; i++)
         {
+            Debug.Assert(_mostAccurateInLengthBucketOrganisms[i] == null || _mostAccurateInLengthBucketOrganisms[i]!.Commands.Length == i + 1);
             var mostAccurateInCurrentBucket = _mostAccurateInLengthBucketOrganisms[i];
             if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
             {
@@ -507,71 +482,43 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
     }
 
-    protected void MarkTrueParetoFrontOrganismsInColony()
-    {
-        _paretoFrontZeroCount = 0;
+    //protected void MarkTrueParetoFrontOrganismsInColony_Parallel()
+    //{
+    //    _paretoFrontZeroCount = 0;
+    //    for (var i = 0; i < BConfig.MaxScriptLength; i++)
+    //    {
+    //        _mostAccurateInLengthBucketOrganisms[i] = null;
+    //    }
 
-        // Group by Commands.Length
-        var bucketStart = new int[BConfig.MaxScriptLength + 1];
-        var bucketSize = new int[BConfig.MaxScriptLength + 1];
-        var sizeBuckets = new int[_organismsCount];
+    //    Parallel.For(0, _organismsCount, i =>
+    //    {
+    //        var organism = _organisms[i]!;
+    //        var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
 
-        // Count organisms per length bucket
-        for (int i = 0; i < _organismsCount; i++)
-        {
-            if (_organisms[i] == null) continue;
-            int len = _organisms[i]!.Commands.Length;
-            bucketSize[len]++;
-        }
+    //        lock (_bucketLocks[organismBucketIdx])
+    //        {
+    //            if (organism.Score > 1 && 
+    //                (_mostAccurateInLengthBucketOrganisms[organismBucketIdx] == null ||
+    //                organism.Score > _mostAccurateInLengthBucketOrganisms[organismBucketIdx]!.Score))
+    //            {
+    //                _mostAccurateInLengthBucketOrganisms[organismBucketIdx] = organism;
+    //            }
+    //        }
+    //    });
 
-        // Compute start positions for each bucket
-        int startPos = 0;
-        for (int l = 1; l <= BConfig.MaxScriptLength; l++)
-        {
-            bucketStart[l] = startPos;
-            startPos += bucketSize[l];
-        }
-
-        // Place organism indices into buckets
-        for (int i = 0; i < _organismsCount; i++)
-        {
-            if (_organisms[i] == null) continue;
-            int len = _organisms[i]!.Commands.Length;
-            sizeBuckets[bucketStart[len]++] = i;
-        }
-
-        // Sweep from shortest to longest length to identify front
-        int bestScoreForShorter = 1;
-        bool layerContainsFrontMember = false;
-        int candidateIdx = -1;
-        startPos = 0;
-        for (int l = 1; l <= BConfig.MaxScriptLength; l++)
-        {
-            if (bucketSize[l] == 0) continue;
-            int endPos = startPos + bucketSize[l];
-            if (layerContainsFrontMember)
-            {
-                _organisms[candidateIdx]!.IsInParetoFrontZero = true;
-                _paretoFrontZeroCount++;
-            }
-            candidateIdx = -1;
-            layerContainsFrontMember = false;
-            for (int pos = startPos; pos < endPos; pos++)
-            {
-                int orgIdx = sizeBuckets[pos];
-                if (_organisms[orgIdx] == null) continue;
-                
-                _organisms[orgIdx]!.IsInParetoFrontZero = _organisms[orgIdx]!.Score > bestScoreForShorter;
-                if (_organisms[orgIdx]!.Score > bestScoreForShorter)
-                {
-                    bestScoreForShorter = _organisms[orgIdx]!.Score;
-                    layerContainsFrontMember = true;
-                    candidateIdx = orgIdx;
-                }
-            }
-            startPos = endPos;
-        }
-    }
+    //    var previousScore = 1;
+    //    for (var i = 0; i < BConfig.MaxScriptLength; i++)
+    //    {
+    //        Debug.Assert(_mostAccurateInLengthBucketOrganisms[i] == null || _mostAccurateInLengthBucketOrganisms[i]!.Commands.Length == i + 1);
+    //        var mostAccurateInCurrentBucket = _mostAccurateInLengthBucketOrganisms[i];
+    //        if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
+    //        {
+    //            mostAccurateInCurrentBucket.IsInParetoFrontZero = true;
+    //            _paretoFrontZeroCount++;
+    //            previousScore = mostAccurateInCurrentBucket.Score;
+    //        }
+    //    }
+    //}
 
     //protected void FindCrossoverPartnerArray()
     //{
@@ -708,10 +655,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
 
         // Pareto front identification of the full population
-        using (new ConsoleTimer("MarkTrueParetoFrontOrganismsInColony"))
-        {
-            MarkTrueParetoFrontOrganismsInColony2();
-        }
+        MarkTrueParetoFrontOrganismsInColony();
 
         // Small sample approximation for non-front layer estimates
         Parallel.For(0, ParetoMicrocosmSize, i =>
