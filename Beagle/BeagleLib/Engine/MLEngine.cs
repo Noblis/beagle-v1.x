@@ -469,23 +469,32 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         // Sweep from shortest to longest length to identify front
         int bestScoreForShorter = 1;
-
+        bool layerContainsFrontMember = false;
+        int candidateIdx = -1;
         startPos = 0;
         for (int l = 1; l <= BConfig.MaxScriptLength; l++)
         {
             if (bucketSize[l] == 0) continue;
             int endPos = startPos + bucketSize[l];
-
+            if (layerContainsFrontMember)
+            {
+                _organisms[candidateIdx]!.IsInParetoFrontZero = true;
+                _paretoFrontZeroCount++;
+                Console.WriteLine($"Score: {_organisms[candidateIdx]!.Score} Length: {_organisms[candidateIdx]!.Commands.Length}");
+            }
+            candidateIdx = -1;
+            layerContainsFrontMember = false;
             for (int pos = startPos; pos < endPos; pos++)
             {
                 int orgIdx = sizeBuckets[pos];
                 if (_organisms[orgIdx] == null) continue;
                 
                 _organisms[orgIdx]!.IsInParetoFrontZero = _organisms[orgIdx]!.Score > bestScoreForShorter;
-                if (_organisms[orgIdx]!.IsInParetoFrontZero)
+                if (_organisms[orgIdx]!.Score > bestScoreForShorter)
                 {
-                    _paretoFrontZeroCount++;
                     bestScoreForShorter = _organisms[orgIdx]!.Score;
+                    layerContainsFrontMember = true;
+                    candidateIdx = orgIdx;
                 }
             }
             startPos = endPos;
