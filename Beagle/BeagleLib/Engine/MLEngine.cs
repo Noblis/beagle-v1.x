@@ -370,20 +370,20 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _isOnCurrentlyBeingSelectedFrontQ[i] = !_selectedQ[i];
         }
 
-        using (new ConsoleTimer("SelectNextParetoFrontInMicrocosm nested loops"))
+        //FYI: we tried to see if parallelizing one of the loops would give us better performance
+        //We ended up having to swap the loops but because we no longer can skip some of the iterations results
+        // were a mixed bag (sometimes better and sometimes worse) but the average appears to be better single-threaded...
+        for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
-            for (int i = 0; i < ParetoMicrocosmSize; i++)
+            if (_isOnCurrentlyBeingSelectedFrontQ[i] && !_selectedQ[i])
             {
-                if (_isOnCurrentlyBeingSelectedFrontQ[i] && !_selectedQ[i])
+                for (int j = 0; j < ParetoMicrocosmSize; j++)
                 {
-                    for (int j = 0; j < ParetoMicrocosmSize; j++)
+                    if (i != j && !_selectedQ[j] && _isOnCurrentlyBeingSelectedFrontQ[j] &&
+                        _microcosmOrganisms[i].Commands.Length <= _microcosmOrganisms[j].Commands.Length &&
+                        _microcosmOrganisms[i].Score > _microcosmOrganisms[j].Score)
                     {
-                        if (i != j && !_selectedQ[j] && _isOnCurrentlyBeingSelectedFrontQ[j] &&
-                            _microcosmOrganisms[i].Commands.Length <= _microcosmOrganisms[j].Commands.Length &&
-                            _microcosmOrganisms[i].Score > _microcosmOrganisms[j].Score)
-                        {
-                            _isOnCurrentlyBeingSelectedFrontQ[j] = false;
-                        }
+                        _isOnCurrentlyBeingSelectedFrontQ[j] = false;
                     }
                 }
             }
