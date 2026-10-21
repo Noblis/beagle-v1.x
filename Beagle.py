@@ -112,18 +112,26 @@ class BeagleModel:
                 stack.append(a)
         return stack[0]
 
-    def modelExpression(self, n_features):
+    def modelExpression(self):
         stack = []
         copyPasteDict = {}
         expr = self.expression.split('; ')
-        #if len(self.variableNames) == 0:
         
-        for i in range(n_features):
-            self.variableNames.append(symbols("x" + str(i)))
-        #else:
-        #    for i in range(len(self.variableNames)):
-        #        self.variableNames[i] = symbols(self.variableNames[i])
         
+        if len(self.variableNames) == 0:
+
+            maxVarNum = 0
+            for op in expr:
+                if "LOAD" in op:
+                    varNum = int(op.split(':')[1])
+                    if varNum > maxVarNum:
+                        maxVarNum = varNum
+
+            self.variableNames = [None for _ in range(maxVarNum + 1)]
+            for op in expr:
+                if "LOAD" in op:
+                    self.variableNames[int(op.split(':')[1])] = symbols(str(op.replace(" ",":").split(':')[1]))
+            
         data = self.variableNames
         
         for op in expr:
@@ -218,7 +226,7 @@ class BeagleModel:
 class BeagleRegressor:
     """Scikit-learn–compatible wrapper around Beagle's API."""
 
-    def __init__(self, evaluation_limit=300*10**6, pop_size=None, experiments_per_generation=512, evaluations_to_colony_reset=None, run_feynman=None, stop_after_min=None, solution_threshold=None, terminate_on_solution = False, fitness_func = "Corr"):
+    def __init__(self, evaluation_limit=300*10**6, pop_size=None, experiments_per_generation=512, evaluations_to_colony_reset=None, run_feynman=None, stop_after_min=None, solution_threshold=None, terminate_on_solution = False, fitness_func = "Corr", variable_names=None):
         self.evaluation_limit = int(evaluation_limit) if evaluation_limit is not None else None
         self.pop_size = int(pop_size) if pop_size is not None else None
         self.experiments_per_generation = int(experiments_per_generation) if experiments_per_generation is not None else None
@@ -228,6 +236,7 @@ class BeagleRegressor:
         self.fitness_func = str(fitness_func) if fitness_func is not None else "Corr"
         self.terminate_on_solution = bool(terminate_on_solution)
         self.solution_threshold = max(min(1.0,float(solution_threshold)),0.0) if solution_threshold is not None else None
+        self.variable_names = variable_names
         self.n_features_in_ = None
         self.feature_names_ = None
         self.training_curve_ = []
@@ -473,7 +482,10 @@ public class PythonMLSetup : MLSetup
             \t\tpublic override double SolutionFoundASRThreshold => {self.solution_threshold};\n"""
 
     def _set_input_labels(self):
-        labels = [f"x{i}" for i in range(0, self.n_features_in_)]
+        if self.variable_names is None:
+            labels = [f"x{i}" for i in range(0, self.n_features_in_)]
+        else:
+            labels = [str(label) for label in self.variable_names[:self.n_features_in_]]
         labels = str(labels).replace("'", "\"")
         return f"""
         public override string[] GetInputLabels()
