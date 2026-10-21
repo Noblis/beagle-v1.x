@@ -160,9 +160,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _scores = new int[MLSetup.Current.OrganismsArraySize];
 
             //additions for NSGA selection
-            _microcosmOrganismScores = new int[ParetoMicrocosmSize];
-            _microcosmOrganismLengths = new int[ParetoMicrocosmSize];
-            _microcosmOrganismLayerNumbers = new int[ParetoMicrocosmSize];
+            _microcosmOrganisms = new Organism[ParetoMicrocosmSize];
+            //_microcosmOrganismScores = new int[ParetoMicrocosmSize];
+            //_microcosmOrganismLengths = new int[ParetoMicrocosmSize];
+            //_microcosmOrganismLayerNumbers = new int[ParetoMicrocosmSize];
 
             _perLayerOffspringTargets = new float[ParetoMicrocosmSize];
             _perLayerSizes = new int[ParetoMicrocosmSize];
@@ -336,13 +337,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         //TODO: Does this early termination on 0 and subzero scores help
         if (organism.Score <= 0)
         {
-            organism.Layer = _microcosmOrganismLayerNumbers[ParetoMicrocosmSize - 1];
+            //if the score is negative, we assign the last layer
+            organism.Layer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
             return;
         }
 
         for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
-            if (_microcosmOrganismLayerNumbers[i] > currentLayer)
+            if (_microcosmOrganisms[i].Layer > currentLayer)
             {
                 if (dominated == false)
                 {
@@ -353,31 +355,35 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 dominated = false;
             }
 
-            if (DoesDominateOtherQ(_microcosmOrganismLengths[i], _microcosmOrganismScores[i], organism.Commands.Length, organism.Score)) dominated = true;
+            if (DoesDominateOtherQ(_microcosmOrganisms[i].Commands.Length, _microcosmOrganisms[i].Score, organism.Commands.Length, organism.Score)) dominated = true;
         }
 
         organism.Layer = currentLayer;
     }
 
-    // Identify the next front layer from sampled individuals
-    public void FrontSelect(int[] sizeLayersRef, int[] scoreLayersRef, int[] frontIndices, ref int frontCount, bool[] selectedQ)
+    //Identify the next front layer from sampled individuals
+    //This method uses _microcosmOrganisms and _selectedQ arrays to update _organismsIdentifiedToParetoFrontsIndices and return organismsIdentifiedToParetoFrontsCount
+    public int SelectNextParetoFrontInMicrocosm(int organismsIdentifiedToParetoFrontsCount)
     {
-        bool[] onFrontQ = new bool[ParetoMicrocosmSize];
-
         for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
-            onFrontQ[i] = !selectedQ[i];
+            _isOnCurrentlyBeingSelectedFrontQ[i] = !_selectedQ[i];
         }
-        
-        for (int i = 0; i < ParetoMicrocosmSize; i++)
+
+        using (new ConsoleTimer("SelectNextParetoFrontInMicrocosm nested loops"))
         {
-            if (onFrontQ[i] && !selectedQ[i])
+            for (int i = 0; i < ParetoMicrocosmSize; i++)
             {
-                for (int j = 0; j < ParetoMicrocosmSize; j++)
+                if (_isOnCurrentlyBeingSelectedFrontQ[i] && !_selectedQ[i])
                 {
-                    if (i != j && !selectedQ[j] && onFrontQ[j] && sizeLayersRef[i] <= sizeLayersRef[j] && scoreLayersRef[i] > scoreLayersRef[j])
+                    for (int j = 0; j < ParetoMicrocosmSize; j++)
                     {
-                        onFrontQ[j] = false;
+                        if (i != j && !_selectedQ[j] && _isOnCurrentlyBeingSelectedFrontQ[j] &&
+                            _microcosmOrganisms[i].Commands.Length <= _microcosmOrganisms[j].Commands.Length &&
+                            _microcosmOrganisms[i].Score > _microcosmOrganisms[j].Score)
+                        {
+                            _isOnCurrentlyBeingSelectedFrontQ[j] = false;
+                        }
                     }
                 }
             }
@@ -385,52 +391,51 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
-            if (onFrontQ[i])
+            if (_isOnCurrentlyBeingSelectedFrontQ[i])
             {
-                frontIndices[frontCount] = i;
-                frontCount++;
+                _organismsIdentifiedToParetoFrontsIndices[organismsIdentifiedToParetoFrontsCount] = i;
+                organismsIdentifiedToParetoFrontsCount++;
             }
         }
+
+        return organismsIdentifiedToParetoFrontsCount;
     }
 
     // Group sampled individuals into layers
     public void EstimateParetoLayersFromMicrocosm()
     {
-        int[] frontIndices = new int[ParetoMicrocosmSize];
-        int frontCount = 0;
-        bool[] selectedQ = new bool[ParetoMicrocosmSize];
-
+        //mark all organisms in microcosm as not assigned yet
         for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
-            selectedQ[i] = false;
+            _selectedQ[i] = false;
         }
-        int lastIndex = 0;
-        int layerNumber = 0;
-        int[] sizeLayersTmp = new int[ParetoMicrocosmSize];
-        int[] scoreLayersTmp = new int[ParetoMicrocosmSize];
-        int[] layerNumbersTmp = new int[ParetoMicrocosmSize];
-        while (frontCount < ParetoMicrocosmSize)
+
+        int organismsIdentifiedToParetoFrontsCount = 0;
+        int organismsAssignedToParetoFrontsCount = 0;
+        int currentLayerNumber = 0;
+
+        while (organismsIdentifiedToParetoFrontsCount < ParetoMicrocosmSize)
         {
-            FrontSelect(_microcosmOrganismLengths, _microcosmOrganismScores, frontIndices, ref frontCount, selectedQ);
-            for (int i = lastIndex; i < frontCount; i++)
+            //This will use _microcosmOrganisms and _selectedQ arrays to update _organismsIdentifiedToParetoFrontsIndices and organismsIdentifiedToParetoFrontsCount
+            organismsIdentifiedToParetoFrontsCount = SelectNextParetoFrontInMicrocosm(organismsIdentifiedToParetoFrontsCount);
+            for (int i = organismsAssignedToParetoFrontsCount; i < organismsIdentifiedToParetoFrontsCount; i++)
             {
-                selectedQ[frontIndices[i]] = true;
-                sizeLayersTmp[i] = _microcosmOrganismLengths[frontIndices[i]];
-                scoreLayersTmp[i] = _microcosmOrganismScores[frontIndices[i]];
-                layerNumbersTmp[i] = layerNumber;
+                _selectedQ[_organismsIdentifiedToParetoFrontsIndices[i]] = true;
+                _tmpMicrocosmOrganisms[i] = _microcosmOrganisms[_organismsIdentifiedToParetoFrontsIndices[i]];
+                _tmpMicrocosmOrganisms[i].Layer = currentLayerNumber;
             }
 
-            lastIndex = frontCount;
-            layerNumber++;
+            organismsAssignedToParetoFrontsCount = organismsIdentifiedToParetoFrontsCount;
+            currentLayerNumber++;
         }
 
-        for (int i = 0; i < ParetoMicrocosmSize; i++)
-        {
-            _microcosmOrganismLengths[i] = sizeLayersTmp[i];
-            _microcosmOrganismScores[i] = scoreLayersTmp[i];
-            _microcosmOrganismLayerNumbers[i] = layerNumbersTmp[i];
-        }
+        //for (int i = 0; i < ParetoMicrocosmSize; i++)
+        //{
+        //    _microcosmOrganisms[i] = _tmpMicrocosmOrganisms[i];
+        //}
 
+        //swap _microcosmOrganisms and _tmpMicrocosmOrganisms arrays they reference
+        (_microcosmOrganisms, _tmpMicrocosmOrganisms) = (_tmpMicrocosmOrganisms, _microcosmOrganisms);
     }
 
     // Identifies the true Pareto front (front-0) of current population.
@@ -641,8 +646,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Parallel.For(0, ParetoMicrocosmSize, i =>
         {
             int pick = Rnd.Random.Next(_organismsCount);
-            _microcosmOrganismLengths[i] = _organisms[pick]!.Commands.Length;
-            _microcosmOrganismScores[i] = _organisms[pick]!.Score;
+            _microcosmOrganisms[i] = _organisms[pick]!;
             _perLayerSizes[i] = 0;
         });
         EstimateParetoLayersFromMicrocosm();
@@ -1481,9 +1485,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly float[] _allInputs;
 
     //NSGA selection parameters
-    protected readonly int[] _microcosmOrganismScores;
-    protected readonly int[] _microcosmOrganismLengths;
-    protected readonly int[] _microcosmOrganismLayerNumbers;
+    protected Organism[] _microcosmOrganisms;
+    //protected readonly int[] _microcosmOrganismScores;
+    //protected readonly int[] _microcosmOrganismLengths;
+    //protected readonly int[] _microcosmOrganismLayerNumbers;
 
     protected readonly int[] _perLayerSizes;
     protected readonly float[] _perLayerOffspringTargets;
@@ -1548,6 +1553,20 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
     public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
+    #endregion
+
+    #region EstimateParetoLayersFromMicrocosm() and SelectNextParetoFrontInMicrocosm() -related arrays
+    //EstimateParetoLayersFromMicrocosm
+    protected readonly int[] _organismsIdentifiedToParetoFrontsIndices = new int[ParetoMicrocosmSize];
+    protected readonly bool[] _selectedQ = new bool[ParetoMicrocosmSize];
+
+    protected Organism[] _tmpMicrocosmOrganisms = new Organism[ParetoMicrocosmSize];
+    //protected readonly int[] _tmpSizeLayers = new int[ParetoMicrocosmSize];
+    //protected readonly int[] _tmpScoreLayers = new int[ParetoMicrocosmSize];
+    //protected readonly int[] _tmpLayerNumbers = new int[ParetoMicrocosmSize];
+
+    //SelectNextParetoFrontInMicrocosm
+    protected readonly bool[] _isOnCurrentlyBeingSelectedFrontQ = new bool[ParetoMicrocosmSize];
     #endregion
 
     //#region External Thread-Safe Interface
