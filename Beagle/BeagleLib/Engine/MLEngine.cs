@@ -480,7 +480,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             {
                 _organisms[candidateIdx]!.IsInParetoFrontZero = true;
                 _paretoFrontZeroCount++;
-                Console.WriteLine($"Score: {_organisms[candidateIdx]!.Score} Length: {_organisms[candidateIdx]!.Commands.Length}");
             }
             candidateIdx = -1;
             layerContainsFrontMember = false;
