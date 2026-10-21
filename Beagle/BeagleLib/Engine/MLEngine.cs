@@ -187,6 +187,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _gcLatencyMode = GCSettings.LatencyMode;
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
             #endregion
+
+            #region Set up bucket locks
+            for (var i = 0; i < BConfig.MaxScriptLength; i++)
+            {
+                _bucketLocks[i] = new object();
+            }
+            #endregion
         }
     }
     public override void Dispose()
@@ -437,8 +444,38 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         (_microcosmOrganisms, _tmpMicrocosmOrganisms) = (_tmpMicrocosmOrganisms, _microcosmOrganisms);
     }
 
-    // Identifies the true Pareto front (front-0) of current population.
     protected void MarkTrueParetoFrontOrganismsInColony()
+    {
+        Parallel.For(0, _organismsCount, i =>
+        {
+            var organism = _organisms[i]!;
+            var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
+
+            lock (_bucketLocks[organismBucketIdx])
+            {
+                if (_mostAccurateInLengthBucketOrganisms[organismBucketIdx] == null ||
+                    organism.Score > _mostAccurateInLengthBucketOrganisms[organismBucketIdx]!.Score)
+                {
+                    _mostAccurateInLengthBucketOrganisms[organismBucketIdx] = organism;
+                }
+            }
+        });
+
+        _paretoFrontZeroCount = 0;
+        var previousScore = int.MinValue;
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            var mostAccurateInCurrentBucket = _mostAccurateInLengthBucketOrganisms[i];
+            if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
+            {
+                mostAccurateInCurrentBucket.IsInParetoFrontZero = true;
+                _paretoFrontZeroCount++;
+                previousScore = mostAccurateInCurrentBucket.Score;
+            }
+        }
+    }
+
+    protected void MarkTrueParetoFrontOrganismsInColony2()
     {
         _paretoFrontZeroCount = 0;
 
@@ -639,7 +676,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
 
         // Pareto front identification of the full population
-        MarkTrueParetoFrontOrganismsInColony();
+        using (new ConsoleTimer("MarkTrueParetoFrontOrganismsInColony"))
+        {
+            MarkTrueParetoFrontOrganismsInColony();
+        }
 
         // Small sample approximation for non-front layer estimates
         Parallel.For(0, ParetoMicrocosmSize, i =>
@@ -1566,6 +1606,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     //SelectNextParetoFrontInMicrocosm
     protected readonly bool[] _isOnCurrentlyBeingSelectedFrontQ = new bool[ParetoMicrocosmSize];
+    #endregion
+
+    #region MarkTrueParetoFrontOrganismsInColony()-related arrays
+    protected Organism?[] _mostAccurateInLengthBucketOrganisms = new Organism[BConfig.MaxScriptLength];
+    protected object[] _bucketLocks = new object[BConfig.MaxScriptLength];
     #endregion
 
     #region External Thread-Safe Interface
