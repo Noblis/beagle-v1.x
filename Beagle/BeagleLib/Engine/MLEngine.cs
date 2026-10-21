@@ -187,13 +187,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _gcLatencyMode = GCSettings.LatencyMode;
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
             #endregion
-
-            #region Set up bucket locks
-            for (var i = 0; i < BConfig.MaxScriptLength; i++)
-            {
-                _bucketLocks[i] = new object();
-            }
-            #endregion
         }
     }
     public override void Dispose()
@@ -457,14 +450,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             var organism = _organisms[i]!;
             var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
 
-            lock (_bucketLocks[organismBucketIdx])
+            if (organism.Score > 1 &&
+                (_mostAccurateInLengthBucketOrganisms[organismBucketIdx] == null ||
+                 organism.Score > _mostAccurateInLengthBucketOrganisms[organismBucketIdx]!.Score))
             {
-                if (organism.Score > 1 &&
-                    (_mostAccurateInLengthBucketOrganisms[organismBucketIdx] == null ||
-                     organism.Score > _mostAccurateInLengthBucketOrganisms[organismBucketIdx]!.Score))
-                {
-                    _mostAccurateInLengthBucketOrganisms[organismBucketIdx] = organism;
-                }
+                _mostAccurateInLengthBucketOrganisms[organismBucketIdx] = organism;
             }
         }
 
@@ -1585,8 +1575,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     #endregion
 
     #region MarkTrueParetoFrontOrganismsInColony()-related arrays
-    protected Organism?[] _mostAccurateInLengthBucketOrganisms = new Organism[BConfig.MaxScriptLength];
-    protected object[] _bucketLocks = new object[BConfig.MaxScriptLength];
+    protected readonly Organism?[] _mostAccurateInLengthBucketOrganisms = new Organism[BConfig.MaxScriptLength];
     #endregion
 
     #region External Thread-Safe Interface
