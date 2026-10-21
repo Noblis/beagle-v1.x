@@ -678,7 +678,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         // Pareto front identification of the full population
         using (new ConsoleTimer("MarkTrueParetoFrontOrganismsInColony"))
         {
-            MarkTrueParetoFrontOrganismsInColony();
+            MarkTrueParetoFrontOrganismsInColony2();
         }
 
         // Small sample approximation for non-front layer estimates
