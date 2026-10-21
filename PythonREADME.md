@@ -1,4 +1,4 @@
-\# Beagle Python Wrapper
+# Beagle Python Wrapper
 
 
 
@@ -6,7 +6,7 @@ The Beagle Python wrapper (Beagle.py) provides a SKLearn compatible wrapper to u
 
 
 
-\## Overview
+## Overview
 
 
 
@@ -14,23 +14,23 @@ The `BeagleRegressor` class provides a bridge between Python and the Beagle C# i
 
 
 
-\## Requirements
+## Requirements
 
 Python version 3.0 or greater
 
-\### Python Dependencies
+### Python Dependencies
 
-\- `numpy`
+- `numpy`
 
-\- `sympy`
+- `sympy`
 
-\- `pandas`
+- `pandas`
 
-\- `matplotlib`
+- `matplotlib`
 
-\- `scikit-learn`
+- `scikit-learn`
 
-\- `ipython`
+- `ipython`
 
 
 
@@ -44,16 +44,16 @@ pip install numpy sympy pandas matplotlib scikit-learn ipython
 
 
 
-\### System Dependencies
+### System Dependencies
 
-\- \*\*.NET 10 SDK\*\*: Required to run the Beagle engine via the `dotnet` command.
+- **.NET 10 SDK**: Required to run the Beagle engine via the `dotnet` command.
 You can download it here: https://dotnet.microsoft.com/en-us/download/dotnet/10.0
 
-\- \*\*Beagle C# Project\*\*: This wrapper expects the Beagle source code to be present in the same directory. If you download the project from GitHub, it will already exist in the correct location. If not, place it inside the beagle-v1.x folder. To use the Beagle Python wrapper you should be running Python from the same directory where Beagle.py file is located.
+- **Beagle C# Project**: This wrapper expects the Beagle source code to be present in the same directory. If you download the project from GitHub, it will already exist in the correct location. If not, place it inside the beagle-v1.x folder. To use the Beagle Python wrapper you should be running Python from the same directory where Beagle.py file is located.
 
 
 
-\## Quick Start Tutorial
+## Quick Start Tutorial
 
 
 
@@ -132,107 +132,104 @@ print(f"Best Symbolic Expression: {expression[0]}")
 
 
 
-\## API Reference
-
-
-
-Below is an overview of what features are available in the Python wrapper. 
-
-
-
-\### `BeagleRegressor`
-
-
-
-The object representation for the symbolic regression engine. 
-
-
-
-\#### `\_\_init\_\_(...)`
-
+## API Reference
+ 
+ 
+ 
+Below is an overview of what features are available in the Python wrapper.
+ 
+ 
+ 
+### `BeagleRegressor`
+ 
+ 
+ 
+The object representation for the symbolic regression engine.
+ 
+ 
+ 
+#### `__init__(...)`
+ 
 Initializes the regressor with various search constraints.
-
-
-
+ 
+ 
+ 
 | Parameter | Type | Default | Description |
-
+ 
 | :--- | :--- | :--- | :--- |
+ 
+| `evaluation_limit` | `int` | `None` | Maximum number of evaluations before stopping |
+ 
+| `pop_size` | `int` | `None` | The target population size |
+ 
+| `experiments_per_generation` | `int` | `512` | Number of experiments to run in each generation |
+ 
+| `evaluations_to_colony_reset` | `int` | `None` | Number of total births before resetting the colony if no progress is made |
+ 
+| `run_feynman` | `int` | `None` | If set, enables Feynman benchmark search mode |
+ 
+| `stop_after_min` | `int` | `None` | Maximum runtime in minutes |
+ 
+| `solution_threshold` | `float` | `None` | A fitness threshold (0.0 to 1.0] that, if reached, signals a found solution |
+ 
+| `terminate_on_solution` | `bool` | `False` | If `True`, stops immediately once `solution\_threshold` is met |
+ 
+| `fitness_func` | `str` | `"Corr"` | The fitness function to use: `"Corr"` (Correlation) or `"Pt"` |
 
-| `evaluation\_limit` | `int` | `None` | Maximum number of evaluations before stopping |
-
-| `pop\_size` | `int` | `None` | The target population size |
-
-| `experiments\_per\_generation` | `int` | `512` | Number of experiments to run in each generation |
-
-| `evaluations\_to\_colony\_reset` | `int` | `None` | Number of total births before resetting the colony if no progress is made |
-
-| `run\_feynman` | `int` | `None` | If set, enables Feynman benchmark search mode |
-
-| `stop\_after\_min` | `int` | `None` | Maximum runtime in minutes |
-
-| `solution\_threshold` | `float` | `None` | A fitness threshold (0.0 to 1.0] that, if reached, signals a found solution |
-
-| `terminate\_on\_solution` | `bool` | `False` | If `True`, stops immediately once `solution\_threshold` is met |
-
-| `fitness\_func` | `str` | `"Corr"` | The fitness function to use: `"Corr"` (Correlation) or `"Pt"` |
-
-
-
-\#### `fit(X, y, show\_training\_curve=False, live\_tracking=False)`
-
+| `variable_names` | `[str,...]` | `None` | A list of variable names for the model to use when displaying the symbolic expression. 
+ 
+ 
+ 
+#### `fit(X, y, show_training_curve=False, live_tracking=False)`
+ 
 Executes the symbolic regression search.
-
-
-
-\- `X`: Training input data (`n\_samples`, `n\_features`).
-
-\- `y`: Training target data (`n\_samples`).
-
-\- `show\_training\_curve`: If `True`, displays a static plot of the training curve after fitting.
-
-\- `live\_tracking`: If `True`, provides a real-time updating plot of the best fitness per generation during the search.
-
-
-
-\#### `predict(X)`
-
+ 
+ 
+ 
+- `X`: Training input data (`n_samples`, `n_features`).
+ 
+- `y`: Training target data (`n_samples`).
+ 
+- `show_training_curve`: If `True`, displays a static plot of the training curve after fitting.
+ 
+- `live_tracking`: If `True`, provides a real-time updating plot of the best fitness per generation during the search.
+ 
+ 
+ 
+#### `predict(X)`
+ 
 Returns the predicted values for the input `X` using the best discovered expression.
-
-
-
-\#### `modelExpression()`
-
+ 
+ 
+ 
+#### `modelExpression()`
+ 
 Returns the symbolic representation of the best-found model as a list of `sympy` objects.
-
-
-
-\### `BeagleModel`
-
-
-
-A representation of a single model from Beagle. Can be used to explore a model in the Python environment that was developed outside of the wrapper by directly using Beagle in C#. 
-
-
-
-\####`\_\_init\_\_(expression)`
-
-
-
-Create a Python object for a given expression. 
-
-
-
-\#### `evalute(X)`
-
+ 
+ 
+ 
+### `BeagleModel`
+ 
+ 
+ 
+A representation of a single model from Beagle. Can be used to explore a model in the Python environment that was developed outside of the wrapper by directly using Beagle in C#.
+ 
+ 
+ 
+####`__init__(expression)`
+ 
+ 
+ 
+Create a Python object for a given expression.
+ 
+ 
+ 
+#### `evalute(X)`
+ 
 Evaluates the model using input data `X`
-
-
-
-\#### `modelExpression(n\_features)`
-
-Prints the symbolic expression provided the number of total input features available. 
-
-
-
-
-
+ 
+ 
+ 
+#### `modelExpression()`
+ 
+Prints the symbolic expression.
