@@ -444,7 +444,39 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         (_microcosmOrganisms, _tmpMicrocosmOrganisms) = (_tmpMicrocosmOrganisms, _microcosmOrganisms);
     }
 
-    protected void MarkTrueParetoFrontOrganismsInColony()
+    protected void MarkTrueParetoFrontOrganismsInColony3()
+    {
+        //Parallel.For(0, _organismsCount, i =>
+        for(var i = 0; i < _organismsCount; i++)
+        {
+            var organism = _organisms[i]!;
+            var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
+
+            //lock (_bucketLocks[organismBucketIdx])
+            {
+                if (_mostAccurateInLengthBucketOrganisms[organismBucketIdx] == null ||
+                    organism.Score > _mostAccurateInLengthBucketOrganisms[organismBucketIdx]!.Score)
+                {
+                    _mostAccurateInLengthBucketOrganisms[organismBucketIdx] = organism;
+                }
+            }
+        }//);
+
+        _paretoFrontZeroCount = 0;
+        var previousScore = int.MinValue;
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            var mostAccurateInCurrentBucket = _mostAccurateInLengthBucketOrganisms[i];
+            if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
+            {
+                mostAccurateInCurrentBucket.IsInParetoFrontZero = true;
+                _paretoFrontZeroCount++;
+                previousScore = mostAccurateInCurrentBucket.Score;
+            }
+        }
+    }
+
+    protected void MarkTrueParetoFrontOrganismsInColony2()
     {
         Parallel.For(0, _organismsCount, i =>
         {
@@ -475,7 +507,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
     }
 
-    protected void MarkTrueParetoFrontOrganismsInColony2()
+    protected void MarkTrueParetoFrontOrganismsInColony()
     {
         _paretoFrontZeroCount = 0;
 
