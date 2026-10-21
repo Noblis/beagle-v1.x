@@ -361,8 +361,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         organism.Layer = currentLayer;
     }
 
-    //Identify the next front layer from sampled individuals
-    //This method uses _microcosmOrganisms and _selectedQ arrays to update _organismsIdentifiedToParetoFrontsIndices and return organismsIdentifiedToParetoFrontsCount
+    //Identify the next front layer from sampled individuals. This method uses _microcosmOrganisms and _selectedQ arrays to update _organismsIdentifiedToParetoFrontsIndices and return organismsIdentifiedToParetoFrontsCount
     public int SelectNextParetoFrontInMicrocosm(int organismsIdentifiedToParetoFrontsCount)
     {
         for (int i = 0; i < ParetoMicrocosmSize; i++)
@@ -439,7 +438,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
 
     // Identifies the true Pareto front (front-0) of current population.
-    protected void ParetoFrontSweep()
+    protected void MarkTrueParetoFrontOrganismsInColony()
     {
         _paretoFrontZeroCount = 0;
 
@@ -640,7 +639,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
 
         // Pareto front identification of the full population
-        ParetoFrontSweep();
+        MarkTrueParetoFrontOrganismsInColony();
 
         // Small sample approximation for non-front layer estimates
         Parallel.For(0, ParetoMicrocosmSize, i =>
@@ -1471,7 +1470,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         _mostAccurateOrganismsSinceLastColonyReset[idx] = organism;
     }
-#endregion
+    #endregion
 
 
     #region Readonly Fields Set in Constructor
@@ -1569,13 +1568,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly bool[] _isOnCurrentlyBeingSelectedFrontQ = new bool[ParetoMicrocosmSize];
     #endregion
 
-    //#region External Thread-Safe Interface
+    #region External Thread-Safe Interface
     //public Organism? GetMostAccurateEverOrganismForExport()
     //{
     //    return _mostAccurateEverOrganismForExport;
     //}
     //protected Organism? _mostAccurateEverOrganismForExport;
-    //#endregion
+    #endregion
 
     #region GC-related settings
     protected readonly GCLatencyMode _gcLatencyMode;
