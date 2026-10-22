@@ -11,9 +11,6 @@ using Newtonsoft.Json;
 using Command = BeagleLib.VM.Command;
 using Output = BeagleLib.Util.Output;
 
-//using Command = BeagleLib.VM.Command;
-//using Output = BeagleLib.Util.Output;
-
 namespace BeagleLib.Agent;
 
 public class Organism
@@ -329,7 +326,7 @@ public class Organism
     public string ToString(string[] inputLabels)
     {
         _sb.Clear();
-        _sb.Append($"Length: {Commands.Length} Score: {Score} | ");
+        _sb.Append($"Length: {Commands.Length} Score: {Score} Layer: {Layer} | ");
         for (var addr = 0; addr < Commands.Length; addr++)
         {
             _sb = Commands[addr].AppendToStringBuilder(inputLabels, _sb);
@@ -340,7 +337,7 @@ public class Organism
     public override string ToString()
     {
         _sb.Clear();
-        _sb.Append($"Length: {Commands.Length} Score: {Score} | ");
+        _sb.Append($"Length: {Commands.Length} Score: {Score} Layer {Layer} | ");
         for (var addr = 0; addr < Commands.Length; addr++)
         {
             _sb.Append($"{Commands[addr].ToString()}; ");

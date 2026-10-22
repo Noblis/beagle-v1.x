@@ -721,13 +721,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 float frontTargetPerMember;
                 if (_turboParetoSearch)
                 {
-                    frontTargetPerMember = (_paretoFrontZeroCount > 0)
+                    frontTargetPerMember = _paretoFrontZeroCount > 0
                         ? 1.0f * targetColonySize / _paretoFrontZeroCount
                         : 0.0f;
                 }
                 else
                 {
-                    frontTargetPerMember = (_paretoFrontZeroCount > 0)
+                    frontTargetPerMember = _paretoFrontZeroCount > 0
                         ? 0.5f * targetColonySize / _paretoFrontZeroCount
                         : 0.0f;
                 }
