@@ -523,6 +523,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     {
                         if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
                         {
+                            //we want to store a local copy of idx in OUR thread, so we can work with it
+                            //while another thread may increment _newbornOrganismsCount
                             var idx = Interlocked.Increment(ref _newbornOrganismsCount);
 
                             #if DEBUG
@@ -562,11 +564,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     //_organisms[i] = null; 
                 });
 
-                //TODO: see if this could be made to only run in debug
-                Parallel.For(0, _organismsCount, i =>
-                {
-                    _organisms[i] = null;
-                });
+                //TODO: see if this could be removed for performance
+                //Parallel.For(0, _organismsCount, i =>
+                //{
+                //    _organisms[i] = null;
+                //});
 
                 _newbornOrganismsCount++;
 
