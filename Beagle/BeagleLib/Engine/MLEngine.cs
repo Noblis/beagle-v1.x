@@ -736,7 +736,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 //int maxLayer = 0;
                 //for (int i = 0; i < _organismsCount; i++)
                 //{
-                //    if (_layers[i] > maxLayer) maxLayer = _layers[i];
+                //    if (_organisms[i]!.Layer > maxLayer) maxLayer = _organisms[i]!.Layer;
                 //}
 
                 // Non-front: geometric decay across layers, divided by layer size
