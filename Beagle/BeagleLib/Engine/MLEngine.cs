@@ -481,6 +481,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     if (!_organisms[i]!.IsInParetoFrontZero) Interlocked.Increment(ref _perLayerSizes[organism.Layer]);
                 });
 
+                Debug.Assert(_organisms.All(x => x == null || x.IsLayerInitialized));
+
                 // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute offspring across layers
                 int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 float frontTargetPerMember;
@@ -498,14 +500,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 }
 
                 // Non-front: geometric decay across layers, divided by layer size
-                //int maxLayer = 0;
-                //for (int i = 0; i < _organismsCount; i++)
-                //{
-                //    if (_organisms[i]!.Layer > maxLayer) maxLayer = _organisms[i]!.Layer;
-                //}
-                //int maxLayer = new ArraySegment<Organism>(_organisms!, 0, _organismsCount).AsParallel().Max(x => x.Layer);
-
-                // Non-front: geometric decay across layers, divided by layer size
                 int maxLayer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
                 float nonFrontTarget = 0.5f * targetColonySize;
                 for (int l = 0; l <= maxLayer; l++)
@@ -513,6 +507,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     if (_turboParetoSearch) _perLayerOffspringTargets[l] = 0.0f;
                     else _perLayerOffspringTargets[l] = nonFrontTarget / MathF.Pow(2f, l + 1) / _perLayerSizes[l];
                 }
+
                 FindCrossoverPartnerArray();
 
                 // Offspring generation
@@ -520,6 +515,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 {
                     var organism = _organisms[i]!;
                     float pctProb = organism.IsInParetoFrontZero ? frontTargetPerMember : _perLayerOffspringTargets[organism.Layer];
+                    
+                    var randomizedScale = 0.75f + Rnd.Random.NextSingle() * 0.5f;
+                    pctProb *= randomizedScale;
 
                     do
                     {
