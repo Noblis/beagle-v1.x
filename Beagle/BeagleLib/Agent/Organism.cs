@@ -679,6 +679,7 @@ public class Organism
     private double? _asr;
 
     public bool IsInParetoFrontZero => Layer == -1;
+    public bool IsLayerInitialized => Layer != -1000;
 
     private static StringBuilder _sb = new(8192); //buffer to build strings
     #endregion

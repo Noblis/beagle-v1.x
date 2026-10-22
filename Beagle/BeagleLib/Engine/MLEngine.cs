@@ -331,7 +331,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     // Identify which layer an organism from the whole population belongs to using sampled layers
     public void CalcParetoLayerForOrganism(Organism organism)
     {
-        if (organism.IsInParetoFrontZero) return;
+        if (organism.IsLayerInitialized) return;
         
         bool dominated = false;
         int currentLayer = 0;
@@ -437,6 +437,40 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         //swap _microcosmOrganisms and _tmpMicrocosmOrganisms arrays they reference
         (_microcosmOrganisms, _tmpMicrocosmOrganisms) = (_tmpMicrocosmOrganisms, _microcosmOrganisms);
+    }
+
+    public void EstimateParetoLayersFromMicrocosm2()
+    {
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            if (_microcosmLengthBucketOrganisms[i] == null) _microcosmLengthBucketOrganisms[i] = [];
+            else _microcosmLengthBucketOrganisms[i]!.Clear();
+        }
+
+        for (var i = 0; i < ParetoMicrocosmSize; i++)
+        {
+            var organism = _microcosmOrganisms[i];
+            var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
+            _microcosmLengthBucketOrganisms[organismBucketIdx]!.Add(organism);
+        }
+
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            _microcosmLengthBucketOrganisms[i]!.Sort(new OrganismScoreComparer());
+        }
+
+        var previousScore = 1;
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            Debug.Assert(_mostAccurateInLengthBucketOrganisms[i] == null || _mostAccurateInLengthBucketOrganisms[i]!.Commands.Length == i + 1);
+            var mostAccurateInCurrentBucket = _mostAccurateInLengthBucketOrganisms[i];
+            if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
+            {
+                mostAccurateInCurrentBucket.Layer = -1;
+                _paretoFrontZeroCount++;
+                previousScore = mostAccurateInCurrentBucket.Score;
+            }
+        }
     }
 
     protected void MarkTrueParetoFrontOrganismsInColony()
@@ -1579,6 +1613,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     //SelectNextParetoFrontInMicrocosm
     protected readonly bool[] _isOnCurrentlyBeingSelectedFrontQ = new bool[ParetoMicrocosmSize];
+    #endregion
+
+    #region EstimateParetoLayersFromMicrocosm()-related arrays
+    protected readonly List<Organism>?[] _microcosmLengthBucketOrganisms = new List<Organism>[BConfig.MaxScriptLength];
     #endregion
 
     #region MarkTrueParetoFrontOrganismsInColony()-related arrays
