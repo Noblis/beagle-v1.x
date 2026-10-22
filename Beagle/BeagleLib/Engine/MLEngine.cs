@@ -331,6 +331,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     // Identify which layer an organism from the whole population belongs to using sampled layers
     public void CalcParetoLayerForOrganism(Organism organism)
     {
+        if (organism.IsInParetoFrontZero) return;
+        
         bool dominated = false;
         int currentLayer = 0;
         
@@ -358,7 +360,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (DoesDominateOtherQ(_microcosmOrganisms[i].Commands.Length, _microcosmOrganisms[i].Score, organism.Commands.Length, organism.Score)) dominated = true;
         }
 
-        organism.Layer = currentLayer;
+        organism.Layer = currentLayer - 1;
     }
 
     //Identify the next front layer from sampled individuals. This method uses _microcosmOrganisms and _selectedQ arrays to update _organismsIdentifiedToParetoFrontsIndices and return organismsIdentifiedToParetoFrontsCount
@@ -465,7 +467,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             var mostAccurateInCurrentBucket = _mostAccurateInLengthBucketOrganisms[i];
             if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
             {
-                mostAccurateInCurrentBucket.IsInParetoFrontZero = true;
+                mostAccurateInCurrentBucket.Layer = -1;
                 _paretoFrontZeroCount++;
                 previousScore = mostAccurateInCurrentBucket.Score;
             }
@@ -650,8 +652,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         // Small sample approximation for non-front layer estimates
         Parallel.For(0, ParetoMicrocosmSize, i =>
         {
-            int pick = Rnd.Random.Next(_organismsCount);
-            _microcosmOrganisms[i] = _organisms[pick]!;
+            do
+            {
+                int pick = Rnd.Random.Next(_organismsCount);
+                _microcosmOrganisms[i] = _organisms[pick]!;
+            } while (_microcosmOrganisms[i].IsInParetoFrontZero);
+            
             _perLayerSizes[i] = 0;
         });
         EstimateParetoLayersFromMicrocosm();
@@ -738,9 +744,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 //{
                 //    if (_organisms[i]!.Layer > maxLayer) maxLayer = _organisms[i]!.Layer;
                 //}
+                //int maxLayer = new ArraySegment<Organism>(_organisms!, 0, _organismsCount).AsParallel().Max(x => x.Layer);
 
                 // Non-front: geometric decay across layers, divided by layer size
-                int maxLayer = new ArraySegment<Organism>(_organisms!, 0, _organismsCount).AsParallel().Max(x => x.Layer);
+                int maxLayer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
                 float nonFrontTarget = 0.5f * targetColonySize;
                 for (int l = 0; l <= maxLayer; l++)
                 {

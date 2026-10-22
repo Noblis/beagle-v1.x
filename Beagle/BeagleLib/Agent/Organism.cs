@@ -308,11 +308,14 @@ public class Organism
     protected void ResetPropertiesForNewOrganism()
     {
         LinearRegressionDone = false;
+
         _scale = 1;
         _offset = 0;
 
         Score = 0;
         _asr = null;
+
+        Layer = -1000;
     }
 
     static Organism()
@@ -675,7 +678,7 @@ public class Organism
     }
     private double? _asr;
 
-    public bool IsInParetoFrontZero { get; set; }
+    public bool IsInParetoFrontZero => Layer == -1;
 
     private static StringBuilder _sb = new(8192); //buffer to build strings
     #endregion
