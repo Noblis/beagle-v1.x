@@ -303,302 +303,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
     }
 
-    private void VerifyAndComplete(bool noEscMenu)
-    {
-        if (!noEscMenu)
-        {
-            DisplayModelAsLatex();
-            Thread.Sleep(3000); //sleep for three seconds to let Browser open request complete
-        }
-
-        if (VerifyModel())
-        {
-            Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
-            Environment.ExitCode = 0;
-        }
-        else
-        {
-            Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
-            Environment.ExitCode = 1;
-        }
-    }
-
-    public bool DoesDominateOtherQ(int mySize, int myScore, int otherSize, int otherScore)
-    {
-        return mySize <= otherSize && myScore >= otherScore && (mySize < otherSize || myScore > otherScore);
-    }
-
-    // Identify which layer an organism from the whole population belongs to using sampled layers
-    public void CalcParetoLayerForOrganism(Organism organism)
-    {
-        if (organism.IsLayerInitialized) return;
-        
-        bool dominated = false;
-        int currentLayer = 0;
-        
-        //TODO: Does this early termination on 0 and subzero scores help
-        if (organism.Score <= 0)
-        {
-            //if the score is negative, we assign the last layer
-            organism.Layer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
-            return;
-        }
-
-        for (int i = 0; i < ParetoMicrocosmSize; i++)
-        {
-            if (_microcosmOrganisms[i].Layer > currentLayer)
-            {
-                if (dominated == false)
-                {
-                    organism.Layer = currentLayer;
-                    return;
-                }
-                currentLayer++;
-                dominated = false;
-            }
-
-            if (DoesDominateOtherQ(_microcosmOrganisms[i].Commands.Length, _microcosmOrganisms[i].Score, organism.Commands.Length, organism.Score)) dominated = true;
-        }
-
-        organism.Layer = currentLayer - 1;
-    }
-
-    //Identify the next front layer from sampled individuals. This method uses _microcosmOrganisms and _selectedQ arrays to update _organismsIdentifiedToParetoFrontsIndices and return organismsIdentifiedToParetoFrontsCount
-    public int SelectNextParetoFrontInMicrocosm(int organismsIdentifiedToParetoFrontsCount)
-    {
-        for (int i = 0; i < ParetoMicrocosmSize; i++)
-        {
-            _isOnCurrentlyBeingSelectedFrontQ[i] = !_selectedQ[i];
-        }
-
-        //FYI: we tried to see if parallelizing one of the loops would give us better performance
-        //We ended up having to swap the loops but because we no longer can skip some of the iterations results
-        // were a mixed bag (sometimes better and sometimes worse) but the average appears to be better single-threaded...
-        for (int i = 0; i < ParetoMicrocosmSize; i++)
-        {
-            if (_isOnCurrentlyBeingSelectedFrontQ[i] && !_selectedQ[i])
-            {
-                for (int j = 0; j < ParetoMicrocosmSize; j++)
-                {
-                    if (i != j && !_selectedQ[j] && _isOnCurrentlyBeingSelectedFrontQ[j] &&
-                        _microcosmOrganisms[i].Commands.Length <= _microcosmOrganisms[j].Commands.Length &&
-                        _microcosmOrganisms[i].Score > _microcosmOrganisms[j].Score)
-                    {
-                        _isOnCurrentlyBeingSelectedFrontQ[j] = false;
-                    }
-                }
-            }
-        }
-
-        for (int i = 0; i < ParetoMicrocosmSize; i++)
-        {
-            if (_isOnCurrentlyBeingSelectedFrontQ[i])
-            {
-                _organismsIdentifiedToParetoFrontsIndices[organismsIdentifiedToParetoFrontsCount] = i;
-                organismsIdentifiedToParetoFrontsCount++;
-            }
-        }
-
-        return organismsIdentifiedToParetoFrontsCount;
-    }
-
-    // Group sampled individuals into layers
-    public void EstimateParetoLayersFromMicrocosm()
-    {
-        //mark all organisms in microcosm as not assigned yet
-        for (int i = 0; i < ParetoMicrocosmSize; i++)
-        {
-            _selectedQ[i] = false;
-        }
-
-        int organismsIdentifiedToParetoFrontsCount = 0;
-        int organismsAssignedToParetoFrontsCount = 0;
-        int currentLayerNumber = 0;
-
-        while (organismsIdentifiedToParetoFrontsCount < ParetoMicrocosmSize)
-        {
-            //This will use _microcosmOrganisms and _selectedQ arrays to update _organismsIdentifiedToParetoFrontsIndices and organismsIdentifiedToParetoFrontsCount
-            organismsIdentifiedToParetoFrontsCount = SelectNextParetoFrontInMicrocosm(organismsIdentifiedToParetoFrontsCount);
-            for (int i = organismsAssignedToParetoFrontsCount; i < organismsIdentifiedToParetoFrontsCount; i++)
-            {
-                _selectedQ[_organismsIdentifiedToParetoFrontsIndices[i]] = true;
-                _tmpMicrocosmOrganisms[i] = _microcosmOrganisms[_organismsIdentifiedToParetoFrontsIndices[i]];
-                _tmpMicrocosmOrganisms[i].Layer = currentLayerNumber;
-            }
-
-            organismsAssignedToParetoFrontsCount = organismsIdentifiedToParetoFrontsCount;
-            currentLayerNumber++;
-        }
-
-        //for (int i = 0; i < ParetoMicrocosmSize; i++)
-        //{
-        //    _microcosmOrganisms[i] = _tmpMicrocosmOrganisms[i];
-        //}
-
-        //swap _microcosmOrganisms and _tmpMicrocosmOrganisms arrays they reference
-        (_microcosmOrganisms, _tmpMicrocosmOrganisms) = (_tmpMicrocosmOrganisms, _microcosmOrganisms);
-    }
-
-    public void EstimateParetoLayersFromMicrocosm2()
-    {
-        //initialize buckets
-        for (var i = 0; i < BConfig.MaxScriptLength; i++)
-        {
-            if (_microcosmLengthBucketOrganisms[i] == null) _microcosmLengthBucketOrganisms[i] = [];
-            else _microcosmLengthBucketOrganisms[i]!.Clear();
-        }
-
-        //fill buckets
-        for (var i = 0; i < ParetoMicrocosmSize; i++)
-        {
-            var organism = _microcosmOrganisms[i];
-            var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
-            _microcosmLengthBucketOrganisms[organismBucketIdx]!.Add(organism);
-        }
-
-        //sort organisms in buckets
-        for (var i = 0; i < BConfig.MaxScriptLength; i++)
-        {
-            _microcosmLengthBucketOrganisms[i]!.Sort(new OrganismScoreComparer());
-        }
-
-        //assign layers and fill _microcosmOrganisms array with organisms with assigned layers
-        int microcosmOrganismCount = 0;
-        int currentLayer = 0;
-        while (microcosmOrganismCount < ParetoMicrocosmSize)
-        {
-            var previousScore = int.MinValue;
-            for (var i = 0; i < BConfig.MaxScriptLength; i++)
-            {
-                var currentBucket = _microcosmLengthBucketOrganisms[i]!;
-                if (currentBucket.Count == 0) continue;
-                int mostAccurateInCurrentBucketIdx = currentBucket.Count - 1;
-
-                var mostAccurateInCurrentBucket = currentBucket[mostAccurateInCurrentBucketIdx];
-                Debug.Assert(mostAccurateInCurrentBucket == null || mostAccurateInCurrentBucket.Commands.Length == i + 1);
-
-                if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
-                {
-                    mostAccurateInCurrentBucket.Layer = currentLayer;
-                    previousScore = mostAccurateInCurrentBucket.Score;
-                    currentBucket.RemoveAt(mostAccurateInCurrentBucketIdx);
-                    _microcosmOrganisms[microcosmOrganismCount++] = mostAccurateInCurrentBucket;
-                }
-            }
-            currentLayer++;
-        }
-    }
-
-    protected void MarkTrueParetoFrontOrganismsInColony()
-    {
-        _paretoFrontZeroCount = 0;
-        for (var i = 0; i < BConfig.MaxScriptLength; i++)
-        {
-            _mostAccurateInLengthBucketOrganisms[i] = null;
-        }
-
-        for(var i = 0; i < _organismsCount; i++)
-        {
-            var organism = _organisms[i]!;
-            var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
-
-            if (organism.Score > 1 &&
-                (_mostAccurateInLengthBucketOrganisms[organismBucketIdx] == null ||
-                 organism.Score > _mostAccurateInLengthBucketOrganisms[organismBucketIdx]!.Score))
-            {
-                _mostAccurateInLengthBucketOrganisms[organismBucketIdx] = organism;
-            }
-        }
-
-        var previousScore = 1;
-        for (var i = 0; i < BConfig.MaxScriptLength; i++)
-        {
-            Debug.Assert(_mostAccurateInLengthBucketOrganisms[i] == null || _mostAccurateInLengthBucketOrganisms[i]!.Commands.Length == i + 1);
-            var mostAccurateInCurrentBucket = _mostAccurateInLengthBucketOrganisms[i];
-            if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
-            {
-                mostAccurateInCurrentBucket.Layer = -1;
-                _paretoFrontZeroCount++;
-                previousScore = mostAccurateInCurrentBucket.Score;
-            }
-        }
-    }
-
-    //protected void MarkTrueParetoFrontOrganismsInColony_Parallel()
-    //{
-    //    _paretoFrontZeroCount = 0;
-    //    for (var i = 0; i < BConfig.MaxScriptLength; i++)
-    //    {
-    //        _mostAccurateInLengthBucketOrganisms[i] = null;
-    //    }
-
-    //    Parallel.For(0, _organismsCount, i =>
-    //    {
-    //        var organism = _organisms[i]!;
-    //        var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
-
-    //        lock (_bucketLocks[organismBucketIdx])
-    //        {
-    //            if (organism.Score > 1 && 
-    //                (_mostAccurateInLengthBucketOrganisms[organismBucketIdx] == null ||
-    //                organism.Score > _mostAccurateInLengthBucketOrganisms[organismBucketIdx]!.Score))
-    //            {
-    //                _mostAccurateInLengthBucketOrganisms[organismBucketIdx] = organism;
-    //            }
-    //        }
-    //    });
-
-    //    var previousScore = 1;
-    //    for (var i = 0; i < BConfig.MaxScriptLength; i++)
-    //    {
-    //        Debug.Assert(_mostAccurateInLengthBucketOrganisms[i] == null || _mostAccurateInLengthBucketOrganisms[i]!.Commands.Length == i + 1);
-    //        var mostAccurateInCurrentBucket = _mostAccurateInLengthBucketOrganisms[i];
-    //        if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
-    //        {
-    //            mostAccurateInCurrentBucket.IsInParetoFrontZero = true;
-    //            _paretoFrontZeroCount++;
-    //            previousScore = mostAccurateInCurrentBucket.Score;
-    //        }
-    //    }
-    //}
-
-    //protected void FindCrossoverPartnerArray()
-    //{
-    //    // Fill array with random
-    //    _crossoverPartnersCount = 0;
-
-    //    //TODO: maybe parallelize with atomic counter
-    //    var maxPoolSize = Math.Min(CrossoverPartnerPoolSize, _organismsCount);
-    //    for (int i = 0; i < maxPoolSize; i++)
-    //    {
-    //        int randIdx = Rnd.Random.Next(_organismsCount);
-    //        var organism = _organisms[randIdx]!;
-    //        if (organism.Layer <= CrossoverLayerThreshold/* && organism.Score > 0*/) //we probably don't need the commented out code
-    //        {
-    //            _crossoverPartners[_crossoverPartnersCount] = _organisms[randIdx]!;
-    //            _crossoverPartnersCount++;
-    //        }
-    //    }
-    //}
-
-    protected void FindCrossoverPartnerArray()
-    {
-        // Fill array with random
-        _crossoverPartnersCount = -1; //we set this to -1 because we use the count AFTER the increment
-        var maxPoolSize = Math.Min(CrossoverPartnerPoolSize, _organismsCount);
-
-        Parallel.For(0, maxPoolSize, _ =>
-        {
-            int randIdx = Rnd.Random.Next(_organismsCount);
-            var organism = _organisms[randIdx]!;
-            if (organism.Layer <= CrossoverLayerThreshold/* && organism.Score > 0*/) //we probably don't need the commented out code
-            {
-                _crossoverPartners[Interlocked.Increment(ref _crossoverPartnersCount)] = _organisms[randIdx]!;
-            }
-        });
-        _crossoverPartnersCount++;
-    }
-
     protected bool TrainingLoopBody()
     {
         #region reset stuff for new generation, set up experiments (inputs/output), convert inputs to one long array
@@ -695,29 +399,29 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         #endregion
 
-
-        // Pareto front identification of the full population
+        #region set up layers for the true pareto front
         MarkTrueParetoFrontOrganismsInColony();
+        #endregion
 
-        // Small sample approximation for non-front layer estimates
+        #region popiulation micorcosm with organisms not on the true pareto front
         Parallel.For(0, ParetoMicrocosmSize, i =>
         {
             do
             {
                 int pick = Rnd.Random.Next(_organismsCount);
                 _microcosmOrganisms[i] = _organisms[pick]!;
-            } while (_microcosmOrganisms[i].IsInParetoFrontZero);
+            } 
+            while (_microcosmOrganisms[i].IsInParetoFrontZero);
             
             _perLayerSizes[i] = 0;
         });
+        #endregion
 
-        using (new ConsoleTimer("EstimateParetoLayersFromMicrocosm"))
-        {
-            EstimateParetoLayersFromMicrocosm2();
-        }
+        #region set up layers in mictocosm
+        SetParetoLayersInMicrocosm();
+        #endregion
 
         #region births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays
-
         using (new ConsoleTimer("births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays", _showProfilingInfo))
         {
             if (MLSetup.Current.TotalBirthsToResetColonyIfNoProgress > 0 && _totalBirths - _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate >= MLSetup.Current.TotalBirthsToResetColonyIfNoProgress)
@@ -773,7 +477,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
-                    CalcParetoLayerForOrganism(organism);
+                    CalcEstimatedParetoLayerForOrganism(organism);
                     if (!_organisms[i]!.IsInParetoFrontZero) Interlocked.Increment(ref _perLayerSizes[organism.Layer]);
                 });
 
@@ -1200,6 +904,163 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         #endregion
     }
 
+    public bool DoesDominateOtherQ(int mySize, int myScore, int otherSize, int otherScore)
+    {
+        return mySize <= otherSize && myScore >= otherScore && (mySize < otherSize || myScore > otherScore);
+    }
+    public void CalcEstimatedParetoLayerForOrganism(Organism organism)
+    {
+        if (organism.IsLayerInitialized) return;
+
+        bool dominated = false;
+        int currentLayer = 0;
+
+        //TODO: Does this early termination on 0 and subzero scores help
+        if (organism.Score <= 0)
+        {
+            //if the score is negative, we assign the last layer
+            organism.Layer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
+            return;
+        }
+
+        for (int i = 0; i < ParetoMicrocosmSize; i++)
+        {
+            if (_microcosmOrganisms[i].Layer > currentLayer)
+            {
+                if (dominated == false)
+                {
+                    organism.Layer = currentLayer;
+                    return;
+                }
+                currentLayer++;
+                dominated = false;
+            }
+
+            if (DoesDominateOtherQ(_microcosmOrganisms[i].Commands.Length, _microcosmOrganisms[i].Score, organism.Commands.Length, organism.Score)) dominated = true;
+        }
+
+        organism.Layer = currentLayer - 1;
+    }
+    public void SetParetoLayersInMicrocosm()
+    {
+        //initialize buckets
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            if (_microcosmLengthBucketOrganisms[i] == null) _microcosmLengthBucketOrganisms[i] = [];
+            else _microcosmLengthBucketOrganisms[i]!.Clear();
+        }
+
+        //fill buckets
+        for (var i = 0; i < ParetoMicrocosmSize; i++)
+        {
+            var organism = _microcosmOrganisms[i];
+            var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
+            _microcosmLengthBucketOrganisms[organismBucketIdx]!.Add(organism);
+        }
+
+        //sort organisms in buckets
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            _microcosmLengthBucketOrganisms[i]!.Sort(new OrganismScoreComparer());
+        }
+
+        //assign layers and fill _microcosmOrganisms array with organisms with assigned layers
+        int microcosmOrganismCount = 0;
+        int currentLayer = 0;
+        while (microcosmOrganismCount < ParetoMicrocosmSize)
+        {
+            var previousScore = int.MinValue;
+            for (var i = 0; i < BConfig.MaxScriptLength; i++)
+            {
+                var currentBucket = _microcosmLengthBucketOrganisms[i]!;
+                if (currentBucket.Count == 0) continue;
+                int mostAccurateInCurrentBucketIdx = currentBucket.Count - 1;
+
+                var mostAccurateInCurrentBucket = currentBucket[mostAccurateInCurrentBucketIdx];
+                Debug.Assert(mostAccurateInCurrentBucket == null || mostAccurateInCurrentBucket.Commands.Length == i + 1);
+
+                while (true)
+                {
+                    if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score >= previousScore)
+                    {
+                        mostAccurateInCurrentBucket.Layer = currentLayer;
+                        currentBucket.RemoveAt(mostAccurateInCurrentBucketIdx);
+                        _microcosmOrganisms[microcosmOrganismCount++] = mostAccurateInCurrentBucket;
+
+                        if (currentBucket.Count > 0)
+                        {
+                            var nextMostAccurateInCurrentBucketIdx = currentBucket.Count - 1;
+                            var nextMostAccurateInCurrentBucket = currentBucket[nextMostAccurateInCurrentBucketIdx];
+                            if (nextMostAccurateInCurrentBucket.Score == mostAccurateInCurrentBucket.Score)
+                            {
+                                mostAccurateInCurrentBucketIdx = nextMostAccurateInCurrentBucketIdx;
+                                mostAccurateInCurrentBucket = nextMostAccurateInCurrentBucket;
+                                continue;
+                            }
+                        }
+
+                        previousScore = mostAccurateInCurrentBucket.Score;
+                    }
+                    break;
+                }
+            }
+            currentLayer++;
+        }
+    }
+    protected void MarkTrueParetoFrontOrganismsInColony()
+    {
+        _paretoFrontZeroCount = 0;
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            _mostAccurateInLengthBucketOrganisms[i] = null;
+        }
+
+        //Testing showed that running this loop through Parallel.For with a locks array is actually not faster
+        for (var i = 0; i < _organismsCount; i++)
+        {
+            var organism = _organisms[i]!;
+            var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
+
+            if (organism.Score > 1 &&
+                (_mostAccurateInLengthBucketOrganisms[organismBucketIdx] == null ||
+                 organism.Score > _mostAccurateInLengthBucketOrganisms[organismBucketIdx]!.Score))
+            {
+                _mostAccurateInLengthBucketOrganisms[organismBucketIdx] = organism;
+            }
+        }
+
+        var previousScore = 1;
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            Debug.Assert(_mostAccurateInLengthBucketOrganisms[i] == null || _mostAccurateInLengthBucketOrganisms[i]!.Commands.Length == i + 1);
+            var mostAccurateInCurrentBucket = _mostAccurateInLengthBucketOrganisms[i];
+            if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
+            {
+                mostAccurateInCurrentBucket.Layer = -1;
+                _paretoFrontZeroCount++;
+                previousScore = mostAccurateInCurrentBucket.Score;
+            }
+        }
+    }
+
+    protected void FindCrossoverPartnerArray()
+    {
+        // Fill array with random
+        _crossoverPartnersCount = -1; //we set this to -1 because we use the count AFTER the increment
+        var maxPoolSize = Math.Min(CrossoverPartnerPoolSize, _organismsCount);
+
+        Parallel.For(0, maxPoolSize, _ =>
+        {
+            int randIdx = Rnd.Random.Next(_organismsCount);
+            var organism = _organisms[randIdx]!;
+            if (organism.Layer <= CrossoverLayerThreshold/* && organism.Score > 0*/) //we probably don't need the commented out code
+            {
+                _crossoverPartners[Interlocked.Increment(ref _crossoverPartnersCount)] = _organisms[randIdx]!;
+            }
+        });
+        _crossoverPartnersCount++;
+    }
+
     protected void SaveColony()
     {
         var now = DateTime.Now;
@@ -1482,6 +1343,25 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         return !error;
     }
+    private void VerifyAndComplete(bool noEscMenu)
+    {
+        if (!noEscMenu)
+        {
+            DisplayModelAsLatex();
+            Thread.Sleep(3000); //sleep for three seconds to let Browser open request complete
+        }
+
+        if (VerifyModel())
+        {
+            Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
+            Environment.ExitCode = 0;
+        }
+        else
+        {
+            Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
+            Environment.ExitCode = 1;
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected int GetMostAccurateOrganismsSinceLastColonyResetCount()
@@ -1622,8 +1502,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
     #endregion
 
-    #region EstimateParetoLayersFromMicrocosm() and SelectNextParetoFrontInMicrocosm() -related arrays
-    //EstimateParetoLayersFromMicrocosm
+    #region SetParetoLayersInMicrocosm() and SelectNextParetoFrontInMicrocosm() -related arrays
+    //SetParetoLayersInMicrocosm
     protected readonly int[] _organismsIdentifiedToParetoFrontsIndices = new int[ParetoMicrocosmSize];
     protected readonly bool[] _selectedQ = new bool[ParetoMicrocosmSize];
 
@@ -1636,7 +1516,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly bool[] _isOnCurrentlyBeingSelectedFrontQ = new bool[ParetoMicrocosmSize];
     #endregion
 
-    #region EstimateParetoLayersFromMicrocosm()-related arrays
+    #region SetParetoLayersInMicrocosm()-related arrays
     protected readonly List<Organism>?[] _microcosmLengthBucketOrganisms = new List<Organism>[BConfig.MaxScriptLength];
     #endregion
 
