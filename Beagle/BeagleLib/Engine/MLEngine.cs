@@ -441,12 +441,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     public void EstimateParetoLayersFromMicrocosm2()
     {
+        //initialize buckets
         for (var i = 0; i < BConfig.MaxScriptLength; i++)
         {
             if (_microcosmLengthBucketOrganisms[i] == null) _microcosmLengthBucketOrganisms[i] = [];
             else _microcosmLengthBucketOrganisms[i]!.Clear();
         }
 
+        //fill buckets
         for (var i = 0; i < ParetoMicrocosmSize; i++)
         {
             var organism = _microcosmOrganisms[i];
@@ -454,22 +456,36 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _microcosmLengthBucketOrganisms[organismBucketIdx]!.Add(organism);
         }
 
+        //sort organisms in buckets
         for (var i = 0; i < BConfig.MaxScriptLength; i++)
         {
             _microcosmLengthBucketOrganisms[i]!.Sort(new OrganismScoreComparer());
         }
 
-        var previousScore = 1;
-        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        //assign layers and fill _microcosmOrganisms array with organisms with assigned layers
+        int microcosmOrganismCount = 0;
+        int currentLayer = 0;
+        while (microcosmOrganismCount < ParetoMicrocosmSize)
         {
-            Debug.Assert(_mostAccurateInLengthBucketOrganisms[i] == null || _mostAccurateInLengthBucketOrganisms[i]!.Commands.Length == i + 1);
-            var mostAccurateInCurrentBucket = _mostAccurateInLengthBucketOrganisms[i];
-            if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
+            var previousScore = int.MinValue;
+            for (var i = 0; i < BConfig.MaxScriptLength; i++)
             {
-                mostAccurateInCurrentBucket.Layer = -1;
-                _paretoFrontZeroCount++;
-                previousScore = mostAccurateInCurrentBucket.Score;
+                var currentBucket = _microcosmLengthBucketOrganisms[i]!;
+                if (currentBucket.Count == 0) continue;
+                int mostAccurateInCurrentBucketIdx = currentBucket.Count - 1;
+
+                var mostAccurateInCurrentBucket = currentBucket[mostAccurateInCurrentBucketIdx];
+                Debug.Assert(mostAccurateInCurrentBucket == null || mostAccurateInCurrentBucket.Commands.Length == i + 1);
+
+                if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
+                {
+                    mostAccurateInCurrentBucket.Layer = currentLayer;
+                    previousScore = mostAccurateInCurrentBucket.Score;
+                    currentBucket.RemoveAt(mostAccurateInCurrentBucketIdx);
+                    _microcosmOrganisms[microcosmOrganismCount++] = mostAccurateInCurrentBucket;
+                }
             }
+            currentLayer++;
         }
     }
 
@@ -694,7 +710,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             
             _perLayerSizes[i] = 0;
         });
-        EstimateParetoLayersFromMicrocosm();
+
+        using (new ConsoleTimer("EstimateParetoLayersFromMicrocosm"))
+        {
+            EstimateParetoLayersFromMicrocosm2();
+        }
+
         #region births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays
 
         using (new ConsoleTimer("births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays", _showProfilingInfo))
