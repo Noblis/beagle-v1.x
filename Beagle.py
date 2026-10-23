@@ -226,7 +226,7 @@ class BeagleModel:
 class BeagleRegressor:
     """Scikit-learn–compatible wrapper around Beagle's API."""
 
-    def __init__(self, evaluation_limit=300*10**6, pop_size=None, pop_size_strategy=[], pop_size_mod=None, experiments_per_generation=None, evaluations_to_colony_reset=None, run_feynman=None, stop_after_min=2, solution_threshold=None, terminate_on_solution = False, fitness_func = "Corr", variable_names=None):
+    def __init__(self, evaluation_limit=300*10**6, pop_size=None, pop_size_strategy=[], pop_size_mod=None, experiments_per_generation=None, evaluations_to_colony_reset=None, run_feynman=None, stop_after_min=2, solution_threshold=None, terminate_on_solution = False, fitness_func = "Corr", variable_names=None, remove_redundand_commands=True):
             self.evaluation_limit = int(evaluation_limit) if evaluation_limit is not None else None
             self.pop_size = pop_size if pop_size is not None else None
             self.pop_size_strategy = pop_size_strategy
@@ -235,6 +235,7 @@ class BeagleRegressor:
             self.evaluations_to_colony_reset = int(evaluations_to_colony_reset) if evaluations_to_colony_reset is not None else None
             self.stop_after_min = int(stop_after_min) if stop_after_min is not None else None
             self.run_feynman = int(run_feynman) if run_feynman is not None else None
+            self.remove_redundand_commands = bool(remove_redundand_commands) if remove_redundand_commands is not None else True
             self.fitness_func = str(fitness_func) if fitness_func is not None else "Corr"
             self.terminate_on_solution = bool(terminate_on_solution)
             self.solution_threshold = max(min(1.0,float(solution_threshold)),0.0) if solution_threshold is not None else None
@@ -429,6 +430,7 @@ public class PythonMLSetup : MLSetup
         code += self._set_evaluations_to_colony_reset(evaluations_to_colony_reset=self.evaluations_to_colony_reset)
         code += self._set_experiments_per_generation(experiments_per_generation=self.experiments_per_generation)
         code += self._set_solution_threshold()
+        code += self._set_remove_redundant_commands()
         code += self._set_continue_search_after_solution()
         code += "\n}"
 
@@ -479,6 +481,12 @@ public class PythonMLSetup : MLSetup
             return "\t\tpublic override double SolutionFoundASRThreshold => 1.0;\n"
         return f"""
             \t\tpublic override double SolutionFoundASRThreshold => {self.solution_threshold};\n"""
+
+    def _set_remove_redundant_commands(self):
+        if self.remove_redundand_commands:
+            return "\t\tpublic override bool RemoveRedundantCommands => true;\n"
+        return f"""
+                    \t\tpublic override bool RemoveRedundantCommands => false;\n"""
 
     def _set_input_labels(self):
         if self.variable_names is None:
