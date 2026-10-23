@@ -20,8 +20,8 @@ public abstract class FeynmanMLSetup : MLSetup
         if (remainder < 5) return 25_000_000;
         if (remainder < 10) return 10_000_000;
         if (remainder < 20) return 3_000_000;
-        if (remainder < 50) return 1_000_000;
-        if (remainder < 100) return 500_000;
+        if (remainder < 30) return 1_000_000;
+        if (remainder < 50) return 500_000;
         return 250_000;
     }
 
