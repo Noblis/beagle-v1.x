@@ -510,6 +510,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                 FindCrossoverPartnerArray();
 
+                Debug.Assert(_crossoverPartners.All(x => x == null || x.IsLayerInitialized));
+
                 // Offspring generation
                 Parallel.For(0, _organismsCount, i =>
                 {
@@ -537,7 +539,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                             if (Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
                             {
-                                _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_organisms!, _organismsCount, _crossoverPartners[Rnd.Random.Next(_crossoverPartnersCount)]);
+                                var crossoverPartnerIdx = Rnd.Random.Next(_crossoverPartnersCount);
+                                _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_organisms!, _organismsCount, _crossoverPartners[crossoverPartnerIdx]);
                                 if (_newbornOrganisms[idx] == null ) // if crossover fails, do mutation instead
                                 {
                                     _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
@@ -552,26 +555,24 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         pctProb--;
                     }
                     while (pctProb > 0);
+                });
 
+                //move current colony into dead pool and null the _organims array
+                Parallel.For(0, _organismsCount, i =>
+                {
                     //death (100% chance)
+                    var organism = _organisms[i]!;
+                    _organisms[i] = null;
+
                     if (!ReferenceEquals(organism, _mostAccurateEverOrganism) &&
                         !ReferenceEquals(organism, _shortestEverSatisfactoryOrganism) &&
                         !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
                     {
                         Organism.SaveOrganismToDeadPool(organism);
                     }
-                    //this has been commented out for crossover to be able to find a passive partner organism in the current colony
-                    //_organisms[i] = null; 
                 });
 
-                //TODO: see if this could be removed for performance
-                //Parallel.For(0, _organismsCount, i =>
-                //{
-                //    _organisms[i] = null;
-                //});
-
                 _newbornOrganismsCount++;
-
             }
 
             _totalBirths += _newbornOrganismsCount;
