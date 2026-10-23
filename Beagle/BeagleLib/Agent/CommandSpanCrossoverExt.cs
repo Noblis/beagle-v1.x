@@ -19,7 +19,7 @@ public static class CommandSpanCrossoverExt
         }
 
         //find chunk in partner
-        Span<Command> partnerCommands = stackalloc Command[BConfig.MaxScriptLength];
+        Span<Command> partnerCommands = stackalloc Command[partner.Commands.Length];
         partner.Commands.CopyTo(partnerCommands);
         var (partnerCrossoverEnd, partnerCrossoverStart) = partnerCommands.FindEndAndStartOfValidCrossoverChunkForPartner();
         var crossoverChunkLength = crossoverEnd - crossoverStart;
@@ -38,7 +38,15 @@ public static class CommandSpanCrossoverExt
         int stackEffect = 0;
         for (int i = 0; i < myCommandsLength; i++)
         {
-            if (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste || stackEffect < me[i].MinStackRequired)
+            
+            if (stackEffect < me[i].MinStackRequired)
+            {
+                myCommandsLength = -1;
+                break;
+            }
+
+            var newChunkLength = partnerCrossoverEnd - partnerCrossoverStart;
+            if (i >= crossoverStart && i < crossoverStart + newChunkLength && (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste))
             {
                 myCommandsLength = -1;
                 break;
@@ -47,7 +55,8 @@ public static class CommandSpanCrossoverExt
             stackEffect += me[i].StackEffect;
         }
     }
-    public static int FindStartOfValidCrossoverChunk(this Span<Command> me, int crossoverEnd)
+
+    private static int FindStartOfValidCrossoverChunk(this Span<Command> me, int crossoverEnd)
     {
         int[] possibleCrossoverStarts = GetPossibleCrossoverStartsThreadStaticArray();
         int possibleCrossoverStartsCount = 0;
@@ -69,8 +78,8 @@ public static class CommandSpanCrossoverExt
         // for generalizability to select one if we find multiple possible crossover chunks
         return possibleCrossoverStarts[Rnd.Random.Next(possibleCrossoverStartsCount)];
     }
-    //this returns crossoverEnd = -1 if can't find a valid chunk
-    public static (int, int) FindEndAndStartOfValidCrossoverChunkForPartner(this Span<Command> me)
+    //this returns crossoverEnd = -1 if it can't find a valid chunk
+    private static (int, int) FindEndAndStartOfValidCrossoverChunkForPartner(this Span<Command> me)
     {
         int commandsLength = me.Length;
         int crossoverEnd = Rnd.Random.Next(commandsLength);
@@ -87,7 +96,7 @@ public static class CommandSpanCrossoverExt
         }
 
         // find crossover candidate chunks
-        for (int i = crossoverEnd; i>=0; i--)
+        for (int i = crossoverEnd; i >= 0; i--)
         {
             // abort if a copy or paste
             if (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste) return (-1, crossoverStart);
@@ -126,7 +135,7 @@ public static class CommandSpanCrossoverExt
 
         return (crossoverEnd, crossoverStart);
     }
-    public static int InsertCrossoverChunk(this Span<Command> me, Span<Command> partner, int myCommandsLength, int crossoverEnd, int crossoverStart, int partnerCrossoverEnd, int partnerCrossoverStart)
+    private static int InsertCrossoverChunk(this Span<Command> me, Span<Command> partner, int myCommandsLength, int crossoverEnd, int crossoverStart, int partnerCrossoverEnd, int partnerCrossoverStart)
     {
         // remove old chunk and then drop in new chunk
         for (var i = 0; i <= crossoverEnd - crossoverStart; i++)
