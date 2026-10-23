@@ -263,7 +263,6 @@ public static class CommandSpanMutationExt
         
         if (mutationType == MutationTypeEnum.Insert)
         {
-            //if (length > BConfig.MaxScriptLength-10) return 0;
             var maxCopyIdx = me.GetMaxCopyIdx(length);
 
             //var newCommand = addr == 0 ? 
