@@ -11,9 +11,6 @@ using Newtonsoft.Json;
 using Command = BeagleLib.VM.Command;
 using Output = BeagleLib.Util.Output;
 
-//using Command = BeagleLib.VM.Command;
-//using Output = BeagleLib.Util.Output;
-
 namespace BeagleLib.Agent;
 
 public class Organism
@@ -311,11 +308,14 @@ public class Organism
     protected void ResetPropertiesForNewOrganism()
     {
         LinearRegressionDone = false;
+
         _scale = 1;
         _offset = 0;
 
         Score = 0;
         _asr = null;
+
+        Layer = -1000;
     }
 
     static Organism()
@@ -329,7 +329,7 @@ public class Organism
     public string ToString(string[] inputLabels)
     {
         _sb.Clear();
-        _sb.Append($"Length: {Commands.Length} Score: {Score} | ");
+        _sb.Append($"Length: {Commands.Length} Score: {Score} Layer: {Layer} | ");
         for (var addr = 0; addr < Commands.Length; addr++)
         {
             _sb = Commands[addr].AppendToStringBuilder(inputLabels, _sb);
@@ -340,7 +340,7 @@ public class Organism
     public override string ToString()
     {
         _sb.Clear();
-        _sb.Append($"Length: {Commands.Length} Score: {Score} | ");
+        _sb.Append($"Length: {Commands.Length} Score: {Score} Layer {Layer} | ");
         for (var addr = 0; addr < Commands.Length; addr++)
         {
             _sb.Append($"{Commands[addr].ToString()}; ");
@@ -678,7 +678,8 @@ public class Organism
     }
     private double? _asr;
 
-    public bool IsInParetoFrontZero { get; set; }
+    public bool IsInParetoFrontZero => Layer == -1;
+    public bool IsLayerInitialized => Layer != -1000;
 
     private static StringBuilder _sb = new(8192); //buffer to build strings
     #endregion
