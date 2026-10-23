@@ -510,6 +510,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                 FindCrossoverPartnerArray();
 
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
                 Debug.Assert(_crossoverPartners.All(x => x == null || x.IsLayerInitialized));
 
                 // Offspring generation
