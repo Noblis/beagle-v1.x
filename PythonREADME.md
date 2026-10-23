@@ -160,7 +160,11 @@ Initializes the regressor with various search constraints.
  
 | `evaluation_limit` | `int` | `None` | Maximum number of evaluations before stopping |
  
-| `pop_size` | `int` | `None` | The target population size |
+| `pop_size` | `int` or `[int, ...]` | `None` | The target population size or a list of sizes to switch through at generation counts defined by pop_size_strategy |
+
+| `pop_size_strategy` | `[int, ...]` | `None` | If using multiple population sizes, sets the generation thresholds to switch to the next defined size |
+
+| `pop_size_mod` | `int` | `None` | Number of generations that the population size will restart the cycle (if multiple sizes were set). Defined as $generations \% pop\_size\_mod$| 
  
 | `experiments_per_generation` | `int` | `512` | Number of experiments to run in each generation |
  
@@ -172,7 +176,7 @@ Initializes the regressor with various search constraints.
  
 | `solution_threshold` | `float` | `None` | A fitness threshold (0.0 to 1.0] that, if reached, signals a found solution |
  
-| `terminate_on_solution` | `bool` | `False` | If `True`, stops immediately once `solution\_threshold` is met |
+| `terminate_on_solution` | `bool` | `False` | If `True`, stops immediately once `solution_threshold` is met |
  
 | `fitness_func` | `str` | `"Corr"` | The fitness function to use: `"Corr"` (Correlation) or `"Pt"` |
 

@@ -380,6 +380,8 @@ public class Organism
 
     public Organism? ProduceCrossoverChild(Organism partner)
     {
+        Debug.Assert(partner.IsLayerInitialized);
+
         Span<Command> crossoverCommands = stackalloc Command[BConfig.MaxScriptLength];
         var myCommandsLength = Commands.Length;
 
