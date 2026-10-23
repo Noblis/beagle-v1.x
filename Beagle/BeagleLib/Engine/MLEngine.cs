@@ -510,6 +510,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                 FindCrossoverPartnerArray();
 
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
                 Debug.Assert(_crossoverPartners.All(x => x == null || x.IsLayerInitialized));
 
                 // Offspring generation
@@ -540,7 +541,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                             if (Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
                             {
                                 var crossoverPartnerIdx = Rnd.Random.Next(_crossoverPartnersCount);
-                                _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_organisms!, _organismsCount, _crossoverPartners[crossoverPartnerIdx]);
+                                _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_crossoverPartners[crossoverPartnerIdx]);
                                 if (_newbornOrganisms[idx] == null ) // if crossover fails, do mutation instead
                                 {
                                     _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);

@@ -378,17 +378,17 @@ public class Organism
         return CreateByCopyingCommandsFromPartOfSpan(mutationCommands, mutationCommandsLength);
     }
 
-    public Organism? ProduceCrossoverChild(Organism[] organisms, int organismsCount, Organism partner)
+    public Organism? ProduceCrossoverChild(Organism partner)
     {
         Debug.Assert(partner.IsLayerInitialized);
 
         Span<Command> crossoverCommands = stackalloc Command[BConfig.MaxScriptLength];
-        var crossoverCommandsLength = Commands.Length;
+        var myCommandsLength = Commands.Length;
 
         Commands.CopyTo(crossoverCommands);
 
         #if DEBUG //Verify that it copied correctly
-        if (Commands.Length != crossoverCommandsLength) ReportInvalidScriptAndBreak();
+        if (Commands.Length != myCommandsLength) ReportInvalidScriptAndBreak();
         
         for (var i = 0; i < Commands.Length; i++)
         {
@@ -402,10 +402,9 @@ public class Organism
         }
         #endif
 
-
-        crossoverCommands.Crossover(ref crossoverCommandsLength, partner);
-        if (crossoverCommandsLength == -1) return null; // returns null if crossover failed
-        return CreateByCopyingCommandsFromPartOfSpan(crossoverCommands, crossoverCommandsLength);
+        crossoverCommands.Crossover(ref myCommandsLength, partner);
+        if (myCommandsLength == -1) return null; // returns null if crossover failed
+        return CreateByCopyingCommandsFromPartOfSpan(crossoverCommands, myCommandsLength);
     }
 
     public IEnumerable<Command> GetFullCommands(float[][] inputsArray, float[] correctOutputs)
