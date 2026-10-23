@@ -32,6 +32,7 @@ public static class CommandSpanCrossoverExt
 
         myCommandsLength = me.InsertCrossoverChunk(partnerCommands, myCommandsLength, crossoverEnd, crossoverStart, partnerCrossoverEnd, partnerCrossoverStart);
 
+        #if DEBUG
         // check for invalid crossover
         int stackEffect = 0;
         for (int i = 0; i < myCommandsLength; i++)
@@ -52,6 +53,7 @@ public static class CommandSpanCrossoverExt
 
             stackEffect += me[i].StackEffect;
         }
+        #endif
 
         if (MLSetup.Current.RemoveRedundantCommandsAfterMutation) me.RemoveRedundantCommands(ref myCommandsLength);
     }
