@@ -7,138 +7,147 @@ namespace BeagleLib.Agent;
 public static class CommandSpanCrossoverExt
 {
     #region Crossover Methods
-    public static void Crossover(this Span<Command> me, ref int crossoverCommandsLength, Organism partner)
+    public static void Crossover(this Span<Command> me, ref int myCommandsLength, Organism partner)
     {
-
-        var crossoverEnd = Rnd.Random.Next(crossoverCommandsLength);
-        var crossoverStart = 0;
-
-        // Scan to left of crossoverEnd to find potential crossoverStart points (this version will find just one)
-        me.IdentifyCrossoverChunk( crossoverEnd, ref crossoverStart);
-
+        //find chunk in me
+        var crossoverEnd = Rnd.Random.Next(myCommandsLength);
+        var crossoverStart = me.FindStartOfValidCrossoverChunk(crossoverEnd);
         if (crossoverStart == -1) // catch if crossover chunk search fails
         {
-            crossoverCommandsLength = -1;
+            myCommandsLength = -1;
             return;
         }
 
-        int partnerCommandsLength = partner.Commands.Length;
-        Span < Command > partnerCommands = stackalloc Command[BConfig.MaxScriptLength];
+        //find chunk in partner
+        Span<Command> partnerCommands = stackalloc Command[BConfig.MaxScriptLength];
         partner.Commands.CopyTo(partnerCommands);
-
-        var partnerCrossoverEnd = Rnd.Random.Next(partnerCommandsLength);
-        var partnerCrossoverStart = 0;
-        IdentifyPartnerCrossoverChunk(ref partnerCommands, ref partnerCommandsLength, ref partnerCrossoverEnd, ref partnerCrossoverStart);
-
-        // catch if fails to find crossover chunk in partner
-        if (partnerCommandsLength == -1 || (crossoverCommandsLength-(crossoverEnd-crossoverStart)+(partnerCrossoverEnd-partnerCrossoverStart)>BConfig.MaxScriptLength))
+        var (partnerCrossoverEnd, partnerCrossoverStart) = partnerCommands.FindEndAndStartOfValidCrossoverChunkForPartner();
+        var crossoverChunkLength = crossoverEnd - crossoverStart;
+        var partnerCrossoverChunkLength = partnerCrossoverEnd - partnerCrossoverStart;
+        if (partnerCrossoverEnd == -1 || myCommandsLength - crossoverChunkLength + partnerCrossoverChunkLength > BConfig.MaxScriptLength)
         {
-            crossoverCommandsLength = -1;
+            myCommandsLength = -1;
             return;
         }
 
-        me.InsertCrossoverChunk(partnerCommands, ref crossoverCommandsLength, crossoverEnd, crossoverStart, partnerCrossoverEnd, partnerCrossoverStart);
+        myCommandsLength = me.InsertCrossoverChunk(partnerCommands, myCommandsLength, crossoverEnd, crossoverStart, partnerCrossoverEnd, partnerCrossoverStart);
 
-        if (MLSetup.Current.RemoveRedundantCommandsAfterMutation) me.RemoveRedundantCommands(ref crossoverCommandsLength);
+        if (MLSetup.Current.RemoveRedundantCommandsAfterMutation) me.RemoveRedundantCommands(ref myCommandsLength);
 
         // check for invalid crossover
         int stackEffect = 0;
-        for (int i = 0; i < crossoverCommandsLength; i++)
+        for (int i = 0; i < myCommandsLength; i++)
         {
             if (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste || stackEffect < me[i].MinStackRequired)
             {
-                crossoverCommandsLength = -1;
+                myCommandsLength = -1;
                 break;
             }
 
             stackEffect += me[i].StackEffect;
         }
     }
-    public static void IdentifyCrossoverChunk(this Span<Command> me, int crossoverEnd, ref int crossoverStart)
+    public static int FindStartOfValidCrossoverChunk(this Span<Command> me, int crossoverEnd)
     {
-        int[] numbers = new int[crossoverEnd+1];
-        int validCrossCount = 0;
+        int[] possibleCrossoverStarts = GetPossibleCrossoverStartsThreadStaticArray();
+        int possibleCrossoverStartsCount = 0;
         int stackEffect = 0;
 
-        for (int i = crossoverEnd; i>=0; i--)
+        for (int i = crossoverEnd; i >= 0; i--)
         {
             stackEffect += me[i].StackEffect;
-            if (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste)
-            {
-                crossoverStart = -1;
-                return;
-            }
+            if (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste) return -1;
+
             if (stackEffect ==1)
             {
-                numbers[validCrossCount] = i;
-                validCrossCount++;
+                possibleCrossoverStarts[possibleCrossoverStartsCount] = i;
+                possibleCrossoverStartsCount++;
                 break;
             }
         }
-        // for generalizability to select one if we find multiple
-        crossoverStart = numbers[Rnd.Random.Next(validCrossCount)];
+
+        // for generalizability to select one if we find multiple possible crossover chunks
+        return possibleCrossoverStarts[Rnd.Random.Next(possibleCrossoverStartsCount)];
     }
-    public static void IdentifyPartnerCrossoverChunk(ref Span<Command> partner, ref int partnerLength, ref int crossoverEnd, ref int crossoverStart)
+    //this returns crossoverEnd = -1 if can't find a valid chunk
+    public static (int, int) FindEndAndStartOfValidCrossoverChunkForPartner(this Span<Command> me)
     {
-        int[] numbers = new int[crossoverEnd+1];
-        int validCrossCount = 0;
+        int commandsLength = me.Length;
+        int crossoverEnd = Rnd.Random.Next(commandsLength);
+        int crossoverStart = 0;
+
+        int[] possibleCrossoverStarts = GetPossibleCrossoverStartsThreadStaticArray();
+        int possibleCrossoverStartsCount = 0;
         int stackEffect = 0;
 
         // if endpoint is swap, move endpoint to the left
-        while (partner[crossoverEnd].Operation == OpEnum.Swap) crossoverEnd -= 1;
+        while (me[crossoverEnd].Operation == OpEnum.Swap)
+        {
+            crossoverEnd -= 1;
+        }
 
         // find crossover candidate chunks
         for (int i = crossoverEnd; i>=0; i--)
         {
             // abort if a copy or paste
-            if (partner[i].Operation == OpEnum.Copy || partner[i].Operation == OpEnum.Paste)
-            {
-                partnerLength = -1;
-                return;
-            }
+            if (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste) return (-1, crossoverStart);
+
             // if duplicate isn't needed by this chunk, skip it
-            if (stackEffect == 0 && partner[i].Operation == OpEnum.Dup)
+            if (stackEffect == 0 && me[i].Operation == OpEnum.Dup)
             {
-                partner.RemoveAt(ref partnerLength, i);
+                me.RemoveAt(ref commandsLength, i);
                 crossoverEnd -= 1;
                 continue;
             }
             // if swap isn't needed by this chunk, skip it and the chunk that isn't needed
-            if (stackEffect == 0 && partner[i].Operation == OpEnum.Swap)
+            if (stackEffect == 0 && me[i].Operation == OpEnum.Swap)
             {
-                partner.RemoveAt(ref partnerLength, i);
+                me.RemoveAt(ref commandsLength, i);
                 crossoverEnd--;
-                int skipSize = partner[i-1].MinStackRequired;
+                int skipSize = me[i-1].MinStackRequired;
                 for (int j = 1; j <= skipSize+1; j++)
                 {
-                    partner.RemoveAt(ref partnerLength, i-(j));
+                    me.RemoveAt(ref commandsLength, i-j);
                     crossoverEnd--;
                 }
-                i = i - (1 + skipSize);
+                i -= 1 + skipSize;
                 continue;
             }
-            stackEffect += partner[i].StackEffect;
+            stackEffect += me[i].StackEffect;
             if (stackEffect==1) // check if valid chunk found
             {
-                numbers[validCrossCount] = i;
-                validCrossCount++;
+                possibleCrossoverStarts[possibleCrossoverStartsCount] = i;
+                possibleCrossoverStartsCount++;
                 break;
             }
         }
         // for generalizability to select one if we find multiple
-        crossoverStart = numbers[Rnd.Random.Next(validCrossCount)];
+        crossoverStart = possibleCrossoverStarts[Rnd.Random.Next(possibleCrossoverStartsCount)];
+
+        return (crossoverEnd, crossoverStart);
     }
-    public static void InsertCrossoverChunk(this Span<Command> me, Span<Command> partner, ref int length, int crossoverEnd, int crossoverStart, int partnerCrossoverEnd, int partnerCrossoverStart)
+    public static int InsertCrossoverChunk(this Span<Command> me, Span<Command> partner, int myCommandsLength, int crossoverEnd, int crossoverStart, int partnerCrossoverEnd, int partnerCrossoverStart)
     {
         // remove old chunk and then drop in new chunk
-        for (var i = 0; i<=crossoverEnd-crossoverStart; i++)
+        for (var i = 0; i <= crossoverEnd - crossoverStart; i++)
         {
-            me.RemoveAt(ref length, crossoverEnd-i);
+            me.RemoveAt(ref myCommandsLength, crossoverEnd-i);
         }
+
         for (var i = 0; i <= partnerCrossoverEnd - partnerCrossoverStart; i++)
         {
-            me.Insert(ref length, crossoverStart+i,partner[i+partnerCrossoverStart]);
+            me.Insert(ref myCommandsLength, crossoverStart+i,partner[i+partnerCrossoverStart]);
         }
+
+        return myCommandsLength;
     }
+    #endregion
+
+    #region Thread static storage
+    [ThreadStatic] private static int[]? _possibleCrossoverStarts;
+    private static int[] GetPossibleCrossoverStartsThreadStaticArray()
+    {
+        return _possibleCrossoverStarts ??= new int[BConfig.MaxScriptLength];
+    }    
     #endregion
 }
