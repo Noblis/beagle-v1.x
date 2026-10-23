@@ -226,27 +226,31 @@ class BeagleModel:
 class BeagleRegressor:
     """Scikit-learn–compatible wrapper around Beagle's API."""
 
-    def __init__(self, evaluation_limit=300*10**6, pop_size=None, experiments_per_generation=512, evaluations_to_colony_reset=None, run_feynman=None, stop_after_min=None, solution_threshold=None, terminate_on_solution = False, fitness_func = "Corr", variable_names=None):
-        self.evaluation_limit = int(evaluation_limit) if evaluation_limit is not None else None
-        self.pop_size = int(pop_size) if pop_size is not None else None
-        self.experiments_per_generation = int(experiments_per_generation) if experiments_per_generation is not None else None
-        self.evaluations_to_colony_reset = int(evaluations_to_colony_reset) if evaluations_to_colony_reset is not None else None
-        self.stop_after_min = int(stop_after_min) if stop_after_min is not None else None
-        self.run_feynman = int(run_feynman) if run_feynman is not None else None
-        self.fitness_func = str(fitness_func) if fitness_func is not None else "Corr"
-        self.terminate_on_solution = bool(terminate_on_solution)
-        self.solution_threshold = max(min(1.0,float(solution_threshold)),0.0) if solution_threshold is not None else None
-        self.variable_names = variable_names
-        self.n_features_in_ = None
-        self.feature_names_ = None
-        self.training_curve_ = []
-        self.model = None
-        if (self.pop_size is not None) and (self.pop_size <= 10000):
-            print("Warning: Population size is too small (<=10000) to effectively utilize GPU. This may lead to suboptimal results.")
-        if (self.fitness_func not in ["Corr", "Pt"]):
-            raise ValueError("Invalid fitness function. Must be either 'Corr' or 'Pt'.")
-        if (self.evaluation_limit is None) and (self.time_limit is None):
-            raise ValueError("Runtime is unbounded! Either evaluation_limit or time_limit must be a positive integer.")
+    def __init__(self, evaluation_limit=300*10**6, pop_size=None, pop_size_strategy=[], pop_size_mod=None, experiments_per_generation=None, evaluations_to_colony_reset=None, run_feynman=None, stop_after_min=2, solution_threshold=None, terminate_on_solution = False, fitness_func = "Corr", variable_names=None):
+            self.evaluation_limit = int(evaluation_limit) if evaluation_limit is not None else None
+            self.pop_size = pop_size if pop_size is not None else None
+            self.pop_size_strategy = pop_size_strategy
+            self.pop_size_mod = int(pop_size_mod) if pop_size_mod is not None else None
+            self.experiments_per_generation = int(experiments_per_generation) if experiments_per_generation is not None else None
+            self.evaluations_to_colony_reset = int(evaluations_to_colony_reset) if evaluations_to_colony_reset is not None else None
+            self.stop_after_min = int(stop_after_min) if stop_after_min is not None else None
+            self.run_feynman = int(run_feynman) if run_feynman is not None else None
+            self.fitness_func = str(fitness_func) if fitness_func is not None else "Corr"
+            self.terminate_on_solution = bool(terminate_on_solution)
+            self.solution_threshold = max(min(1.0,float(solution_threshold)),0.0) if solution_threshold is not None else None
+            self.variable_names = variable_names
+            #self.models_ = None
+            #self.best_model_ = None
+            self.n_features_in_ = None
+            self.feature_names_ = None
+            self.training_curve_ = []
+            self.model = None
+            # if (self.pop_size is not None) and (self.pop_size <= 10000):
+            #     print("Warning: Population size is too small (<=10000) to effectively utilize GPU. This may lead to suboptimal results.")
+            if (self.fitness_func not in ["Corr", "Pt"]):
+                raise ValueError("Invalid fitness function. Must be either 'Corr' or 'Pt'.")
+            if (self.evaluation_limit is None) and (self.stop_after_min is None):
+                raise ValueError("Runtime is unbounded! Either evaluation_limit or stop_after_min must be a positive integer.")
 
     def _to_input_list(self, X):
         arr = np.array(X, dtype=float)
@@ -426,7 +430,7 @@ public class PythonMLSetup : MLSetup
     }
 """
         code += self._set_input_labels()
-        code += self._set_population_size(pop_size=self.pop_size)
+        code += self._set_population_size(pop_size=self.pop_size, strategy = self.pop_size_strategy, mod=self.pop_size_mod)
         code += self._set_evaluations_to_colony_reset(evaluations_to_colony_reset=self.evaluations_to_colony_reset)
         code += self._set_experiments_per_generation(experiments_per_generation=self.experiments_per_generation)
         code += self._set_solution_threshold()
