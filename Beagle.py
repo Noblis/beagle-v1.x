@@ -239,14 +239,9 @@ class BeagleRegressor:
             self.terminate_on_solution = bool(terminate_on_solution)
             self.solution_threshold = max(min(1.0,float(solution_threshold)),0.0) if solution_threshold is not None else None
             self.variable_names = variable_names
-            #self.models_ = None
-            #self.best_model_ = None
             self.n_features_in_ = None
-            self.feature_names_ = None
             self.training_curve_ = []
             self.model = None
-            # if (self.pop_size is not None) and (self.pop_size <= 10000):
-            #     print("Warning: Population size is too small (<=10000) to effectively utilize GPU. This may lead to suboptimal results.")
             if (self.fitness_func not in ["Corr", "Pt"]):
                 raise ValueError("Invalid fitness function. Must be either 'Corr' or 'Pt'.")
             if (self.evaluation_limit is None) and (self.stop_after_min is None):
