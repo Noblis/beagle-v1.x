@@ -918,12 +918,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         int currentLayer = 0;
 
         //TODO: Does this early termination on 0 and subzero scores help
-        if (organism.Score <= 0)
-        {
-            //if the score is negative, we assign the last layer
-            organism.Layer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
-            return;
-        }
+        //if (organism.Score <= 0)
+        //{
+        //    //if the score is negative, we assign the last layer
+        //    organism.Layer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
+        //    return;
+        //}
 
         for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
