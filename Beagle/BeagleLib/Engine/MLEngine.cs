@@ -558,6 +558,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     while (pctProb > 0);
                 });
 
+                for (int elites = 0; elites < _organismsCount; elites++)
+                {
+                    if (_organisms[elites]!.IsInParetoFrontZero)
+                    {
+                        var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+                        _newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
+                    }
+                }
+
                 //move current colony into dead pool and null the _organims array
                 Parallel.For(0, _organismsCount, i =>
                 {
