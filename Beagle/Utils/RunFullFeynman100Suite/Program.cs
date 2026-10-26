@@ -21,11 +21,11 @@ public static class Program
     private const int NumberOfRunsPerEq = 10;
 
     // ReSharper disable once InconsistentNaming
-    //private static readonly int[] _easyProblems = Enumerable.Range(1, 100).ToArray();
-    //private static readonly int[] _hardProblems = [];
+    private static readonly int[] _easyProblems = Enumerable.Range(1, 100).ToArray();
+    private static readonly int[] _hardProblems = [];
 
-    private static readonly int[] _easyProblems = [1, 8, 10, 11, 12, 15, 16, 22, 25, 27, 28, 34, 37, 39, 40, 41, 42, 45, 46, 49, 53, 54, 55, 58, 59, 60, 66, 69, 70, 73, 74, 75, 76, 77, 78, 83, 84, 85, 88, 89, 92, 93, 96, 97, 100];
-    private static readonly int[] _hardProblems = [2, 3, 4, 5, 6, 7, 14, 17, 18, 19, 20, 21, 26, 29, 30, 31, 33, 36, 38, 43, 44, 50, 56, 57, 64, 67, 68, 72, 80, 86, 87, 90, 91, 95];
+    //private static readonly int[] _easyProblems = [1, 8, 10, 11, 12, 15, 16, 22, 25, 27, 28, 34, 37, 39, 40, 41, 42, 45, 46, 49, 53, 54, 55, 58, 59, 60, 66, 69, 70, 73, 74, 75, 76, 77, 78, 83, 84, 85, 88, 89, 92, 93, 96, 97, 100];
+    //private static readonly int[] _hardProblems = [2, 3, 4, 5, 6, 7, 14, 17, 18, 19, 20, 21, 26, 29, 30, 31, 33, 36, 38, 43, 44, 50, 56, 57, 64, 67, 68, 72, 80, 86, 87, 90, 91, 95];
     //medium problems are all others
 
     private static void Main()
