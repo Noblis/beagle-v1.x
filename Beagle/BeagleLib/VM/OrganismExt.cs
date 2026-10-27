@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using BeagleLib.Agent;
+﻿using BeagleLib.Agent;
 using BeagleLib.Engine;
 using BeagleLib.Engine.FitFunc;
 using System.Runtime.CompilerServices;
