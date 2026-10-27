@@ -226,7 +226,7 @@ class BeagleModel:
 class BeagleRegressor:
     """Scikit-learn–compatible wrapper around Beagle's API."""
 
-    def __init__(self, evaluation_limit=300*10**6, pop_size=None, pop_size_strategy=[], pop_size_mod=None, experiments_per_generation=None, evaluations_to_colony_reset=None, run_feynman=None, stop_after_min=2, solution_threshold=None, terminate_on_solution = False, fitness_func = "Corr", variable_names=None, remove_redundand_commands=True):
+    def __init__(self, evaluation_limit=300*10**6, pop_size=None, pop_size_strategy=[], pop_size_mod=None, experiments_per_generation=None, evaluations_to_colony_reset=None, run_feynman=None, stop_after_min=2, fitness_func = "Corr", variable_names=None, remove_redundand_commands=True):
             self.evaluation_limit = int(evaluation_limit) if evaluation_limit is not None else None
             self.pop_size = pop_size if pop_size is not None else None
             self.pop_size_strategy = pop_size_strategy
@@ -237,8 +237,6 @@ class BeagleRegressor:
             self.run_feynman = int(run_feynman) if run_feynman is not None else None
             self.remove_redundand_commands = bool(remove_redundand_commands) if remove_redundand_commands is not None else True
             self.fitness_func = str(fitness_func) if fitness_func is not None else "Corr"
-            self.terminate_on_solution = bool(terminate_on_solution)
-            self.solution_threshold = max(min(1.0,float(solution_threshold)),0.0) if solution_threshold is not None else None
             self.variable_names = variable_names
             self.n_features_in_ = None
             self.training_curve_ = []
@@ -429,9 +427,7 @@ public class PythonMLSetup : MLSetup
         code += self._set_population_size(pop_size=self.pop_size, strategy = self.pop_size_strategy, mod=self.pop_size_mod)
         code += self._set_evaluations_to_colony_reset(evaluations_to_colony_reset=self.evaluations_to_colony_reset)
         code += self._set_experiments_per_generation(experiments_per_generation=self.experiments_per_generation)
-        code += self._set_solution_threshold()
         code += self._set_remove_redundant_commands()
-        code += self._set_continue_search_after_solution()
         code += "\n}"
 
         # export code to .cs file
@@ -470,17 +466,6 @@ public class PythonMLSetup : MLSetup
             return ""
         return f"""
             \t\tpublic override long TotalBirthsToResetColonyIfNoProgress => {evaluations_to_colony_reset};\n"""
-
-    def _set_continue_search_after_solution(self):
-        if self.terminate_on_solution:
-            return """\t\tpublic override bool KeepOptimizingAfterSolutionFound => false;\n"""
-        return """\t\tpublic override bool KeepOptimizingAfterSolutionFound => true;\n"""
-
-    def _set_solution_threshold(self):
-        if self.solution_threshold is None:
-            return "\t\tpublic override double SolutionFoundASRThreshold => 1.0;\n"
-        return f"""
-            \t\tpublic override double SolutionFoundASRThreshold => {self.solution_threshold};\n"""
 
     def _set_remove_redundant_commands(self):
         if self.remove_redundand_commands:

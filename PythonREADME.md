@@ -174,10 +174,6 @@ Initializes the regressor with various search constraints.
  
 | `stop_after_min` | `int` | `None` | Maximum runtime in minutes |
  
-| `solution_threshold` | `float` | `None` | A fitness threshold (0.0 to 1.0] that, if reached, signals a found solution |
- 
-| `terminate_on_solution` | `bool` | `False` | If `True`, stops immediately once `solution_threshold` is met |
- 
 | `fitness_func` | `str` | `"Corr"` | The fitness function to use: `"Corr"` (Correlation) or `"Pt"` |
 
 | `variable_names` | `[str,...]` | `None` | A list of variable names for the model to use when displaying the symbolic expression. 
