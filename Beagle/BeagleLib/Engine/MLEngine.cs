@@ -11,7 +11,6 @@ using System.Diagnostics;
 using System.Runtime;
 using System.Runtime.CompilerServices;
 using WebMonk;
-//using WebMonk.RazorSharp.HtmlTags;
 
 namespace BeagleLib.Engine;
 
@@ -359,19 +358,30 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Parallel.For(0, _organismsCount, i =>
             {
                 Debug.Assert(Math.Abs(_scores[i]) <= BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration);
-                
+                Debug.Assert(!IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_organisms[i]!));
+
                 _organisms[i]!.Score = _scores[i];
-                //_organisms[i]!.TaxedScore = _scores[i] - MLSetup.Current.CalcScriptLengthTax(_organisms[i]!.Commands.Length);
+
             });
         }
 
-        //update scores on _mostAccurateEverOrganism and on _mostAccurateOrganismsSinceLastColonyReset
-        //TODO: verify that I don't update the same organism twice
-        Parallel.For(-1, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
+        if (ReferenceEquals(_mostAccurateEverOrganism, _mostAccurateOrganismsSinceLastColonyReset[0]))
         {
-            var organism = i == -1 ? _mostAccurateEverOrganism : _mostAccurateOrganismsSinceLastColonyReset[i];
-            organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
-        });
+            Parallel.For(0, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
+            {
+                var organism = _mostAccurateOrganismsSinceLastColonyReset[i];
+                organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
+            });
+        }
+        else
+        {
+            Parallel.For(-1, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
+            {
+                var organism = i == -1 ? _mostAccurateEverOrganism : _mostAccurateOrganismsSinceLastColonyReset[i];
+                if (i == -1) Debugger.Break();
+                organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
+            });
+        }
         #endregion
 
         #region update most accurate & shortest satisfactory organisms
