@@ -389,13 +389,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (_mlEngineNotificationsHandler?.Quit == true) return true;
 
             //we add the most accurate ones again with probability of 5%. It means approximately every 20 generations
-            if (Rnd.RandomBoolWithChance(0.05))
-            {
-                for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
-                {
-                    if (_mostAccurateOrganismsSinceLastColonyReset[i] != null) _organisms[_organismsCount++] = _mostAccurateOrganismsSinceLastColonyReset[i];
-                }
-            }
+            //if (Rnd.RandomBoolWithChance(0.05))
+            //{
+            //    for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+            //    {
+            //        if (_mostAccurateOrganismsSinceLastColonyReset[i] != null) _organisms[_organismsCount++] = _mostAccurateOrganismsSinceLastColonyReset[i];
+            //    }
+            //}
         }
         #endregion
 
@@ -434,6 +434,18 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 //set up the new "beginning of times"
                 _generationAtLastColonyReset = _currentGeneration;
 
+                //clone elites
+                var idx = -1;
+                for (int elites = 0; elites < _organismsCount; elites++)
+                {
+                    if (_organisms[elites]!.IsInParetoFrontZero)
+                    {
+                        idx++;
+                        _newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
+                    }
+                }
+                idx++;
+
                 //kill all current organisms
                 Parallel.For(0, _organismsCount, i =>
                 {
@@ -463,7 +475,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                 //Create new organisms in multithreaded fashion. We always begin with the initial number of organisms - TargetColonySize(0)
                 _newbornOrganismsCount = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
-                Parallel.For(0, _newbornOrganismsCount, i =>
+                Parallel.For(idx, _newbornOrganismsCount, i =>
                 {
                     var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                     _newbornOrganisms[i] = newOrganism;
@@ -927,12 +939,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         int currentLayer = 0;
 
         //TODO: Does this early termination on 0 and subzero scores help
-        if (organism.Score <= 0)
-        {
-            //if the score is negative, we assign the last layer
-            organism.Layer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
-            return;
-        }
+        //if (organism.Score <= 0)
+        //{
+        //    //if the score is negative, we assign the last layer
+        //    organism.Layer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
+        //    return;
+        //}
 
         for (int i = 0; i < ParetoMicrocosmSize; i++)
         {
