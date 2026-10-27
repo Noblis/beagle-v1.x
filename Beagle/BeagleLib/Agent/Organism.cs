@@ -525,7 +525,16 @@ public class Organism
 
         Output.WriteLine("");
     }
-    
+
+    public void PrintRawCommandsWithGenericLabelsWithoutScaleAndOffsetInLine()
+    {
+        for (var addr = 0; addr < Commands.Length; addr++)
+        {
+            _sb.Clear();
+            Output.Write($"{Commands[addr].AppendToStringBuilderWithGenericLabels(_sb)}; ");
+        }
+    }
+
     public string CommandsToJson(float[][] inputsArray, float[] correctOutputs)
     {
         return JsonConvert.SerializeObject(GetFullCommands(inputsArray, correctOutputs));
@@ -578,7 +587,17 @@ public class Organism
             int count = 0;
             do
             {
-                if (++count > 10) throw new Exception("Unable to calculate scale and offset in 10 attempts!");
+                if (++count > 10)
+                {
+                    Console.ResetColor();
+                    Output.WriteLine();
+                    Output.WriteLine("------------------------------------------------------------------------------------------------------------------------");
+                    Output.WriteLine("Unable to calculate scale and offset in 10 attempts for following organism (WARNING: code below uses generic labels): ");
+                    PrintRawCommandsWithGenericLabelsWithoutScaleAndOffsetInLine();
+                    Output.WriteLine();
+                    Output.WriteLine("------------------------------------------------------------------------------------------------------------------------");
+                    throw new Exception("Unable to calculate scale and offset in 10 attempts!");
+                }
 
                 if (count > 1)
                 {
