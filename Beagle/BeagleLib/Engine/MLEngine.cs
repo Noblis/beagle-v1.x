@@ -367,7 +367,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             });
         }
 
-        if (ReferenceEquals(_mostAccurateEverOrganism, _mostAccurateOrganismsSinceLastColonyReset[0]))
+        #if DEBUG
+        for (var i = 0; i < _organismsCount; i++)
+        {
+            Debug.Assert(_organisms[i] == null || !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_organisms[i]!));
+        }
+        #endif
+        Debug.Assert(!AnyDuplicatesInMostAccurateOrganismsSinceLastColonyReset());
+        if (IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_mostAccurateEverOrganism!))
         {
             Parallel.For(0, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
             {
@@ -378,6 +385,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         else
         {
             Debug.Assert(!IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_mostAccurateEverOrganism!));
+
             Parallel.For(-1, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
             //for (var i = -1; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
             {
@@ -386,7 +394,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
             });
         }
-        Array.Sort(_mostAccurateOrganismsSinceLastColonyReset, new OrganismScoreReverseComparer());
+        Array.Sort(_mostAccurateOrganismsSinceLastColonyReset, new OrganismScoreReverseComparer()); //TODO: remove one of these 
         #endregion
 
         #region update most accurate & shortest satisfactory organisms
@@ -396,10 +404,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             for (var i = 0; i < _organismsCount; i++)
             {
                 var organism = _organisms[i]!;
+                Debug.Assert(!organism.IsInDeadPool);
 
                 //update most accurate organisms
                 UpdateMostAccurateOrganismsWith(organism);
             }
+            Debug.Assert(_generationAtLastColonyReset != 0 || ReferenceEquals(_mostAccurateEverOrganism, _mostAccurateOrganismsSinceLastColonyReset[0]));
+
             if (!ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mlEngineNotificationsHandler?.HandleMostAccurateEverOrganismUpdated(_mostAccurateEverOrganism!.CloneForExport(_inputsArray, _correctOutputs), (uint)_currentGeneration);
             if (_mlEngineNotificationsHandler?.Quit == true) return true;
 
@@ -1387,31 +1398,48 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         return false;
     }
+    protected bool AnyDuplicatesInMostAccurateOrganismsSinceLastColonyReset()
+    {
+        for (int i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+        {
+            if (_mostAccurateOrganismsSinceLastColonyReset[i] == null) continue;
+
+            for (int j = i + 1; j < _mostAccurateOrganismsSinceLastColonyReset.Length; j++)
+            {
+                if (ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[i], _mostAccurateOrganismsSinceLastColonyReset[j])) return true;
+            }
+        }
+        return false;
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     protected void UpdateMostAccurateOrganismsWith(Organism organism)
     {
-        for (var i = _mostAccurateOrganismsSinceLastColonyReset.Length - 1; i >= 0; i--)
+        try
         {
-            if (_mostAccurateOrganismsSinceLastColonyReset[i] == null) continue;
-
-            if (!_mostAccurateOrganismsSinceLastColonyReset[i].IsMoreAccurateOrSameAccuracyButShorterThanMe(organism))
+            for (var i = _mostAccurateOrganismsSinceLastColonyReset.Length - 1; i >= 0; i--)
             {
-                if (i != _mostAccurateOrganismsSinceLastColonyReset.Length - 1) InsertIntoMostAccurateOrganismsSinceLastColonyResetAt(i + 1, organism);
-                return;
+                if (_mostAccurateOrganismsSinceLastColonyReset[i] == null) continue;
+
+                if (!_mostAccurateOrganismsSinceLastColonyReset[i].IsMoreAccurateOrSameAccuracyButShorterThanMe(organism))
+                {
+                    if (i != _mostAccurateOrganismsSinceLastColonyReset.Length - 1) InsertIntoMostAccurateOrganismsSinceLastColonyResetAt(i + 1, organism);
+                    return;
+                }
             }
+
+            //we only get here if organism is better than anything we have seen since last colony reset
+            InsertIntoMostAccurateOrganismsSinceLastColonyResetAt(0, organism);
+            _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate = _totalBirths;
         }
-
-        //we only get here if organism is better than anything we have seen since last colony reset
-        InsertIntoMostAccurateOrganismsSinceLastColonyResetAt(0, organism);
-        _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate = _totalBirths;
-
-        //we only need to check for most accurate organism if most accurate organism since last colony reset was updated
-        if (_mostAccurateEverOrganism.IsMoreAccurateOrSameAccuracyButShorterThanMe(_mostAccurateOrganismsSinceLastColonyReset[0]!))
+        finally
         {
-            _mostAccurateEverOrganism = _mostAccurateOrganismsSinceLastColonyReset[0]!;
-            _mostAccurateEverOrganismTotalTime = _totalTimeWatch.Elapsed;
-            _totalBirthAtLastMostAccurateEverOrganism = _totalBirths;
+            if (_mostAccurateEverOrganism.IsMoreAccurateOrSameAccuracyButShorterThanMe(_mostAccurateOrganismsSinceLastColonyReset[0]!))
+            {
+                _mostAccurateEverOrganism = _mostAccurateOrganismsSinceLastColonyReset[0]!;
+                _mostAccurateEverOrganismTotalTime = _totalTimeWatch.Elapsed;
+                _totalBirthAtLastMostAccurateEverOrganism = _totalBirths;
+            }
         }
     }
 
