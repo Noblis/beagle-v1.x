@@ -531,7 +531,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                             if (Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
                             {
                                 var crossoverPartnerIdx = Rnd.Random.Next(_crossoverPartnersCount);
-                                _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_crossoverPartners[crossoverPartnerIdx]);
+                                _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_crossoverPartners[crossoverPartnerIdx]!);
                                 if (_newbornOrganisms[idx] == null ) // if crossover fails, do mutation instead
                                 {
                                     _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
@@ -582,7 +582,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var mostAccurateColor = _mostAccurateEverOrganism!.Score == MLSetup.MaxGenerationScore ? ConsoleColor.Green : ConsoleColor.White;
 
         Console.ForegroundColor = mostAccurateColor;
-        Output.Write("Most accurate ever genome: (");
+        Output.Write("Most accurate ever genome (");
         Console.ForegroundColor = ConsoleColor.Red;
         Output.Write($"{_mostAccurateEverOrganism!.Score:N0}");
         Console.ForegroundColor = mostAccurateColor;
@@ -591,7 +591,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Output.Write($"{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}");
         Console.ForegroundColor = mostAccurateColor;
 
-        Output.Write("), length = ");
+        Output.Write("): length = ");
         Console.ForegroundColor = ConsoleColor.Red;
         Output.Write($"{_mostAccurateEverOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
         Console.ForegroundColor = mostAccurateColor;
@@ -610,7 +610,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         if (_mostAccurateEverOrganism!.Score == MLSetup.MaxGenerationScore && !ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mostAccurateEverOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
         else _mostAccurateEverOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
-
+        
+        Console.ForegroundColor = ConsoleColor.White;
+        
         if (_mostAccurateOrganismsSinceLastColonyReset[0] != null && !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[0], _mostAccurateEverOrganism))
         {
             Output.Write("Last colony reset at ");
@@ -620,7 +622,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Output.WriteLine(" generation");
 
             Console.ForegroundColor = ConsoleColor.White;
-            Output.Write("Most accurate genome since last colony reset: (");
+            Output.Write("Most accurate genome since last colony reset (");
             Console.ForegroundColor = ConsoleColor.Red;
             Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.Score:N0}");
             Console.ForegroundColor = ConsoleColor.White;
@@ -628,7 +630,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Console.ForegroundColor = ConsoleColor.Red;
             Output.Write($"{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}");
             Console.ForegroundColor = ConsoleColor.White;
-            Output.Write("), length = ");
+            Output.Write("): length = ");
             Console.ForegroundColor = ConsoleColor.Red;
             Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
             Console.ForegroundColor = ConsoleColor.White;
@@ -1028,12 +1030,18 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         {
             int randIdx = Rnd.Random.Next(_organismsCount);
             var organism = _organisms[randIdx]!;
-            if (organism.Layer <= CrossoverLayerThreshold/* && organism.Score > 0*/) //we probably don't need the commented out code
+            if (organism.Layer <= CrossoverLayerThreshold)
             {
                 _crossoverPartners[Interlocked.Increment(ref _crossoverPartnersCount)] = _organisms[randIdx]!;
             }
         });
         _crossoverPartnersCount++;
+
+        //set remaining entries to null. We probably don't need to do it, but it is safer this way
+        for(var i = _crossoverPartnersCount; i <maxPoolSize; i++)
+        {
+            _crossoverPartners[i] = null;
+        }
     }
 
     protected void SaveColony()
@@ -1415,7 +1423,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected readonly int[] _perLayerSizes;
     protected readonly float[] _perLayerOffspringTargets;
     
-    protected readonly Organism[] _crossoverPartners;
+    protected readonly Organism?[] _crossoverPartners;
     protected int _crossoverPartnersCount;
 
     protected readonly Context _context;

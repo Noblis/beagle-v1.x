@@ -30,6 +30,6 @@ public class QuadraticEq : MLSetup
         return 300_000;
     }
 
-    public override long TotalBirthsToResetColonyIfNoProgress => 1_200_000_000;
+    public override long TotalBirthsToResetColonyIfNoProgress => 10_000_000;
     #endregion
 }
