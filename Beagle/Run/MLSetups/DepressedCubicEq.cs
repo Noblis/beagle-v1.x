@@ -30,8 +30,6 @@ public class DepressedCubicEq : MLSetup
         return 2_000_000;
     }
     public override long TotalBirthsToResetColonyIfNoProgress => 1_000_000_000;
-    public override bool KeepOptimizingAfterSolutionFound => true;
-    public override double SolutionFoundASRThreshold => 1.0;
     public override uint ExperimentsPerGeneration => 1024;
     #endregion
 }

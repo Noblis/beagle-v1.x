@@ -32,8 +32,6 @@ public class CosApproximation : MLSetup
     //    //return 1_000_000;
     //}
     public override long TotalBirthsToResetColonyIfNoProgress => 20_000_000_000;
-    public override bool KeepOptimizingAfterSolutionFound => true;
-    public override double SolutionFoundASRThreshold => 1.0; //0.9999;
     public override uint ExperimentsPerGeneration => 1024;
 
     //public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Sin && x != OpEnum.Cos).ToArray();

@@ -8,8 +8,6 @@ using BeagleLib.Util;
 using BeagleLib.VM;
 using MathNet.Numerics;
 using Newtonsoft.Json;
-using Command = BeagleLib.VM.Command;
-using Output = BeagleLib.Util.Output;
 
 namespace BeagleLib.Agent;
 
@@ -108,7 +106,6 @@ public class Organism
         organism._offset = Offset;
 
         organism.Score = Score;
-        organism._asr = _asr;
 
         return organism;
     }
@@ -313,7 +310,6 @@ public class Organism
         _offset = 0;
 
         Score = 0;
-        _asr = null;
 
         Layer = -1000;
     }
@@ -525,7 +521,16 @@ public class Organism
 
         Output.WriteLine("");
     }
-    
+
+    public void PrintRawCommandsWithGenericLabelsWithoutScaleAndOffsetInLine()
+    {
+        for (var addr = 0; addr < Commands.Length; addr++)
+        {
+            _sb.Clear();
+            Output.Write($"{Commands[addr].AppendToStringBuilderWithGenericLabels(_sb)}; ");
+        }
+    }
+
     public string CommandsToJson(float[][] inputsArray, float[] correctOutputs)
     {
         return JsonConvert.SerializeObject(GetFullCommands(inputsArray, correctOutputs));
@@ -578,7 +583,17 @@ public class Organism
             int count = 0;
             do
             {
-                if (++count > 10) throw new Exception("Unable to calculate scale and offset in 10 attempts!");
+                if (++count > 10)
+                {
+                    Console.ResetColor();
+                    Output.WriteLine();
+                    Output.WriteLine("------------------------------------------------------------------------------------------------------------------------");
+                    Output.WriteLine("Unable to calculate scale and offset in 10 attempts for following organism (WARNING: code below uses generic labels): ");
+                    PrintRawCommandsWithGenericLabelsWithoutScaleAndOffsetInLine();
+                    Output.WriteLine();
+                    Output.WriteLine("------------------------------------------------------------------------------------------------------------------------");
+                    throw new Exception("Unable to calculate scale and offset in 10 attempts!");
+                }
 
                 if (count > 1)
                 {
@@ -668,16 +683,6 @@ public class Organism
     public int Score { get; set; }
     //public int TaxedScore { get; set; }
     public int Layer { get; set; } = -1;
-
-    public double ASR
-    {
-        get
-        {
-            _asr ??= Math.Round((double)Score / MLSetup.MaxGenerationScore, 5);
-            return _asr.Value;
-        }
-    }
-    private double? _asr;
 
     public bool IsInParetoFrontZero => Layer == -1;
     public bool IsLayerInitialized => Layer != -1000;

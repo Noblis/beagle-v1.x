@@ -23,9 +23,13 @@ public class QuadraticEq : MLSetup
     {
         return ["a", "b", "c"];
     }
+    public sealed override int TargetColonySize(int generation)
+    {
+        //var remainder = generation % 525;
+        //if (remainder < 25) return 250_000;
+        return 300_000;
+    }
 
-    public override double SolutionFoundASRThreshold => 1.0;
     public override long TotalBirthsToResetColonyIfNoProgress => 1_200_000_000;
-    public override bool KeepOptimizingAfterSolutionFound => true;
     #endregion
 }

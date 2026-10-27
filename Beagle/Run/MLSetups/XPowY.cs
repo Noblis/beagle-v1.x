@@ -28,8 +28,5 @@ public class XPowY : MLSetup
     }
 
     public override long TotalBirthsToResetColonyIfNoProgress => 100_000_000;
-
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
     #endregion
 }

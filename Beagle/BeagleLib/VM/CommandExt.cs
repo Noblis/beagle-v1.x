@@ -53,4 +53,44 @@ public static class CommandExt
         }
         return sb;
     }
+    public static StringBuilder AppendToStringBuilderWithGenericLabels(this Command me, StringBuilder sb)
+    {
+        switch (me.CommandType)
+        {
+            case CommandTypeEnum.CommandOnly:
+            {
+                sb.Append(me.Operation.GetUpperCase());
+                break;
+            }
+            case CommandTypeEnum.CommandPlusFloat:
+            {
+                sb.Append(me.Operation.GetUpperCase());
+                sb.Append(" ");
+                sb.Append(me.ConstValue);
+                break;
+            }
+            case CommandTypeEnum.CommandPlusIndex:
+            {
+                if (me.Operation == OpEnum.Copy || me.Operation == OpEnum.Paste)
+                {
+                    //copy and paste
+                    sb.Append(me.Operation.GetUpperCase());
+                    sb.Append(" @");
+                    sb.Append(me.Idx);
+                }
+                else
+                {
+                    //loads
+                    sb.Append(me.Operation.GetUpperCase());
+                    sb.Append(" ");
+                    sb.Append($"x{me.Idx+1}");
+                    sb.Append(":");
+                    sb.Append(me.Idx);
+                }
+                break;
+            }
+            default: throw new Exception($"Unknown CommandType {me.CommandType}");
+        }
+        return sb;
+    }
 }

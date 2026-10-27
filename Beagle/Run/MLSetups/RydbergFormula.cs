@@ -36,7 +36,6 @@ public class RydbergFormula : MLSetup
     //}
     public override uint ExperimentsPerGeneration => 512;
     public override long TotalBirthsToResetColonyIfNoProgress => 750_000_000;
-    public override bool KeepOptimizingAfterSolutionFound => true;
 
     //private readonly NumPyRandom _rs = np.random.RandomState();
     #endregion

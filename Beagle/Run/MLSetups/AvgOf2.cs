@@ -25,7 +25,5 @@ public class AvgOf2 : MLSetup
         
         return 1_000_000;
     }
-
-    public override double SolutionFoundASRThreshold => 1.0;
     #endregion
 }

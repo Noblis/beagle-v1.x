@@ -16,18 +16,12 @@ public abstract class FeynmanMLSetup : MLSetup
     //use for correlation fit func
     public sealed override int TargetColonySize(int generation)
     {
-        var remainder = generation % 1500;
-        if (remainder < 5) return 25_000_000;
-        if (remainder < 10) return 10_000_000;
-        if (remainder < 20) return 3_000_000;
-        if (remainder < 30) return 1_000_000;
-        if (remainder < 50) return 500_000;
+        var remainder = generation % 525;
+        if (remainder < 25) return 5_000_000;
         return 250_000;
     }
 
     public sealed override long TotalBirthsToResetColonyIfNoProgress => 750_000_000;
-    public sealed override double SolutionFoundASRThreshold => 1.0;
-    public sealed override bool KeepOptimizingAfterSolutionFound => true;
     public sealed override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Cbrt && x != OpEnum.Cube && x != OpEnum.Pow).ToArray();
     #endregion
 }

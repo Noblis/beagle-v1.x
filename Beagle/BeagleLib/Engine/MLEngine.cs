@@ -116,7 +116,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             var acceleratorCount = useSingleAccelerator ? 1 : devices.Length; //this is for benchmarking One vs Multiple GPUs
             if (firstDevice.AcceleratorType == AcceleratorType.CPU) Output.WriteLine($"Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} exclusively on a CPU using a GPU emulator");
-            else Output.WriteLine($"{Environment.MachineName}: Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} on {Environment.ProcessorCount} CPU(s) & {acceleratorCount} {devices.First().Name} GPU(s) @ {MLSetup.Current.SolutionFoundASRThreshold:0.00000} target ASR");
+            else Output.WriteLine($"{Environment.MachineName}: Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} on {Environment.ProcessorCount} CPU(s) & {acceleratorCount} {devices.First().Name} GPU(s)");
 
             _accelerators = new AcceleratorInfo<TFitFunc>[acceleratorCount];
             for (var i = 0; i < _accelerators.Length; i++)
@@ -211,7 +211,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _totalTimeWatch.Start();
             _totalBirths = _organismsCount;
 
-            _shortestEverSatisfactoryOrganism = null;
             _mostAccurateEverOrganism = null;
             _mostAccurateOrganismsSinceLastColonyReset = new Organism?[BConfig.TopMostAccurateOrganismsToKeep];
             for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++) _mostAccurateOrganismsSinceLastColonyReset[i] = null;
@@ -368,22 +367,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         #endregion
 
         #region update most accurate & shortest satisfactory organisms
-        var oldShortestEverSatisfactoryOrganism = _shortestEverSatisfactoryOrganism;
+        var oldMostAccurateEverOrganism = _mostAccurateEverOrganism;
         using (new ConsoleTimer("update most accurate & shortest satisfactory organisms", _showProfilingInfo))
         {
-            var oldMostAccurateEverOrganism = _mostAccurateEverOrganism;
             for (var i = 0; i < _organismsCount; i++)
             {
                 var organism = _organisms[i]!;
 
                 //update most accurate organisms
                 UpdateMostAccurateOrganismsWith(organism);
-
-                //update the shortest satisfactory organism
-                if (_shortestEverSatisfactoryOrganism.IsSatisfactoryAccuracyAndShorterOrSameLengthButMoreAccurateThanMe(organism, MLSetup.Current.SolutionFoundASRThreshold))   
-                {
-                    _shortestEverSatisfactoryOrganism = organism;
-                }
             }
             if (!ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mlEngineNotificationsHandler?.HandleMostAccurateEverOrganismUpdated(_mostAccurateEverOrganism!.CloneForExport(_inputsArray, _correctOutputs), (uint)_currentGeneration);
             if (_mlEngineNotificationsHandler?.Quit == true) return true;
@@ -441,7 +433,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                     //death (100% chance)
                     if (!ReferenceEquals(organism, _mostAccurateEverOrganism) &&
-                        !ReferenceEquals(organism, _shortestEverSatisfactoryOrganism) &&
                         !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
                     {
                         Organism.SaveOrganismToDeadPool(organism);
@@ -453,8 +444,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
                 {
                     if (_mostAccurateOrganismsSinceLastColonyReset[i] != null &&
-                        !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[i], _mostAccurateEverOrganism) &&
-                        !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[i], _shortestEverSatisfactoryOrganism))
+                        !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[i], _mostAccurateEverOrganism))
                     {
                         Organism.SaveOrganismToDeadPool(_mostAccurateOrganismsSinceLastColonyReset[i]!);
                     }
@@ -558,7 +548,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     while (pctProb > 0);
                 });
 
-                //move current colony into dead pool and null the _organims array
+                //move current colony into dead pool and null the _organisms array
                 Parallel.For(0, _organismsCount, i =>
                 {
                     //death (100% chance)
@@ -566,7 +556,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _organisms[i] = null;
 
                     if (!ReferenceEquals(organism, _mostAccurateEverOrganism) &&
-                        !ReferenceEquals(organism, _shortestEverSatisfactoryOrganism) &&
                         !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
                     {
                         Organism.SaveOrganismToDeadPool(organism);
@@ -590,39 +579,37 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Output.WriteLine($"{_totalTimeWatch.Elapsed:c}: Generation {_currentGeneration:N0} took {_acceleratorGenerationTime:c}/{_generationTime:c}");
         Output.WriteLine($"Colony size: {_organismsCount:N0}: (target: {MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset):N0}). Total births: {_totalBirths:N0}");
 
-        Output.Write("Most accurate ever genome: ASR = ");
+        var mostAccurateColor = _mostAccurateEverOrganism!.Score == MLSetup.MaxGenerationScore ? ConsoleColor.Green : ConsoleColor.White;
+
+        Console.ForegroundColor = mostAccurateColor;
+        Output.Write("Most accurate ever genome: (");
         Console.ForegroundColor = ConsoleColor.Red;
-        Output.Write($"{_mostAccurateEverOrganism!.ASR:0.00000}");
-        Console.ForegroundColor = ConsoleColor.White;
-        
-        Output.Write(" (");
-        Console.ForegroundColor = ConsoleColor.Red;
-        Output.Write($"{_mostAccurateEverOrganism.Score:N0}");
-        Console.ForegroundColor = ConsoleColor.White;
+        Output.Write($"{_mostAccurateEverOrganism!.Score:N0}");
+        Console.ForegroundColor = mostAccurateColor;
         Output.Write("/");
         Console.ForegroundColor = ConsoleColor.Red;
         Output.Write($"{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}");
-        Console.ForegroundColor = ConsoleColor.White;
+        Console.ForegroundColor = mostAccurateColor;
 
         Output.Write("), length = ");
         Console.ForegroundColor = ConsoleColor.Red;
         Output.Write($"{_mostAccurateEverOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
-        Console.ForegroundColor = ConsoleColor.White;
+        Console.ForegroundColor = mostAccurateColor;
         
         Output.Write(" from ");
         Console.ForegroundColor = ConsoleColor.Red;
         Output.Write($"{_mostAccurateEverOrganismTotalTime:c}");
-        Console.ForegroundColor = ConsoleColor.White;
+        Console.ForegroundColor = mostAccurateColor;
         
         Output.Write(" at ");
         Console.ForegroundColor = ConsoleColor.Red;
         Output.Write($"{_totalBirthAtLastMostAccurateEverOrganism:N0}");
-        Console.ForegroundColor = ConsoleColor.White;
+        Console.ForegroundColor = mostAccurateColor;
         Output.WriteLine(" total births");
-        Console.ForegroundColor = ConsoleColor.White;
-        
-        _mostAccurateEverOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
-        //Output.WriteLine(_mostAccurateEverOrganism.CommandsToJson());
+        Console.ForegroundColor = mostAccurateColor;
+
+        if (_mostAccurateEverOrganism!.Score == MLSetup.MaxGenerationScore && !ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mostAccurateEverOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
+        else _mostAccurateEverOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
 
         if (_mostAccurateOrganismsSinceLastColonyReset[0] != null && !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[0], _mostAccurateEverOrganism))
         {
@@ -633,11 +620,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Output.WriteLine(" generation");
 
             Console.ForegroundColor = ConsoleColor.White;
-            Output.Write("Most accurate genome since last colony reset: ASR = ");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.ASR:0.00000}");
-            Console.ForegroundColor = ConsoleColor.White;
-            Output.Write(" (");
+            Output.Write("Most accurate genome since last colony reset: (");
             Console.ForegroundColor = ConsoleColor.Red;
             Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.Score:N0}");
             Console.ForegroundColor = ConsoleColor.White;
@@ -665,144 +648,134 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         _mlEngineNotificationsHandler?.HandleGenerationCounter(this._currentGeneration);
         #endregion
 
-        #region determine if we have a new shortest satisfactory organism and print message
-        if (!ReferenceEquals(oldShortestEverSatisfactoryOrganism, _shortestEverSatisfactoryOrganism))
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Output.WriteLine($"Satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00000}) Solution found. ASR = {_shortestEverSatisfactoryOrganism!.ASR:0.00000} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0})");
+        //#region determine if we have a new shortest satisfactory organism and print message
+        //if (_mostAccurateEverOrganism.Score == MLSetup.MaxGenerationScore)
+        //{
+        //    if (!ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism))
+        //    {
+        //        Console.ForegroundColor = ConsoleColor.Green;
+        //        Output.WriteLine($"Solution found. ({_mostAccurateEverOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0})");
 
-            //Output.WriteLine(_shortestEverSatisfactoryOrganism.CommandsToJson());
-            _shortestEverSatisfactoryOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
-            Console.ResetColor();
+        //        //Output.WriteLine(_shortestEverSatisfactoryOrganism.CommandsToJson());
+        //        _mostAccurateEverOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
+        //        Console.ResetColor();
 
-            #if DEBUG
-            int score = 0;
-            var fitFunc = new TFitFunc();
-            float[] outputs = new float[MLSetup.Current.ExperimentsPerGeneration];
-            Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, experiment =>
-            {
-                var codeMachineCPU = new CodeMachine();
-                outputs[experiment] = codeMachineCPU.RunCommands(_inputsArray[experiment], _shortestEverSatisfactoryOrganism.Commands);
-            });
+        //        #if DEBUG
+        //        int score = 0;
+        //        var fitFunc = new TFitFunc();
+        //        float[] outputs = new float[MLSetup.Current.ExperimentsPerGeneration];
+        //        Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, experiment =>
+        //        {
+        //            var codeMachineCPU = new CodeMachine();
+        //            outputs[experiment] = codeMachineCPU.RunCommands(_inputsArray[experiment], _mostAccurateEverOrganism.Commands);
+        //        });
 
-            if (fitFunc.UseCorrelationFit)
-            {
-                //calculate output mean
-                double outputsMean0 = 0;
-                double outputsMean1 = 0;
-                int count0 = 0;
-                int count1 = 0;
-                for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
-                {
-                    var output = outputs[experiment];
-                    var correctOutput = _correctOutputs[experiment];
+        //        if (fitFunc.UseCorrelationFit)
+        //        {
+        //            //calculate output mean
+        //            double outputsMean0 = 0;
+        //            double outputsMean1 = 0;
+        //            int count0 = 0;
+        //            int count1 = 0;
+        //            for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
+        //            {
+        //                var output = outputs[experiment];
+        //                var correctOutput = _correctOutputs[experiment];
 
-                    //valid/invalid outputs
-                    var isOutputValid = output.IsValidNumber();
-                    var isCorrectOutputValid = correctOutput.IsValidNumber();
+        //                //valid/invalid outputs
+        //                var isOutputValid = output.IsValidNumber();
+        //                var isCorrectOutputValid = correctOutput.IsValidNumber();
 
-                    if (isOutputValid && isCorrectOutputValid)
-                    {
-                        count0++;
-                        outputsMean0 += output;
-                        outputsMean1 += correctOutput;
-                    }
-                }
-                if (count0 != 0)
-                {
-                    outputsMean0 /= count0;
-                    outputsMean1 /= count0;
-                }
-                count0 = 0;
+        //                if (isOutputValid && isCorrectOutputValid)
+        //                {
+        //                    count0++;
+        //                    outputsMean0 += output;
+        //                    outputsMean1 += correctOutput;
+        //                }
+        //            }
+        //            if (count0 != 0)
+        //            {
+        //                outputsMean0 /= count0;
+        //                outputsMean1 /= count0;
+        //            }
+        //            count0 = 0;
 
-                //calculate score
-                var sums = new double[3];
-                for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
-                {
-                    var output = outputs[experiment];
-                    var correctOutput = _correctOutputs[experiment];
+        //            //calculate score
+        //            var sums = new double[3];
+        //            for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
+        //            {
+        //                var output = outputs[experiment];
+        //                var correctOutput = _correctOutputs[experiment];
 
-                    //valid/invalid outputs
-                    var isOutputValid = output.IsValidNumber();
-                    var isCorrectOutputValid = correctOutput.IsValidNumber();
+        //                //valid/invalid outputs
+        //                var isOutputValid = output.IsValidNumber();
+        //                var isCorrectOutputValid = correctOutput.IsValidNumber();
 
-                    if (isOutputValid && isCorrectOutputValid)
-                    {
-                        //if both output and correct output are valid
-                        var outputDeltaVsMean = output - outputsMean0;
-                        var correctOutputDeltaVsMean = correctOutput - outputsMean1;
-                        sums[0] += outputDeltaVsMean * correctOutputDeltaVsMean;
-                        sums[1] += outputDeltaVsMean * outputDeltaVsMean;
-                        sums[2] += correctOutputDeltaVsMean * correctOutputDeltaVsMean;
-                    }
-                    else
-                    {
-                        //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
-                        if (isOutputValid ^ isCorrectOutputValid) count0++; //if they are different
-                        else count1++; //if they are the same
-                    }
-                }
+        //                if (isOutputValid && isCorrectOutputValid)
+        //                {
+        //                    //if both output and correct output are valid
+        //                    var outputDeltaVsMean = output - outputsMean0;
+        //                    var correctOutputDeltaVsMean = correctOutput - outputsMean1;
+        //                    sums[0] += outputDeltaVsMean * correctOutputDeltaVsMean;
+        //                    sums[1] += outputDeltaVsMean * outputDeltaVsMean;
+        //                    sums[2] += correctOutputDeltaVsMean * correctOutputDeltaVsMean;
+        //                }
+        //                else
+        //                {
+        //                    //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
+        //                    if (isOutputValid ^ isCorrectOutputValid) count0++; //if they are different
+        //                    else count1++; //if they are the same
+        //                }
+        //            }
 
-                if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
-                {
-                    var denominator = sums[1] * sums[2];
-                    float rSquared = 0;
-                    if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
+        //            if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
+        //            {
+        //                var denominator = sums[1] * sums[2];
+        //                float rSquared = 0;
+        //                if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
 
-                    //r can range from 0 to 1
-                    //punishment is based on the percentage of mismatches, number of experiments cancels out
-                    score = (int)(BConfig.MaxScore * (MLSetup.Current.ExperimentsPerGeneration - count0 - count1) * rSquared) - BConfig.MaxScore * (count0 - count1);
-                }
-                else
-                {
-                    score = (int)(-BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration);
-                }
-            }
-            else
-            {
-                for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
-                {
-                    var output = outputs[experiment];
-                    var correctOutput = _correctOutputs[experiment];
+        //                //r can range from 0 to 1
+        //                //punishment is based on the percentage of mismatches, number of experiments cancels out
+        //                score = (int)(BConfig.MaxScore * (MLSetup.Current.ExperimentsPerGeneration - count0 - count1) * rSquared) - BConfig.MaxScore * (count0 - count1);
+        //            }
+        //            else
+        //            {
+        //                score = (int)(-BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
+        //            {
+        //                var output = outputs[experiment];
+        //                var correctOutput = _correctOutputs[experiment];
 
-                    //valid/invalid outputs
-                    var isOutputValid = output.IsValidNumber();
-                    var isCorrectOutputValid = correctOutput.IsValidNumber();
+        //                //valid/invalid outputs
+        //                var isOutputValid = output.IsValidNumber();
+        //                var isCorrectOutputValid = correctOutput.IsValidNumber();
 
-                    if (isOutputValid && isCorrectOutputValid) Interlocked.Add(ref score, fitFunc.FitFunction(output, correctOutput));
-                    else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid));
-                }
-            }
-            if (Math.Abs(_shortestEverSatisfactoryOrganism.Score - score) > 20) //math on GPU is not always the same as on CPU therefore we have a tolerance
-            {
-                Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: Invalid shortest satisfactory organism score on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
-                Debugger.Break();
-            }
-            #endif
+        //                if (isOutputValid && isCorrectOutputValid) Interlocked.Add(ref score, fitFunc.FitFunction(output, correctOutput));
+        //                else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid));
+        //            }
+        //        }
+        //        if (Math.Abs(_mostAccurateEverOrganism.Score - score) > 20) //math on GPU is not always the same as on CPU therefore we have a tolerance
+        //        {
+        //            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: Invalid most accurate ever organism score on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+        //            Debugger.Break();
+        //        }
+        //        #endif
 
-            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Found Satisfactory Solution on {Environment.MachineName}", $"Beagle {BConfig.Version}: {MLSetup.Current.Name} completed in {_totalTimeWatch.Elapsed:c} on {Environment.MachineName}\n\n{_shortestEverSatisfactoryOrganism.ToString(_inputLabels)}");
-            if (!MLSetup.Current.KeepOptimizingAfterSolutionFound)
-            {
-                _totalTimeWatch.Stop();
-                Console.ForegroundColor = ConsoleColor.Red;
-                Output.Write("Would you like to continue the evolution for further optimization (y/n)? ");
-                var response = Output.ReadLine();
-                Console.ResetColor();
-                if (response.Trim().ToLower() == "n") return true;
-                _totalTimeWatch.Start();
-            }
-        }
-        else
-        {
-            if (_shortestEverSatisfactoryOrganism != null)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Output.WriteLine($"Shortest satisfactory (ASR >= {MLSetup.Current.SolutionFoundASRThreshold:0.00000}) solution found so far. ASR = {_shortestEverSatisfactoryOrganism.ASR:0.00000} ({_shortestEverSatisfactoryOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}), Length = {_shortestEverSatisfactoryOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
-                _shortestEverSatisfactoryOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
-                Console.ResetColor();
-            }
-        }
-        #endregion
+        //        Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Found Solution on {Environment.MachineName}", $"Beagle {BConfig.Version}: {MLSetup.Current.Name} completed in {_totalTimeWatch.Elapsed:c} on {Environment.MachineName}\n\n{_mostAccurateEverOrganism.ToString(_inputLabels)}");
+        //    }
+        //    else
+        //    {
+        //        Console.ForegroundColor = ConsoleColor.Green;
+        //        Output.WriteLine($"Most accurate ever solution found so far. ({_mostAccurateEverOrganism.Score:N0}/{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}), Length = {_mostAccurateEverOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
+        //        _mostAccurateEverOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
+        //        Console.ResetColor();
+        //    }
+        //}
+        //#endregion
 
         #region print new line if needed
         if (!_showProfilingInfo) Output.WriteLine();
@@ -1488,8 +1461,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected Organism? _mostAccurateEverOrganism;
     protected TimeSpan _mostAccurateEverOrganismTotalTime;
     protected long _totalBirthAtLastMostAccurateEverOrganism;
-
-    protected Organism? _shortestEverSatisfactoryOrganism;
     #endregion
 
     #region Pareto Selection

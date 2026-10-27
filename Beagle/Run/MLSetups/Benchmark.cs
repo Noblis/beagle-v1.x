@@ -21,7 +21,6 @@ public class Benchmark : MLSetup
     {
         return 30_000_000;
     }
-    public override double SolutionFoundASRThreshold => 1.0;
     public override uint ExperimentsPerGeneration => 1024;
     #endregion
 }
