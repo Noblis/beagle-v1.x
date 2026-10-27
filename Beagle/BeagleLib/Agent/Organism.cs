@@ -680,8 +680,10 @@ public class Organism
     protected float _offset;
 
     public Command[] Commands { get; protected set; }
+
     public int Score { get; set; }
-    //public int TaxedScore { get; set; }
+    public int ScoreRecalcCount { get; set; } = 1;
+
     public int Layer { get; set; } = -1;
 
     public bool IsInParetoFrontZero => Layer == -1;

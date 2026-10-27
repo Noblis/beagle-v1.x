@@ -14,3 +14,24 @@ public struct OrganismScoreComparer : IComparer<Organism>
         else return 1;
     }
 }
+
+public readonly struct OrganismScoreReverseComparer : IComparer<Organism>
+{
+    #region Constructors
+    public OrganismScoreReverseComparer() 
+    {
+        _organismScoreComparer = new OrganismScoreComparer();
+    }
+    #endregion
+
+    #region Methods
+    public int Compare(Organism? x, Organism? y)
+    {
+        return -_organismScoreComparer.Compare(x, y);
+    }
+    #endregion
+
+    #region Fields
+    private readonly OrganismScoreComparer _organismScoreComparer;
+    #endregion
+}

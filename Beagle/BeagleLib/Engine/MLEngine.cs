@@ -27,6 +27,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     #region Constructors & Dispose
     public MLEngine(bool forceCPUAccelerator = false, bool useSingleAccelerator = false, bool useLibDevice = false, IMLEngineNotificationsHandler? mlEngineNotificationsHandler = null)
     {
+        Console.ResetColor();
+        
         //This is to not show ^[ on Linux when escape is pressed early
         //if (Console.KeyAvailable) Console.ReadKey(true);
 
@@ -375,13 +377,16 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         else
         {
+            Debug.Assert(!IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_mostAccurateEverOrganism!));
             Parallel.For(-1, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
+            //for (var i = -1; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
             {
-                var organism = i == -1 ? _mostAccurateEverOrganism : _mostAccurateOrganismsSinceLastColonyReset[i];
-                if (i == -1) Debugger.Break();
+                var organism = i == -1 ? _mostAccurateEverOrganism : _mostAccurateOrganismsSinceLastColonyReset[i]; 
+                //if (i == -1) Debugger.Break();
                 organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
             });
         }
+        Array.Sort(_mostAccurateOrganismsSinceLastColonyReset, new OrganismScoreReverseComparer());
         #endregion
 
         #region update most accurate & shortest satisfactory organisms
@@ -413,7 +418,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         MarkTrueParetoFrontOrganismsInColony();
         #endregion
 
-        #region popiulation micorcosm with organisms not on the true pareto front
+        #region population micorcosm with organisms not on the true pareto front
         Parallel.For(0, ParetoMicrocosmSize, i =>
         {
             do

@@ -1,4 +1,5 @@
-﻿using BeagleLib.Agent;
+﻿using System.Diagnostics;
+using BeagleLib.Agent;
 using BeagleLib.Engine;
 using BeagleLib.Engine.FitFunc;
 using System.Runtime.CompilerServices;
@@ -126,12 +127,16 @@ public static class OrganismExt
                 var isOutputValid = output.IsValidNumber();
                 var isCorrectOutputValid = correctOutput.IsValidNumber();
 
-                if (isOutputValid && isCorrectOutputValid) Interlocked.Add(ref score, fitFunc.FitFunction(output, correctOutput));
-                else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid));
+                //if (isOutputValid && isCorrectOutputValid) Interlocked.Add(ref score, fitFunc.FitFunction(output, correctOutput));
+                //else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid));
+
+                if (isOutputValid && isCorrectOutputValid) score += fitFunc.FitFunction(output, correctOutput);
+                else score += fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid);
             }
         }
 
-        me.Score = (me.Score + score) / 2;
+        me.Score = checked((int)(((long)me.Score*me.ScoreRecalcCount + score) / ((long)me.ScoreRecalcCount + 1)));
+        me.ScoreRecalcCount++;
     }
     private static readonly float[] _myOutputs = new float[MLSetup.Current.ExperimentsPerGeneration];
     #endregion
