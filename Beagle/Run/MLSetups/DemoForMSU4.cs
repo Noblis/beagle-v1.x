@@ -30,9 +30,6 @@ public class DemoForMSU4 : MLSetup
 
     public override uint ExperimentsPerGeneration => 512;
 
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
-
     //public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Sin &&
     //                                                                                          x != OpEnum.Add &&
     //                                                                                          x != OpEnum.Sub &&

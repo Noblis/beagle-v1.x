@@ -28,9 +28,7 @@ public class KatyaBall : MLSetup
         return ["x1","x2","x3","x4","x5"];
     }
 
-    public override double SolutionFoundASRThreshold => 1.0;
     public override long TotalBirthsToResetColonyIfNoProgress => 120_000_000;
-    public override bool KeepOptimizingAfterSolutionFound => true;
     public override double CrossoverRate => 0.20;
 
     public override int TargetColonySize(int generation)

@@ -33,8 +33,5 @@ public class DemoForMSU : MLSetup
     //}
 
     public override long TotalBirthsToResetColonyIfNoProgress => 500_000_000;
-
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
     #endregion
 }

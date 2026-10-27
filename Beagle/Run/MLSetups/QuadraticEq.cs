@@ -30,8 +30,6 @@ public class QuadraticEq : MLSetup
         return 300_000;
     }
 
-    public override double SolutionFoundASRThreshold => 1.0;
     public override long TotalBirthsToResetColonyIfNoProgress => 1_200_000_000;
-    public override bool KeepOptimizingAfterSolutionFound => true;
     #endregion
 }

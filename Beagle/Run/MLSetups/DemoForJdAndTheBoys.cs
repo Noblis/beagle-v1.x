@@ -19,8 +19,6 @@ public class DemoForJdAndTheBoys : MLSetup
     {
         return ["a", "b"];
     }
-    public override double SolutionFoundASRThreshold => 1.0;
-
     public override int TargetColonySize(int generation)
     {
         if (generation == 0) return 100_000_000;

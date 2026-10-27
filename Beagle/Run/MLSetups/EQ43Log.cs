@@ -30,7 +30,5 @@ public class Eq43Log : MLSetup
         return ["n", "m", "w", "x", "k", "t"];
     }
     public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
     #endregion
 }

@@ -20,8 +20,5 @@ public class AreaOfCircle : MLSetup
     public override uint ExperimentsPerGeneration => 512;
 
     public override long TotalBirthsToResetColonyIfNoProgress => 2_000_000;
-
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
     #endregion
 }

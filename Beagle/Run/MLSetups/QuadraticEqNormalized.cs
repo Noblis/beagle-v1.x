@@ -19,8 +19,6 @@ public class QuadraticEqNormalized : MLSetup
     {
         return ["b", "c"];
     }
-    public override double SolutionFoundASRThreshold => 1.0;
-
 
     public override int TargetColonySize(int generation)
     {
@@ -28,6 +26,5 @@ public class QuadraticEqNormalized : MLSetup
         return 1_000_000;
     }
     public override long TotalBirthsToResetColonyIfNoProgress => 300_000_000;
-    public override bool KeepOptimizingAfterSolutionFound => true;
     #endregion
 }

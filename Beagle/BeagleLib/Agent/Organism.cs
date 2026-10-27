@@ -108,7 +108,6 @@ public class Organism
         organism._offset = Offset;
 
         organism.Score = Score;
-        organism._asr = _asr;
 
         return organism;
     }
@@ -313,7 +312,6 @@ public class Organism
         _offset = 0;
 
         Score = 0;
-        _asr = null;
 
         Layer = -1000;
     }
@@ -687,16 +685,6 @@ public class Organism
     public int Score { get; set; }
     //public int TaxedScore { get; set; }
     public int Layer { get; set; } = -1;
-
-    public double ASR
-    {
-        get
-        {
-            _asr ??= Math.Round((double)Score / MLSetup.MaxGenerationScore, 5);
-            return _asr.Value;
-        }
-    }
-    private double? _asr;
 
     public bool IsInParetoFrontZero => Layer == -1;
     public bool IsLayerInitialized => Layer != -1000;

@@ -25,7 +25,5 @@ public class Eq58S : MLSetupV16
         return new[] { "q", "Eps", "d" };
     }
     public override long TotalBirthsToResetColonyIfNoProgress => 1_500_000_000;
-    public override double SolutionFoundASRThreshold => 1.0;
-    public override bool KeepOptimizingAfterSolutionFound => true;
     #endregion
 }
