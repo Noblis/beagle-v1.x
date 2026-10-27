@@ -8,7 +8,13 @@ public struct OrganismScoreComparer : IComparer<Organism>
         if (x == null && y != null) return -1;
         if (x != null && y == null) return 1;
 
-        if (x!.Score == y!.Score) return 0;
+        if (x!.Score == y!.Score)
+        {
+            if (x.Commands.Length == y.Commands.Length) return 0;
+            
+            if (x.Commands.Length > y.Commands.Length) return -1;
+            else return 1;
+        }
 
         if (x.Score < y.Score) return -1;
         else return 1;
