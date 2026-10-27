@@ -364,6 +364,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 //_organisms[i]!.TaxedScore = _scores[i] - MLSetup.Current.CalcScriptLengthTax(_organisms[i]!.Commands.Length);
             });
         }
+
+        //update scores on _mostAccurateEverOrganism and on _mostAccurateOrganismsSinceLastColonyReset
+        //TODO: verify that I don't update the same organism twice
+        Parallel.For(-1, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
+        {
+            var organism = i == -1 ? _mostAccurateEverOrganism : _mostAccurateOrganismsSinceLastColonyReset[i];
+            organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
+        });
         #endregion
 
         #region update most accurate & shortest satisfactory organisms
