@@ -8,8 +8,6 @@ using BeagleLib.Util;
 using BeagleLib.VM;
 using MathNet.Numerics;
 using Newtonsoft.Json;
-using Command = BeagleLib.VM.Command;
-using Output = BeagleLib.Util.Output;
 
 namespace BeagleLib.Agent;
 
