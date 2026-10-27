@@ -556,6 +556,9 @@ public class Organism
             Debug.Assert(organism.Commands.Length == commandsLength);
             organism.ResetPropertiesForNewOrganism();
             
+            Debug.Assert(organism.IsInDeadPool);
+            organism.IsInDeadPool = false;
+            
             return organism;
         }
         
@@ -565,6 +568,7 @@ public class Organism
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void SaveOrganismToDeadPool(Organism organism)
     {
+        organism.IsInDeadPool = true;
         _organismDeadPools[organism.Commands.Length - 1].Push(organism);
     }
 
@@ -688,6 +692,8 @@ public class Organism
 
     public bool IsInParetoFrontZero => Layer == -1;
     public bool IsLayerInitialized => Layer != -1000;
+
+    public bool IsInDeadPool { get; protected set; } = false;
 
     private static StringBuilder _sb = new(8192); //buffer to build strings
     #endregion
