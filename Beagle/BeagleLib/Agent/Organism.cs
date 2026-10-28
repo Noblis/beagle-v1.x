@@ -693,7 +693,7 @@ public class Organism
     public bool IsInParetoFrontZero => Layer == -1;
     public bool IsLayerInitialized => Layer != -1000;
 
-    public bool IsInDeadPool { get; protected set; } = false;
+    public bool IsInDeadPool { get; protected set; }
 
     private static StringBuilder _sb = new(8192); //buffer to build strings
     #endregion

@@ -379,6 +379,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Parallel.For(0, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
             {
                 var organism = _mostAccurateOrganismsSinceLastColonyReset[i];
+                Debug.Assert(organism == null || !organism.IsInDeadPool);
                 organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
             });
         }
@@ -389,7 +390,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Parallel.For(-1, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
             //for (var i = -1; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
             {
-                var organism = i == -1 ? _mostAccurateEverOrganism : _mostAccurateOrganismsSinceLastColonyReset[i]; 
+                var organism = i == -1 ? _mostAccurateEverOrganism : _mostAccurateOrganismsSinceLastColonyReset[i];
+                Debug.Assert(organism == null || !organism.IsInDeadPool);
                 //if (i == -1) Debugger.Break();
                 organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
             });
