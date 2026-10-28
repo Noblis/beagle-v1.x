@@ -1300,7 +1300,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             {
                 if (_mostAccurateOrganismsSinceLastColonyReset[i] == null) continue;
 
-                if (_mostAccurateOrganismsSinceLastColonyReset[i].IsMoreAccurateOrSameAccuracyButShorterThanMe(organism))
+                if (!_mostAccurateOrganismsSinceLastColonyReset[i].IsMoreAccurateOrSameAccuracyButShorterThanMe(organism))
                 {
                     if (i != _mostAccurateOrganismsSinceLastColonyReset.Length - 1) InsertIntoMostAccurateOrganismsSinceLastColonyResetAt(i + 1, organism);
                     return;
