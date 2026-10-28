@@ -13,11 +13,15 @@ public abstract class FeynmanMLSetup : MLSetup
     //    return 1_000_000;
     //}
 
-    //use for correlation fit func
+    //public sealed override int TargetColonySize(int generation)
+    //{
+    //    var remainder = generation % 525;
+    //    if (remainder < 25) return 5_000_000;
+    //    return 250_000;
+    //}
     public sealed override int TargetColonySize(int generation)
     {
-        var remainder = generation % 525;
-        if (remainder < 25) return 5_000_000;
+        if (generation < 20) return 5_000_000;
         return 250_000;
     }
 
