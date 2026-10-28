@@ -30,12 +30,8 @@ public static class OrganismExt
     {
         int score = 0;
 
-        //We want to call this method in multi-threaded way, so we don't want nested multi-threading
-        //Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, experiment =>
-        //{
-        //    var codeMachineCPU = new CodeMachine();
-        //    _myOutputs[experiment] = codeMachineCPU.RunCommands(inputsArray[experiment], me.Commands);
-        //});
+        //We want to call this method in multi-threaded way, so we don't want nested multi-threading here and use a normal array
+        if (_myOutputs == null) _myOutputs = new float[MLSetup.Current.ExperimentsPerGeneration];
         for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
         {
             var codeMachineCPU = new CodeMachine();
@@ -137,6 +133,7 @@ public static class OrganismExt
         me.Score = checked((int)(((long)me.Score*me.ScoreRecalcCount + score) / ((long)me.ScoreRecalcCount + 1)));
         me.ScoreRecalcCount++;
     }
-    private static readonly float[] _myOutputs = new float[MLSetup.Current.ExperimentsPerGeneration];
+
+    [ThreadStatic] private static float[]? _myOutputs;
     #endregion
 }

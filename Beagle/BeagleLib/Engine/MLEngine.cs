@@ -386,14 +386,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         {
             Debug.Assert(!IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_mostAccurateEverOrganism!));
 
-            //Parallel.For(-1, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
-            for (var i = -1; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+            Parallel.For(-1, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
+            //for (var i = -1; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
             {
                 var organism = i == -1 ? _mostAccurateEverOrganism : _mostAccurateOrganismsSinceLastColonyReset[i];
                 Debug.Assert(organism == null || !organism.IsInDeadPool);
                 //if (i == -1) Debugger.Break();
                 organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
-            }//);
+            });
         }
         Array.Sort(_mostAccurateOrganismsSinceLastColonyReset, new OrganismScoreReverseComparer()); //TODO: remove one of these 
         #endregion
