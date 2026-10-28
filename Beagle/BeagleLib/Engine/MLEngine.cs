@@ -1078,6 +1078,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         {
             _crossoverPartners[i] = null;
         }
+
+        #if DEBUG
+        for (var i = 0; i < _crossoverPartnersCount; i++)
+        {
+            Debug.Assert(!_crossoverPartners[i]!.IsInDeadPool);
+        }
+        #endif
     }
 
     protected void SaveColony()
