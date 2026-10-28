@@ -180,6 +180,16 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                     _organisms[i] = newOrganism;
                 });
+                
+                //#if DEBUG
+                ////Calculate length distribution
+                //int[] lengthBuckets = new int[BConfig.MaxScriptLength];
+                //for (var i = 0; i < _organismsCount; i++)
+                //{
+                //    lengthBuckets[_organisms[i]!.Commands.Length]++;
+                //}
+                //Debugger.Break();
+                //#endif
             }
             Output.WriteLine();
             #endregion
@@ -198,7 +208,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         _context.Dispose();
         Console.CursorVisible = true;
     }
-    #endregion
+#endregion
 
     #region Methods
     public override void Train(int stopAfterMin = -1, long stopAfterBirths = -1, bool noEscMenu = false, bool benchmarkRun = false)
@@ -366,12 +376,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             });
         }
 
-        #if DEBUG
+#if DEBUG
         for (var i = 0; i < _organismsCount; i++)
         {
             Debug.Assert(_organisms[i] == null || !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_organisms[i]!));
         }
-        #endif
+#endif
         Debug.Assert(!AnyDuplicatesInMostAccurateOrganismsSinceLastColonyReset());
         if (IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_mostAccurateEverOrganism!))
         {
@@ -555,13 +565,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                             //while another thread may increment _newbornOrganismsCount
                             var idx = Interlocked.Increment(ref _newbornOrganismsCount);
 
-                            #if DEBUG
+#if DEBUG
                             if (idx >= _newbornOrganisms.Length)
                             {
                                 Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                                 Debugger.Break();
                             }
-                            #endif
+#endif
 
                             if (Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
                             {
@@ -949,12 +959,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _crossoverPartners[i] = null;
         }
 
-        #if DEBUG
+#if DEBUG
         for (var i = 0; i < _crossoverPartnersCount; i++)
         {
             Debug.Assert(!_crossoverPartners[i]!.IsInDeadPool);
         }
-        #endif
+#endif
     }
 
     protected void SaveColony()
@@ -1404,9 +1414,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     #region Pareto Selection
     private int _paretoFrontZeroCount;
 
-    #pragma warning disable IDE0044
+#pragma warning disable IDE0044
     public bool _turboParetoSearch = false;             //toggle for extreme greedy Pareto front search
-    #pragma warning restore IDE0044
+#pragma warning restore IDE0044
 
     public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
     public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 

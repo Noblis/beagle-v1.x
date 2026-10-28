@@ -22,7 +22,11 @@ public class Organism
 
         //mutationCommands.Add(ref mutationCommandsLength, Command.CreateRandomLoad(inputsCount));
         mutationCommands.Add(ref mutationCommandsLength, Command.CreateRandomLoadOrConst(inputsCount));
-        mutationCommands.Mutate(ref mutationCommandsLength, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
+        var mutationRepetition = Rnd.Random.Next(100);
+        for (var i = 0; i < mutationRepetition; i++)
+        {
+            mutationCommands.Mutate(ref mutationCommandsLength, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
+        }
         var result = CreateByCopyingCommandsFromPartOfSpan(mutationCommands, mutationCommandsLength);
 
         return result;
