@@ -18,7 +18,7 @@ public static class Program
     private const int EasyStopAfterMin = 1;
 
     private const int FeynmanEqCount = 100;
-    private const int NumberOfRunsPerEq = 1000;
+    private const int NumberOfRunsPerEq = 10;
 
     // ReSharper disable once InconsistentNaming
     private static readonly int[] _easyProblems = Enumerable.Range(1, 100).ToArray();
@@ -56,7 +56,7 @@ public static class Program
 
         try
         {
-            for (var eq = 43; eq <= 43; eq++)
+            for (var eq = 1; eq <= FeynmanEqCount; eq++)
             {
                 ProblemType runningAs;
                 if (_hardProblems.Contains(eq))
