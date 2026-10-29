@@ -600,7 +600,7 @@ public class Organism
                     PrintRawCommandsWithGenericLabelsWithoutScaleAndOffsetInLine();
                     Output.WriteLine();
                     Output.WriteLine("------------------------------------------------------------------------------------------------------------------------");
-                    throw new Exception("Unable to calculate scale and offset in 10 attempts!");
+                    SetScaleAndOffset(1f, 0f);
                 }
 
                 if (count > 1)
