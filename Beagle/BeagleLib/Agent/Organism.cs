@@ -601,6 +601,7 @@ public class Organism
                     Output.WriteLine();
                     Output.WriteLine("------------------------------------------------------------------------------------------------------------------------");
                     SetScaleAndOffset(1f, 0f);
+                    return;
                 }
 
                 if (count > 1)
