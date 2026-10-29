@@ -1310,7 +1310,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             {
                 if (_mostAccurateOrganismsSinceLastColonyReset[i] == null) continue;
 
-                if (!_mostAccurateOrganismsSinceLastColonyReset[i].IsMoreAccurateOrSameAccuracyButShorterThanMe(organism))
+                if (!_mostAccurateOrganismsSinceLastColonyReset[i].IsBetterThanMeByAccuracyRecalculatedMoreThanOnceAndLength(organism))
                 {
                     if (i != _mostAccurateOrganismsSinceLastColonyReset.Length - 1) InsertIntoMostAccurateOrganismsSinceLastColonyResetAt(i + 1, organism);
                     return;
@@ -1323,7 +1323,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         finally
         {
-            if (_mostAccurateEverOrganism.IsMoreAccurateOrSameAccuracyButShorterThanMe(_mostAccurateOrganismsSinceLastColonyReset[0]!))
+            if (_mostAccurateEverOrganism.IsBetterThanMeByAccuracyRecalculatedMoreThanOnceAndLength(_mostAccurateOrganismsSinceLastColonyReset[0]!))
             {
                 _mostAccurateEverOrganism = _mostAccurateOrganismsSinceLastColonyReset[0]!;
                 _mostAccurateEverOrganismTotalTime = _totalTimeWatch.Elapsed;

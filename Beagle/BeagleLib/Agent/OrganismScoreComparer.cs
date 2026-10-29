@@ -10,10 +10,16 @@ public struct OrganismScoreComparer : IComparer<Organism>
 
         if (x!.Score == y!.Score)
         {
-            if (x.Commands.Length == y.Commands.Length) return 0;
-            
-            if (x.Commands.Length > y.Commands.Length) return -1;
-            else return 1;
+            if (x.IsRecalculatedMoreThanOnce == y.IsRecalculatedMoreThanOnce)
+            {
+                if (x.Commands.Length == y.Commands.Length) return 0;
+
+                if (x.Commands.Length > y.Commands.Length) return -1;
+                else return 1;
+            }
+
+            if (!x.IsRecalculatedMoreThanOnce && y.IsRecalculatedMoreThanOnce) return -1;
+            if (x.IsRecalculatedMoreThanOnce && !y.IsRecalculatedMoreThanOnce) return 1;
         }
 
         if (x.Score < y.Score) return -1;

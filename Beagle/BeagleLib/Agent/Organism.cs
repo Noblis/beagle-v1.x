@@ -691,6 +691,7 @@ public class Organism
 
     public int Score { get; set; }
     public int ScoreRecalcCount { get; set; } = 1;
+    public bool IsRecalculatedMoreThanOnce => ScoreRecalcCount > 1;
 
     public int Layer { get; set; } = -1;
 
