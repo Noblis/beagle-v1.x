@@ -21,7 +21,7 @@ public static class Program
     private const int NumberOfRunsPerEq = 10;
 
     // ReSharper disable once InconsistentNaming
-    private static readonly int[] _easyProblems = Enumerable.Range(1, 100).ToArray();
+    private static readonly int[] _easyProblems = Enumerable.Range(1, FeynmanEqCount).ToArray();
     private static readonly int[] _hardProblems = [];
 
     //private static readonly int[] _easyProblems = [1, 8, 10, 11, 12, 15, 16, 22, 25, 27, 28, 34, 37, 39, 40, 41, 42, 45, 46, 49, 53, 54, 55, 58, 59, 60, 66, 69, 70, 73, 74, 75, 76, 77, 78, 83, 84, 85, 88, 89, 92, 93, 96, 97, 100];
@@ -56,7 +56,9 @@ public static class Program
 
         try
         {
-            for (var eq = 1; eq <= FeynmanEqCount; eq++)
+            //int[] problems = [44, 87, 90];
+            int[] problems = Enumerable.Range(1, FeynmanEqCount).ToArray();
+            foreach (var eq in problems)
             {
                 ProblemType runningAs;
                 if (_hardProblems.Contains(eq))
