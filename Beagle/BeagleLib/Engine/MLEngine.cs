@@ -565,13 +565,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                             //while another thread may increment _newbornOrganismsCount
                             var idx = Interlocked.Increment(ref _newbornOrganismsCount);
 
-#if DEBUG
+                            #if DEBUG
                             if (idx >= _newbornOrganisms.Length)
                             {
                                 Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
                                 Debugger.Break();
                             }
-#endif
+                            #endif
 
                             if (Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
                             {
@@ -636,7 +636,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Output.Write($"{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}");
         Console.ForegroundColor = mostAccurateColor;
 
-        Output.Write("): length = ");
+        Output.Write(")x");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Output.Write($"{_mostAccurateEverOrganism.ScoreRecalcCount}");
+        Console.ForegroundColor = mostAccurateColor;
+        Output.Write(": length = ");
         Console.ForegroundColor = ConsoleColor.Red;
         Output.Write($"{_mostAccurateEverOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
         Console.ForegroundColor = mostAccurateColor;
