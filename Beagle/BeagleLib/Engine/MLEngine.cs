@@ -607,7 +607,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     bestScore = bestElites;
                     popSize = (int)(((float)popSize) * 0.5f);
                 }
-                else popSize = (int)(((float)popSize) * 1.11f);
+                else
+                {
+                    bestScore = bestElites;
+                    popSize = (int)(((float)popSize) * 1.11f);
+                }
                 //move current colony into dead pool and null the _organisms array
                 Parallel.For(0, _organismsCount, i =>
                 {
