@@ -21,8 +21,15 @@ public abstract class FeynmanMLSetup : MLSetup
     //}
     public sealed override int TargetColonySize(int generation)
     {
-        if (generation < 20) return 5_000_000;
+        if (generation < 5) return 25_000_000;
+        if (generation < 10) return 10_000_000;
+        if (generation < 15) return 5_000_000;
+        if (generation < 20) return 3_000_000;
+        if (generation < 25) return 1_000_000;
+        if (generation < 35) return 500_000;
         return 250_000;
+        //if (generation < 20) return 5_000_000;
+        //return 250_000;
     }
 
     public sealed override long TotalBirthsToResetColonyIfNoProgress => 750_000_000;

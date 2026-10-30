@@ -171,10 +171,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             _crossoverPartners = new Organism[CrossoverPartnerPoolSize];
 
-            using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
+            using (new ConsoleTimer($"create initial colony of {popSize/*MLSetup.Current.TargetColonySize(0)*/:N0} organisms", true, ConsoleColor.Blue))
             {
                 //Create new organisms in multithreaded fashion
-                _organismsCount = MLSetup.Current.TargetColonySize(0);
+                _organismsCount = popSize;//MLSetup.Current.TargetColonySize(0);
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
@@ -497,7 +497,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 }
 
                 //Create new organisms in multithreaded fashion. We always begin with the initial number of organisms - TargetColonySize(0)
-                _newbornOrganismsCount = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
+                _newbornOrganismsCount = popSize;//MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 Parallel.For(0, _newbornOrganismsCount, i =>
                 {
                     var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
@@ -519,7 +519,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Debug.Assert(_organisms.All(x => x == null || x.IsLayerInitialized));
 
                 // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute offspring across layers
-                int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
+                int targetColonySize = popSize;//MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 float frontTargetPerMember;
                 if (_turboParetoSearch)
                 {
@@ -592,7 +592,22 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                     while (pctProb > 0);
                 });
-
+                int bestElites = 0;
+                for (int elites = 0; elites < _organismsCount; elites++)
+                {
+                    if (_organisms[elites]!.IsInParetoFrontZero)
+                    {
+                        //var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+                        //_newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
+                        if (_organisms[elites].Score > bestElites) bestElites = _organisms[elites].Score;
+                    }
+                }
+                if (bestElites > bestScore)
+                {
+                    bestScore = bestElites;
+                    popSize = (int)(((float)popSize) * 0.5f);
+                }
+                else popSize = (int)(((float)popSize) * 1.11f);
                 //move current colony into dead pool and null the _organisms array
                 Parallel.For(0, _organismsCount, i =>
                 {
@@ -622,7 +637,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         _generationTime = _generationWatch.Elapsed;
         Console.ForegroundColor = ConsoleColor.White;
         Output.WriteLine($"{_totalTimeWatch.Elapsed:c}: Generation {_currentGeneration:N0} took {_acceleratorGenerationTime:c}/{_generationTime:c}");
-        Output.WriteLine($"Colony size: {_organismsCount:N0}: (target: {MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset):N0}). Total births: {_totalBirths:N0}");
+        Output.WriteLine($"Colony size: {_organismsCount:N0}: (target: {popSize /*MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset)*/:N0}). Total births: {_totalBirths:N0}");
 
         var mostAccurateColor = _mostAccurateEverOrganism!.Score == MLSetup.MaxGenerationScore ? ConsoleColor.Green : ConsoleColor.White;
 
@@ -1426,6 +1441,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
     #endregion
+
+    public int popSize = 5_000_000;
+    public int bestScore = Int32.MinValue;
 
     #region SetParetoLayersInMicrocosm() and SelectNextParetoFrontInMicrocosm() -related arrays
     //SetParetoLayersInMicrocosm
