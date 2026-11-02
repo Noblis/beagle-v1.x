@@ -686,7 +686,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Console.ForegroundColor = ConsoleColor.Red;
             Output.Write($"{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}");
             Console.ForegroundColor = ConsoleColor.White;
-            Output.Write("): length = ");
+            Output.WriteLine("): length = ");
             Console.ForegroundColor = ConsoleColor.Red;
             Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
             Console.ForegroundColor = ConsoleColor.White;
