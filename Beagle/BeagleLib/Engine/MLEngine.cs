@@ -407,12 +407,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             });
         }
         
-        Array.Sort(_mostAccurateOrganismsSinceLastColonyReset, new OrganismScoreReverseComparer()); //TODO: remove one of these 
-        
-        if (_mostAccurateOrganismsSinceLastColonyReset[0]?.Score > _highestOrganismsScoreSinceLastColonyReset)
-        {
-            _highestOrganismsScoreSinceLastColonyReset = _mostAccurateOrganismsSinceLastColonyReset[0]!.Score;
-        }
+        Array.Sort(_mostAccurateOrganismsSinceLastColonyReset, new OrganismScoreReverseComparer()); 
         #endregion
 
         #region update most accurate & shortest satisfactory organisms
@@ -502,6 +497,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                     _mostAccurateOrganismsSinceLastColonyReset[i] = null;
                 }
+                _highestOrganismsScoreSinceLastColonyReset = int.MinValue;
 
                 //Create new organisms in multithreaded fashion. We always begin with the initial number of organisms - TargetColonySize(0)
                 _newbornOrganismsCount = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
@@ -1340,6 +1336,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _mostAccurateEverOrganism = _mostAccurateOrganismsSinceLastColonyReset[0]!;
                 _mostAccurateEverOrganismTotalTime = _totalTimeWatch.Elapsed;
                 _totalBirthAtLastMostAccurateEverOrganism = _totalBirths;
+            }
+
+            if (_highestOrganismsScoreSinceLastColonyReset > _mostAccurateOrganismsSinceLastColonyReset[0]!.Score)
+            {
+                _highestOrganismsScoreSinceLastColonyReset = _mostAccurateOrganismsSinceLastColonyReset[0]!.Score);
             }
         }
     }
