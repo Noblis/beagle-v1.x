@@ -430,7 +430,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             {
                 for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
                 {
-                    if (_mostAccurateOrganismsSinceLastColonyReset[i] != null) _organisms[_organismsCount++] = _mostAccurateOrganismsSinceLastColonyReset[i];
+                    var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    _organisms[_organismsCount++] = newOrganism;
+                    //if (_mostAccurateOrganismsSinceLastColonyReset[i] != null) _organisms[_organismsCount++] = _mostAccurateOrganismsSinceLastColonyReset[i];
                 }
             }
         }
@@ -461,8 +463,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         #region births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays
         using (new ConsoleTimer("births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays", _showProfilingInfo))
         {
-            if (MLSetup.Current.TotalBirthsToResetColonyIfNoProgress > 0 && _totalBirths - _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate >= MLSetup.Current.TotalBirthsToResetColonyIfNoProgress)
+            if (MLSetup.Current.TotalBirthsToResetColonyIfNoProgress > 0 && _totalBirths - _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate >= MLSetup.Current.TotalBirthsToResetColonyIfNoProgress || _organismsCount > 2*MLSetup.Current.TargetColonySize(0))
             {
+                popSize = MLSetup.Current.TargetColonySize(0);
+                bestScore = 0;
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Output.WriteLine("Resetting the colony fresh...");
                 Output.WriteLine();
@@ -597,8 +601,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 {
                     if (_organisms[elites]!.IsInParetoFrontZero)
                     {
-                        //var idx = Interlocked.Increment(ref _newbornOrganismsCount);
-                        //_newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
+                        var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+                        _newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
                         if (_organisms[elites].Score > bestElites) bestElites = _organisms[elites].Score;
                     }
                 }
@@ -613,7 +617,16 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     popSize = (int)(((float)popSize) * 1.11f);
                 }
 
-                popSize = Math.Min(Math.Max(popSize, 1_000), 50_000_000);
+                popSize = Math.Min(Math.Max(popSize, 1_000), 3*MLSetup.Current.TargetColonySize(0));
+
+                int addRand = popSize/10;//MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
+                Parallel.For(0, addRand, i =>
+                {
+                    var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+                    var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    _newbornOrganisms[idx] = newOrganism;
+                });
+
                 //move current colony into dead pool and null the _organisms array
                 Parallel.For(0, _organismsCount, i =>
                 {

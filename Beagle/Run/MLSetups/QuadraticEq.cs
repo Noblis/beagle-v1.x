@@ -27,7 +27,7 @@ public class QuadraticEq : MLSetup
     {
         //var remainder = generation % 525;
         //if (remainder < 25) return 250_000;
-        return 300_000;
+        return 5_000_000;
     }
 
     public override long TotalBirthsToResetColonyIfNoProgress => 100_000_000;
