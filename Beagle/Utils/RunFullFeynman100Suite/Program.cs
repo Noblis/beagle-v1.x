@@ -10,7 +10,7 @@ public static class Program
         Easy, Medium, Hard 
     }
 
-    private static bool _runWithNoEscMenu = OperatingSystem.IsLinux();
+    private static readonly bool _runWithNoEscMenu = OperatingSystem.IsLinux();
 
     private const string RelativePathToRunProject = "../../../../../Run"; //if running from Visual Studio or Rider
     //private const string RelativePathToRunProject = "../../Run"; //if running from command line
