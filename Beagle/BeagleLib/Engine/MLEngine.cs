@@ -601,29 +601,29 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 {
                     if (_organisms[elites]!.IsInParetoFrontZero)
                     {
-                        var idx = Interlocked.Increment(ref _newbornOrganismsCount);
-                        _newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
+                        //var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+                        //_newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
                         if (_organisms[elites].Score > bestElites) bestElites = _organisms[elites].Score;
                     }
                 }
 
-                popSize = (int)((5_120_000f - (float)bestElites) / (5_120_000f - MathF.Max((float)bestScore,0)) * (float)popSize);
-                bestScore = bestElites;
-                //if (5_120_000-bestElites < (5_120_000 - bestScore)/1.5)
-                //{
-                //    bestScore = bestElites;
-                //    popSize = (int)(((float)popSize) * 0.5f);
-                //}
-                //else if (bestElites > bestScore)
-                //{
-                //    bestScore = bestElites;
-                //    //popSize = (int)(((float)popSize) * 0.5f);
-                //}
-                //else
-                //{
-                //    //bestScore = bestElites;
-                //    popSize = (int)(((float)popSize) * 1.11f);
-                //}
+                //popSize = (int)((5_120_000f - (float)bestElites) / (5_120_000f - MathF.Max((float)bestScore, 0)) * (float)popSize);
+                //bestScore = bestElites;
+                if (5_120_000 - bestElites < (5_120_000 - bestScore) / 1.5)
+                {
+                    bestScore = bestElites;
+                    popSize = (int)(((float)popSize) * 0.5f);
+                }
+                else if (bestElites > bestScore)
+                {
+                    bestScore = bestElites;
+                    //popSize = (int)(((float)popSize) * 0.5f);
+                }
+                else
+                {
+                    //bestScore = bestElites;
+                    popSize = (int)(((float)popSize) * 1.11f);
+                }
 
                 popSize = Math.Min(Math.Max(popSize, 1_000), 3*MLSetup.Current.TargetColonySize(0));
 
