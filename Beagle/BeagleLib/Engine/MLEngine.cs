@@ -606,10 +606,16 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         if (_organisms[elites].Score > bestElites) bestElites = _organisms[elites].Score;
                     }
                 }
-                if (bestElites > bestScore)
+
+                if (5_120_000-bestElites < (5_120_000 - bestScore)/1.5)
                 {
                     bestScore = bestElites;
                     popSize = (int)(((float)popSize) * 0.5f);
+                }
+                else if (bestElites > bestScore)
+                {
+                    bestScore = bestElites;
+                    //popSize = (int)(((float)popSize) * 0.5f);
                 }
                 else
                 {
