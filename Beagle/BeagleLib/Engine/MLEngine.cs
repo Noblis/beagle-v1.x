@@ -601,13 +601,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 {
                     if (_organisms[elites]!.IsInParetoFrontZero)
                     {
-                        //var idx = Interlocked.Increment(ref _newbornOrganismsCount);
-                        //_newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
+                        var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+                        _newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
                         if (_organisms[elites].Score > bestElites) bestElites = _organisms[elites].Score;
                     }
                 }
 
                 popSize = (int)((5_120_000f - (float)bestElites) / (5_120_000f - MathF.Max((float)bestScore, 0)) * (float)popSize);
+                if (5_120_000 - bestElites == 0) popSize = MLSetup.Current.TargetColonySize(0);
                 bestScore = Math.Max(bestElites, bestScore);
                 //if (5_120_000 - bestElites < (5_120_000 - bestScore) / 1.5)
                 //{
