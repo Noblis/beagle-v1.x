@@ -66,17 +66,17 @@ public static class Program
                 if (_hardProblems.Contains(eq))
                 {
                     runningAs = ProblemType.Hard;
-                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={HardStopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={HardStopAfterMin} RunFeynman={eq} #NoEscMenu #useLibDevice";
                 }
                 else if (_easyProblems.Contains(eq))
                 {
                     runningAs = ProblemType.Easy;
-                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={EasyStopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={EasyStopAfterMin} RunFeynman={eq} #NoEscMenu #useLibDevice";
                 }
                 else
                 {
                     runningAs = ProblemType.Medium;
-                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={MediumStopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={MediumStopAfterMin} RunFeynman={eq} #NoEscMenu #useLibDevice";
                 }
 
                 for (var i = 1; i <= NumberOfRunsPerEq; i++)
@@ -111,14 +111,14 @@ public static class Program
                             {
                                 runningAs = ProblemType.Medium;
                                 equationsRanCount[eq - 1] = equationsValidatedCount[eq - 1] = 0;
-                                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={MediumStopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={MediumStopAfterMin} RunFeynman={eq} #NoEscMenu #useLibDevice";
                                 i = 0;
                             }
                             else if (runningAs == ProblemType.Medium)
                             {
                                 runningAs = ProblemType.Hard;
                                 equationsRanCount[eq - 1] = equationsValidatedCount[eq - 1] = 0;
-                                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={HardStopAfterMin} RunFeynman={eq} NoEscMenu #useLibDevice";
+                                startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={HardStopAfterMin} RunFeynman={eq} #NoEscMenu #useLibDevice";
                                 i = 0;
                             }
                             else
