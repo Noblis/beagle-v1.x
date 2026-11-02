@@ -25,7 +25,7 @@ public abstract class FeynmanMLSetup : MLSetup
         return 250_000;
     }
 
-    public sealed override long TotalBirthsToResetColonyIfNoProgress => 750_000_000;
+    public sealed override long TotalBirthsToResetColonyIfNoProgress => 3_000_000_000;
     public sealed override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Cbrt && x != OpEnum.Cube && x != OpEnum.Pow).ToArray();
     #endregion
 }
