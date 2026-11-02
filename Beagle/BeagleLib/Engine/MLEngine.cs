@@ -225,6 +225,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _mostAccurateEverOrganism = null;
             _mostAccurateOrganismsSinceLastColonyReset = new Organism?[BConfig.TopMostAccurateOrganismsToKeep];
             for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++) _mostAccurateOrganismsSinceLastColonyReset[i] = null;
+            _highestOrganismsScoreSinceLastColonyReset = int.MinValue;
             _mostAccurateEverOrganismTotalTime = TimeSpan.Zero;
             _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate = 0;
 
@@ -376,12 +377,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             });
         }
 
-#if DEBUG
+        #if DEBUG
         for (var i = 0; i < _organismsCount; i++)
         {
             Debug.Assert(_organisms[i] == null || !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_organisms[i]!));
         }
-#endif
+        #endif
         Debug.Assert(!AnyDuplicatesInMostAccurateOrganismsSinceLastColonyReset());
         if (IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_mostAccurateEverOrganism!))
         {
@@ -405,7 +406,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
             });
         }
+        
         Array.Sort(_mostAccurateOrganismsSinceLastColonyReset, new OrganismScoreReverseComparer()); //TODO: remove one of these 
+        
+        if (_mostAccurateOrganismsSinceLastColonyReset[0]?.Score > _highestOrganismsScoreSinceLastColonyReset)
+        {
+            _highestOrganismsScoreSinceLastColonyReset = _mostAccurateOrganismsSinceLastColonyReset[0]!.Score;
+        }
         #endregion
 
         #region update most accurate & shortest satisfactory organisms
@@ -1408,6 +1415,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected int _generationAtLastColonyReset;
     protected long _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate;
     protected Organism?[] _mostAccurateOrganismsSinceLastColonyReset = null!;
+    protected int _highestOrganismsScoreSinceLastColonyReset = int.MinValue;
     #endregion
 
     #region Fields to Keep Track of most accurate and shortest satisfactory organisms
