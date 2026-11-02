@@ -171,7 +171,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             _crossoverPartners = new Organism[CrossoverPartnerPoolSize];
 
-            using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
+            using (new ConsoleTimer($"creating initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
                 //Create new organisms in multithreaded fashion
                 _organismsCount = MLSetup.Current.TargetColonySize(0);
@@ -225,8 +225,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _mostAccurateEverOrganism = null;
             _mostAccurateOrganismsSinceLastColonyReset = new Organism?[BConfig.TopMostAccurateOrganismsToKeep];
             for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++) _mostAccurateOrganismsSinceLastColonyReset[i] = null;
+            _highestOrganismsScoreSinceLastColonyReset = int.MinValue;
             _mostAccurateEverOrganismTotalTime = TimeSpan.Zero;
-            _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate = 0;
+            _totalBirthAtLastHighestScoreSinceLastColonyReset = 0;
 
             while (true)
             {
@@ -285,14 +286,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 if (stopAfterMin > 0 && _totalTimeWatch.Elapsed.TotalMinutes > stopAfterMin)
                 {
                     Output.WriteLine("Allotted time exceeded");
-                    VerifyAndComplete(noEscMenu);
+                    VerifyAndComplete();
                     break;
                 }
 
                 if (stopAfterBirths > 0 && _totalBirths > stopAfterBirths)
                 {
                     Output.WriteLine("Allotted number of births exceeded");
-                    VerifyAndComplete(noEscMenu);
+                    VerifyAndComplete();
                     break;
                 }
 
@@ -376,12 +377,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             });
         }
 
-#if DEBUG
+        #if DEBUG
         for (var i = 0; i < _organismsCount; i++)
         {
             Debug.Assert(_organisms[i] == null || !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_organisms[i]!));
         }
-#endif
+        #endif
         Debug.Assert(!AnyDuplicatesInMostAccurateOrganismsSinceLastColonyReset());
         if (IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_mostAccurateEverOrganism!))
         {
@@ -405,7 +406,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
             });
         }
-        Array.Sort(_mostAccurateOrganismsSinceLastColonyReset, new OrganismScoreReverseComparer()); //TODO: remove one of these 
+        
+        Array.Sort(_mostAccurateOrganismsSinceLastColonyReset, new OrganismScoreReverseComparer()); 
         #endregion
 
         #region update most accurate & shortest satisfactory organisms
@@ -461,7 +463,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         #region births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays
         using (new ConsoleTimer("births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays", _showProfilingInfo))
         {
-            if (MLSetup.Current.TotalBirthsToResetColonyIfNoProgress > 0 && _totalBirths - _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate >= MLSetup.Current.TotalBirthsToResetColonyIfNoProgress)
+            if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > _highestOrganismsScoreSinceLastColonyReset)
+            {
+                _highestOrganismsScoreSinceLastColonyReset = _mostAccurateOrganismsSinceLastColonyReset[0]!.Score;
+                _totalBirthAtLastHighestScoreSinceLastColonyReset = _totalBirths;
+            }
+
+            if (MLSetup.Current.TotalBirthsToResetColonyIfNoProgress > 0 && _totalBirths - _totalBirthAtLastHighestScoreSinceLastColonyReset >= MLSetup.Current.TotalBirthsToResetColonyIfNoProgress)
             {
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Output.WriteLine("Resetting the colony fresh...");
@@ -495,6 +503,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                     _mostAccurateOrganismsSinceLastColonyReset[i] = null;
                 }
+                _highestOrganismsScoreSinceLastColonyReset = int.MinValue;
 
                 //Create new organisms in multithreaded fashion. We always begin with the initial number of organisms - TargetColonySize(0)
                 _newbornOrganismsCount = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
@@ -660,8 +669,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         if (_mostAccurateEverOrganism!.Score == MLSetup.MaxGenerationScore && !ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mostAccurateEverOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
         else _mostAccurateEverOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
         
-        Console.ForegroundColor = ConsoleColor.White;
-        
         if (_mostAccurateOrganismsSinceLastColonyReset[0] != null && !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[0], _mostAccurateEverOrganism))
         {
             Output.Write("Last colony reset at ");
@@ -683,13 +690,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Console.ForegroundColor = ConsoleColor.Red;
             Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
             Console.ForegroundColor = ConsoleColor.White;
-            Output.Write(" at ");
-            Console.ForegroundColor = ConsoleColor.Red;
-            Output.Write($"{_totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate:N0}");
-            Console.ForegroundColor = ConsoleColor.White;
-            Output.WriteLine(" total births");
             _mostAccurateOrganismsSinceLastColonyReset[0]!.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
         }
+
+        Console.ForegroundColor = ConsoleColor.White;
+        Output.WriteLine($"Total births at last highest score since last colony reset: {_totalBirthAtLastHighestScoreSinceLastColonyReset:N0}");
+
         //Output.WriteLine($"Total births since last colony reset / reset after: {_totalBirthSinceLastColonyReset:N0}/{MLSetup.Current.TotalBirthsToResetColonyIfNoProgress:N0}");
         //Output.WriteLine(_mostAccurateOrganismSinceLastColonyReset!.CommandsToJson());
         Console.ResetColor();
@@ -1253,13 +1259,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         return !error;
     }
-    private void VerifyAndComplete(bool noEscMenu)
+    private void VerifyAndComplete()
     {
-        if (!noEscMenu)
-        {
-            DisplayModelAsLatex();
-            Thread.Sleep(3000); //sleep for three seconds to let Browser open request complete
-        }
+        //print in LaTeX
+        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_inputsArray, _correctOutputs);
+        var expr = MathExpr.FromCommands(fullCommands, MLSetup.Current.GetInputLabels());
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Output.WriteLine($"\nFormula as LaTeX: {expr.AsLatexString()}");
+        Console.ForegroundColor = ConsoleColor.White;
 
         if (VerifyModel())
         {
@@ -1323,7 +1330,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             //we only get here if organism is better than anything we have seen since last colony reset
             InsertIntoMostAccurateOrganismsSinceLastColonyResetAt(0, organism);
-            _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate = _totalBirths;
         }
         finally
         {
@@ -1405,8 +1411,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     #region Colony Reset Management
     protected int _generationAtLastColonyReset;
-    protected long _totalBirthAtLastMostAccurateOrganismSinceLastColonyResetUpdate;
+    protected long _totalBirthAtLastHighestScoreSinceLastColonyReset;
     protected Organism?[] _mostAccurateOrganismsSinceLastColonyReset = null!;
+    protected int _highestOrganismsScoreSinceLastColonyReset = int.MinValue;
     #endregion
 
     #region Fields to Keep Track of most accurate and shortest satisfactory organisms
