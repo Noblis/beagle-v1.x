@@ -171,7 +171,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             _crossoverPartners = new Organism[CrossoverPartnerPoolSize];
 
-            using (new ConsoleTimer($"create initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
+            using (new ConsoleTimer($"creating initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
             {
                 //Create new organisms in multithreaded fashion
                 _organismsCount = MLSetup.Current.TargetColonySize(0);
@@ -1255,11 +1255,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
     private void VerifyAndComplete(bool noEscMenu)
     {
-        //if (!noEscMenu)
-        //{
-        //    DisplayModelAsLatex();
-        //    Thread.Sleep(3000); //sleep for three seconds to let Browser open request complete
-        //}
+        //print in LaTeX
+        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_inputsArray, _correctOutputs);
+        var expr = MathExpr.FromCommands(fullCommands, MLSetup.Current.GetInputLabels());
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Output.WriteLine($"\nFormula as LaTeX: {expr.AsLatexString()}");
+        Console.ForegroundColor = ConsoleColor.White;
 
         if (VerifyModel())
         {
