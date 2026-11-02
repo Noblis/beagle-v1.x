@@ -1255,11 +1255,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
     private void VerifyAndComplete(bool noEscMenu)
     {
-        if (!noEscMenu)
-        {
-            DisplayModelAsLatex();
-            Thread.Sleep(3000); //sleep for three seconds to let Browser open request complete
-        }
+        //if (!noEscMenu)
+        //{
+        //    DisplayModelAsLatex();
+        //    Thread.Sleep(3000); //sleep for three seconds to let Browser open request complete
+        //}
 
         if (VerifyModel())
         {
