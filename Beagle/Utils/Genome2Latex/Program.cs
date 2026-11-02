@@ -48,11 +48,11 @@ public static class Program
             Console.ResetColor();
             Console.WriteLine();
 
-            Console.WriteLine("Traditional string:");
-            Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine(expr.AsTraditionalString());
-            Console.ResetColor();
-            Console.WriteLine();
+            //Console.WriteLine("Traditional string:");
+            //Console.ForegroundColor = ConsoleColor.Blue;
+            //Console.WriteLine(expr.AsTraditionalString());
+            //Console.ResetColor();
+            //Console.WriteLine();
         }
     }
 

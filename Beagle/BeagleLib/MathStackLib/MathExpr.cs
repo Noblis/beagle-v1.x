@@ -249,42 +249,42 @@ public abstract record MathExpr
         return stack.Last();
     }
 
-    public string AsTraditionalString()
-    {
-        switch (this)
-        {
-            case Sign({ } mathExpr):
-                return $"(-1 * ({mathExpr.AsTraditionalString()}))";
-            case Sqrt({ } mathExpr):
-                return $"({mathExpr.AsTraditionalString()})^(1/2)";
-            case Cbrt({ } mathExpr):
-                return $"({mathExpr.AsTraditionalString()})^(1/3)";
-            case Square({ } mathExpr):
-                return $"(({mathExpr.AsTraditionalString()})^2)";
-            case Cube({ } mathExpr):
-                return $"(({mathExpr.AsTraditionalString()})^3)";
-            case Ln({ } mathExpr):
-                return $"ln({mathExpr.AsTraditionalString()})";
-            case Sin({ } mathExpr):
-                return $"sin({mathExpr.AsTraditionalString()})";
-            case Abs({ } mathExpr):
-                return $"(|{mathExpr.AsTraditionalString()}|)";
-            case Add({ } lhs, { } rhs):
-                return $"(({lhs.AsTraditionalString()}) + ({rhs.AsTraditionalString()}))";
-            case Sub({ } lhs, { } rhs):
-                return $"(({lhs.AsTraditionalString()}) - ({rhs.AsTraditionalString()}))";
-            case Div({ } lhs, { } rhs):
-                return $"(({lhs.AsTraditionalString()}) / ({rhs.AsTraditionalString()}))";
-            case Mul({ } lhs, { } rhs):
-                return $"(({lhs.AsTraditionalString()}) * ({rhs.AsTraditionalString()}))";
-            case Variable({ } name):
-                return name;
-            case Constant(var value):
-                return value.ToString(CultureInfo.InvariantCulture);
-            default:
-                throw new SystemException($"An unexpected member of the MathExpr record was encountered, this switch should be exhaustive: {this}");
-        }
-    }
+    //public string AsTraditionalString()
+    //{
+    //    switch (this)
+    //    {
+    //        case Sign({ } mathExpr):
+    //            return $"(-1 * ({mathExpr.AsTraditionalString()}))";
+    //        case Sqrt({ } mathExpr):
+    //            return $"({mathExpr.AsTraditionalString()})^(1/2)";
+    //        case Cbrt({ } mathExpr):
+    //            return $"({mathExpr.AsTraditionalString()})^(1/3)";
+    //        case Square({ } mathExpr):
+    //            return $"(({mathExpr.AsTraditionalString()})^2)";
+    //        case Cube({ } mathExpr):
+    //            return $"(({mathExpr.AsTraditionalString()})^3)";
+    //        case Ln({ } mathExpr):
+    //            return $"ln({mathExpr.AsTraditionalString()})";
+    //        case Sin({ } mathExpr):
+    //            return $"sin({mathExpr.AsTraditionalString()})";
+    //        case Abs({ } mathExpr):
+    //            return $"(|{mathExpr.AsTraditionalString()}|)";
+    //        case Add({ } lhs, { } rhs):
+    //            return $"(({lhs.AsTraditionalString()}) + ({rhs.AsTraditionalString()}))";
+    //        case Sub({ } lhs, { } rhs):
+    //            return $"(({lhs.AsTraditionalString()}) - ({rhs.AsTraditionalString()}))";
+    //        case Div({ } lhs, { } rhs):
+    //            return $"(({lhs.AsTraditionalString()}) / ({rhs.AsTraditionalString()}))";
+    //        case Mul({ } lhs, { } rhs):
+    //            return $"(({lhs.AsTraditionalString()}) * ({rhs.AsTraditionalString()}))";
+    //        case Variable({ } name):
+    //            return name;
+    //        case Constant(var value):
+    //            return value.ToString(CultureInfo.InvariantCulture);
+    //        default:
+    //            throw new SystemException($"An unexpected member of the MathExpr record was encountered, this switch should be exhaustive: {this}");
+    //    }
+    //}
 
     public string AsFunctionPlotString()
     {

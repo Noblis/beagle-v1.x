@@ -25,7 +25,7 @@ class BeagleModel:
         data = np.array(X).T
         for op in expr:
             if "CONST" in op:
-                stack.append(float(op.split(' ')[1]))
+                stack.append(np.float32(op.split(' ')[1]))
             if "LOAD" in op:
                 stack.append(data[int(op.split(':')[1])])
             if "ADD" in op:
@@ -53,26 +53,26 @@ class BeagleModel:
                 stack.append(np.sign(a))
             if "SQUARE" in op:
                 a = stack.pop()
-                stack.append(a ** 2)
+                stack.append(a ** np.float32(2))
             if "CUBE" in op:
                 a = stack.pop()
-                stack.append(a ** 3)
+                stack.append(a ** np.float32(3))
             if "SQRT" in op:
                 a = stack.pop()
-                stack.append(a ** 0.5)
+                stack.append(a ** np.float32(0.5))
             if "CBRT" in op:
                 a = stack.pop()
-                stack.append(a ** (1/3))
+                stack.append(a ** np.float32(1/3))
             if "LN" in op:
                 a = stack.pop()
                 stack.append(np.log(a))
-            if "SIN" in op:
+            if "SIN" in op and "ARCSIN" not in op:
                 a = stack.pop()
                 stack.append(np.sin(a))
-            if "COS" in op:
+            if "COS" in op and "ARCCOS" not in op:
                 a = stack.pop()
                 stack.append(np.cos(a))
-            if "TAN" in op:
+            if "TAN" in op and "ARCTAN" not in op and "TANH" not in op:
                 a = stack.pop()
                 stack.append(np.tan(a))
             if "ARCSIN" in op:
@@ -110,6 +110,7 @@ class BeagleModel:
                 varName = op.split(" ")[1]
                 a = copyPasteDict[varName]
                 stack.append(a)
+            print("Stack:", stack, "Operation:", op, "CopyPasteDict:", copyPasteDict)
         return stack[0]
 
     def modelExpression(self):
@@ -136,7 +137,7 @@ class BeagleModel:
         
         for op in expr:
             if "CONST" in op:
-                stack.append(float(op.split(' ')[1]))
+                stack.append(np.float32(op.split(' ')[1]))
             if "LOAD" in op:
                 stack.append(data[int(op.split(':')[1])])
             if "ADD" in op:
@@ -164,26 +165,26 @@ class BeagleModel:
                 stack.append(sym.sign(a))
             if "SQUARE" in op:
                 a = stack.pop()
-                stack.append(a ** 2)
+                stack.append(a ** np.float32(2))
             if "CUBE" in op:
                 a = stack.pop()
-                stack.append(a ** 3)
+                stack.append(a ** np.float32(3))
             if "SQRT" in op:
                 a = stack.pop()
-                stack.append(a ** 0.5)
+                stack.append(a ** np.float32(0.5))
             if "CBRT" in op:
                 a = stack.pop()
-                stack.append(a ** (1/3))
+                stack.append(a ** np.float32(1/3))
             if "LN" in op:
                 a = stack.pop()
                 stack.append(sym.log(a))
-            if "SIN" in op:
+            if "SIN" in op and "ARCSIN" not in op:
                 a = stack.pop()
                 stack.append(sym.sin(a))
-            if "COS" in op:
+            if "COS" in op and "ARCCOS" not in op:
                 a = stack.pop()
                 stack.append(sym.cos(a))
-            if "TAN" in op:
+            if "TAN" in op and "ARCTAN" not in op and "TANH" not in op:
                 a = stack.pop()
                 stack.append(sym.tan(a))
             if "ARCSIN" in op:
@@ -221,6 +222,7 @@ class BeagleModel:
                 varName = op.split(" ")[1]
                 a = copyPasteDict[varName]
                 stack.append(a)
+            print("Stack:", stack, "Operation:", op, "CopyPasteDict:", copyPasteDict)
         return stack
             
 class BeagleRegressor:
