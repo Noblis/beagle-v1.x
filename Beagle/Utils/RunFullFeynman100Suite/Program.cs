@@ -13,6 +13,10 @@ public static class Program
     private const string RelativePathToRunProject = "../../../../../Run"; //if running from Visual Studio or Rider
     //private const string RelativePathToRunProject = "../../Run"; //if running from command line
 
+    //private static readonly int[] _problems = [44, 90];
+    private static readonly int[] _problems = Enumerable.Range(1, FeynmanEqCount).ToArray();
+
+
     private const int HardStopAfterMin = 10; 
     private const int MediumStopAfterMin = 4;
     private const int EasyStopAfterMin = 1;
@@ -37,7 +41,7 @@ public static class Program
         //4) As soon as we get half successes, we are done
         //5) As soon as we have at least one solution (for best) and can no longer achieve typical anymore, we are done 
 
-        DateTime now = DateTime.Now;
+        DateTime startTime = DateTime.Now;
         
         var equationsValidatedCount = new int[FeynmanEqCount];
         var equationsRanCount = new int[FeynmanEqCount];
@@ -56,9 +60,7 @@ public static class Program
 
         try
         {
-            //int[] problems = [44, 87, 90];
-            int[] problems = Enumerable.Range(1, FeynmanEqCount).ToArray();
-            foreach (var eq in problems)
+            foreach (var eq in _problems)
             {
                 ProblemType runningAs;
                 if (_hardProblems.Contains(eq))
@@ -98,7 +100,7 @@ public static class Program
                             if (equationsValidatedCount[eq - 1] >= MathF.Ceiling(NumberOfRunsPerEq / 2f))
                                 //&& equationsValidatedCount[eq - 1] == equationsRanCount[eq - 1])
                             {
-                                GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, ranAs);
+                                GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, ranAs, startTime, DateTime.Now);
                                 Console.WriteLine($"Typical is achieved ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
                                 break;
                             }
@@ -127,7 +129,7 @@ public static class Program
                                     MathF.Ceiling(NumberOfRunsPerEq / 2f) - equationsValidatedCount[eq - 1])
                                 {
                                     ranAs[eq - 1] = runningAs;
-                                    GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, ranAs);
+                                    GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, ranAs, startTime, DateTime.Now);
                                     Console.WriteLine($"Best is achieved, typical out of reach ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
                                     break;
                                 }
@@ -142,7 +144,7 @@ public static class Program
                         }
 
                         ranAs[eq - 1] = runningAs;
-                        GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, ranAs);
+                        GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, ranAs, startTime, DateTime.Now);
                     }
                 }
             }
@@ -156,7 +158,7 @@ public static class Program
         {
             try
             {
-                Directory.Move("AppOutput", $"FeynmanAppOutput_{now.Year}-{now.Month:D2}-{now.Day:D2}-{now.Hour:D2}-{now.Minute:D2}-{now.Second:D2}");
+                Directory.Move("AppOutput", $"FeynmanAppOutput_{startTime.Year}-{startTime.Month:D2}-{startTime.Day:D2}-{startTime.Hour:D2}-{startTime.Minute:D2}-{startTime.Second:D2}");
                 break;
             }
             catch (Exception)
@@ -172,7 +174,7 @@ public static class Program
         }
     }
 
-    private static void GenerateAndDisplayResults(int[] equationsValidatedCount, int[] equationsRanCount, ProblemType?[] wasSolvingAs)
+    private static void GenerateAndDisplayResults(int[] equationsValidatedCount, int[] equationsRanCount, ProblemType?[] wasSolvingAs, DateTime startTime, DateTime completionTime)
     {
         var resultsSb = new StringBuilder();
         for (var eqi = 1; eqi <= FeynmanEqCount; eqi++)
@@ -191,6 +193,11 @@ public static class Program
         resultsSb.AppendLine("----------------------");
         resultsSb.AppendLine($"Typical Solved: {equationsValidatedCount.Count(x => x >= MathF.Ceiling(NumberOfRunsPerEq/2f))}/{eqRan}");
         resultsSb.AppendLine($"Best Solved: {equationsValidatedCount.Count(x => x > 0)}/{eqRan}");
+        resultsSb.AppendLine();
+        resultsSb.AppendLine($"Started: {startTime}");
+        resultsSb.AppendLine($"Completed: {completionTime}");
+        resultsSb.AppendLine($"Took: {completionTime - startTime}");
+
 
         var results = resultsSb.ToString();
 
