@@ -515,92 +515,123 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             }
             else
             {
-                _newbornOrganismsCount = -1;
+                _newbornOrganismsCount = 0;
 
                 // Record per-organism layer + tier for offspring targets
                 Parallel.For(0, _organismsCount, i =>
                 {
                     var organism = _organisms[i]!;
                     CalcEstimatedParetoLayerForOrganism(organism);
-                    if (!_organisms[i]!.IsInParetoFrontZero) Interlocked.Increment(ref _perLayerSizes[organism.Layer]);
                 });
 
                 Debug.Assert(_organisms.All(x => x == null || x.IsLayerInitialized));
 
-                // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute offspring across layers
                 int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
-                float frontTargetPerMember;
-                if (_turboParetoSearch)
+                BuildIslandMetadata(_organismsCount, targetColonySize);
+
+                for (var island = 0; island < _activeIslandCount; island++)
                 {
-                    frontTargetPerMember = _paretoFrontZeroCount > 0
-                        ? 1.0f * targetColonySize / _paretoFrontZeroCount
-                        : 0.0f;
-                }
-                else
-                {
-                    frontTargetPerMember = _paretoFrontZeroCount > 0
-                        ? 0.5f * targetColonySize / _paretoFrontZeroCount
-                        : 0.0f;
-                }
+                    var islandStart = _islandOrganismStarts[island];
+                    var islandCount = _islandOrganismCounts[island];
+                    var islandNewbornStart = _islandNewbornStarts[island];
+                    var islandNewbornCapacity = _islandNewbornCapacities[island];
+                    if (islandCount == 0 || islandNewbornCapacity == 0) continue;
 
-                // Non-front: geometric decay across layers, divided by layer size
-                int maxLayer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
-                float nonFrontTarget = 0.5f * targetColonySize;
-                for (int l = 0; l <= maxLayer; l++)
-                {
-                    if (_turboParetoSearch) _perLayerOffspringTargets[l] = 0.0f;
-                    else _perLayerOffspringTargets[l] = nonFrontTarget / MathF.Pow(2f, l + 1) / _perLayerSizes[l];
-                }
+                    Array.Clear(_perLayerSizes, 0, _perLayerSizes.Length);
+                    Array.Clear(_perLayerOffspringTargets, 0, _perLayerOffspringTargets.Length);
 
-                FindCrossoverPartnerArray();
-
-                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-                Debug.Assert(_crossoverPartners.All(x => x == null || x.IsLayerInitialized));
-
-                // Offspring generation
-                Parallel.For(0, _organismsCount, i =>
-                {
-                    var organism = _organisms[i]!;
-                    float pctProb = organism.IsInParetoFrontZero ? frontTargetPerMember : _perLayerOffspringTargets[organism.Layer];
-                    
-                    var randomizedScale = 0.75f + Rnd.Random.NextSingle() * 0.5f;
-                    pctProb *= randomizedScale;
-
-                    do
+                    int islandFrontZeroCount = 0;
+                    int maxLayer = 0;
+                    var islandEnd = islandStart + islandCount;
+                    for (var i = islandStart; i < islandEnd; i++)
                     {
-                        if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
+                        var organism = _organisms[i]!;
+                        if (organism.IsInParetoFrontZero)
                         {
-                            //we want to store a local copy of idx in OUR thread, so we can work with it
-                            //while another thread may increment _newbornOrganismsCount
-                            var idx = Interlocked.Increment(ref _newbornOrganismsCount);
-
-                            #if DEBUG
-                            if (idx >= _newbornOrganisms.Length)
-                            {
-                                Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
-                                Debugger.Break();
-                            }
-                            #endif
-
-                            if (Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
-                            {
-                                var crossoverPartnerIdx = Rnd.Random.Next(_crossoverPartnersCount);
-                                _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_crossoverPartners[crossoverPartnerIdx]!);
-                                if (_newbornOrganisms[idx] == null ) // if crossover fails, do mutation instead
-                                {
-                                    _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
-                                }
-                            }
-                            else
-                            {
-                                _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
-                            }
+                            islandFrontZeroCount++;
                         }
-
-                        pctProb--;
+                        else if (organism.Layer >= 0 && organism.Layer < _perLayerSizes.Length)
+                        {
+                            _perLayerSizes[organism.Layer]++;
+                            if (organism.Layer > maxLayer) maxLayer = organism.Layer;
+                        }
                     }
-                    while (pctProb > 0);
-                });
+
+                    float frontTargetPerMember;
+                    if (_turboParetoSearch)
+                    {
+                        frontTargetPerMember = islandFrontZeroCount > 0
+                            ? 1.0f * islandNewbornCapacity / islandFrontZeroCount
+                            : 0.0f;
+                    }
+                    else
+                    {
+                        frontTargetPerMember = islandFrontZeroCount > 0
+                            ? 0.5f * islandNewbornCapacity / islandFrontZeroCount
+                            : 0.0f;
+                    }
+
+                    float nonFrontTarget = 0.5f * islandNewbornCapacity;
+                    for (int l = 0; l <= maxLayer; l++)
+                    {
+                        if (_turboParetoSearch || _perLayerSizes[l] == 0) _perLayerOffspringTargets[l] = 0.0f;
+                        else _perLayerOffspringTargets[l] = nonFrontTarget / MathF.Pow(2f, l + 1) / _perLayerSizes[l];
+                    }
+
+                    FindCrossoverPartnerArray(islandStart, islandCount);
+
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+                    Debug.Assert(_crossoverPartners.All(x => x == null || x.IsLayerInitialized));
+                    
+                    var islandNewbornCount = -1;
+                    Parallel.For(islandStart, islandEnd, i =>
+                    {
+                        var organism = _organisms[i]!;
+                        float pctProb = organism.IsInParetoFrontZero || organism.Layer < 0 || organism.Layer >= _perLayerOffspringTargets.Length
+                            ? frontTargetPerMember
+                            : _perLayerOffspringTargets[organism.Layer];
+
+                        var randomizedScale = 0.75f + Rnd.Random.NextSingle() * 0.5f;
+                        pctProb *= randomizedScale;
+
+                        do
+                        {
+                            if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
+                            {
+                                var islandLocalIdx = Interlocked.Increment(ref islandNewbornCount);
+                                if (islandLocalIdx >= islandNewbornCapacity) break;
+
+                                var newbornIdx = islandNewbornStart + islandLocalIdx;
+                                _newbornOrganisms[newbornIdx] = CreateChildFromParent(organism);
+                            }
+
+                            pctProb--;
+                        }
+                        while (pctProb > 0);
+                    });
+
+                    islandNewbornCount++;
+                    if (islandNewbornCount < 0) islandNewbornCount = 0;
+                    if (islandNewbornCount > islandNewbornCapacity) islandNewbornCount = islandNewbornCapacity;
+
+                    for (var i = islandNewbornCount; i < islandNewbornCapacity; i++)
+                    {
+                        var parent = _organisms[islandStart + Rnd.Random.Next(islandCount)]!;
+                        _newbornOrganisms[islandNewbornStart + i] = parent.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    }
+
+                    _islandNewbornCounts[island] = islandNewbornCapacity;
+                    _newbornOrganismsCount += islandNewbornCapacity;
+                }
+
+                ApplyAdjacentIslandImmigration();
+
+#if DEBUG
+                for (var i = 0; i < _newbornOrganismsCount; i++)
+                {
+                    Debug.Assert(_newbornOrganisms[i] != null);
+                }
+#endif
 
                 //move current colony into dead pool and null the _organisms array
                 Parallel.For(0, _organismsCount, i =>
@@ -615,8 +646,6 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                         Organism.SaveOrganismToDeadPool(organism);
                     }
                 });
-
-                _newbornOrganismsCount++;
             }
 
             _totalBirths += _newbornOrganismsCount;
@@ -632,6 +661,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Console.ForegroundColor = ConsoleColor.White;
         Output.WriteLine($"{_totalTimeWatch.Elapsed:c}: Generation {_currentGeneration:N0} took {_acceleratorGenerationTime:c}/{_generationTime:c}");
         Output.WriteLine($"Colony size: {_organismsCount:N0}: (target: {MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset):N0}). Total births: {_totalBirths:N0}");
+        if (MLSetup.Current.IslandCount > 1) Output.WriteLine($"Islands: {_activeIslandCount:N0}. Immigration per island: {Math.Max(0, MLSetup.Current.ImmigrationPerIsland):N0}");
 
         var mostAccurateColor = _mostAccurateEverOrganism!.Score == MLSetup.MaxGenerationScore ? ConsoleColor.Green : ConsoleColor.White;
 
@@ -946,15 +976,102 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
     }
 
-    protected void FindCrossoverPartnerArray()
+    protected void BuildIslandMetadata(int organismCount, int targetNewbornCount)
+    {
+        var configuredIslandCount = Math.Max(1, MLSetup.Current.IslandCount);
+        _activeIslandCount = Math.Min(configuredIslandCount, Math.Max(1, organismCount));
+
+        EnsureIslandArrays(_activeIslandCount);
+
+        ComputeContiguousRanges(organismCount, _activeIslandCount, _islandOrganismStarts, _islandOrganismCounts);
+        ComputeContiguousRanges(targetNewbornCount, _activeIslandCount, _islandNewbornStarts, _islandNewbornCapacities);
+
+        Array.Clear(_islandNewbornCounts, 0, _activeIslandCount);
+
+#if DEBUG
+        Debug.Assert(_islandOrganismCounts.Sum() == organismCount);
+        Debug.Assert(_islandNewbornCapacities.Sum() == targetNewbornCount);
+#endif
+    }
+
+    protected void EnsureIslandArrays(int islandCount)
+    {
+        if (_islandOrganismStarts.Length == islandCount) return;
+
+        _islandOrganismStarts = new int[islandCount];
+        _islandOrganismCounts = new int[islandCount];
+        _islandNewbornStarts = new int[islandCount];
+        _islandNewbornCapacities = new int[islandCount];
+        _islandNewbornCounts = new int[islandCount];
+    }
+
+    protected static void ComputeContiguousRanges(int totalCount, int rangeCount, int[] starts, int[] counts)
+    {
+        var baseSize = totalCount / rangeCount;
+        var remainder = totalCount % rangeCount;
+
+        var nextStart = 0;
+        for (var island = 0; island < rangeCount; island++)
+        {
+            starts[island] = nextStart;
+            var size = baseSize + (island < remainder ? 1 : 0);
+            counts[island] = size;
+            nextStart += size;
+        }
+    }
+
+    protected Organism CreateChildFromParent(Organism organism)
+    {
+        if (_crossoverPartnersCount > 0 && Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
+        {
+            var crossoverPartnerIdx = Rnd.Random.Next(_crossoverPartnersCount);
+            var crossoverChild = organism.ProduceCrossoverChild(_crossoverPartners[crossoverPartnerIdx]!);
+            if (crossoverChild != null) return crossoverChild;
+        }
+
+        return organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+    }
+
+    protected void ApplyAdjacentIslandImmigration()
+    {
+        var immigrantsPerIsland = Math.Max(0, MLSetup.Current.ImmigrationPerIsland);
+        if (immigrantsPerIsland == 0 || _activeIslandCount <= 1) return;
+
+        for (var destinationIsland = 0; destinationIsland < _activeIslandCount; destinationIsland++)
+        {
+            var destinationCapacity = _islandNewbornCapacities[destinationIsland];
+            if (destinationCapacity == 0) continue;
+
+            var sourceIsland = destinationIsland == 0 ? _activeIslandCount - 1 : destinationIsland - 1;
+            var sourceCount = _islandOrganismCounts[sourceIsland];
+            if (sourceCount == 0) continue;
+
+            var destinationStart = _islandNewbornStarts[destinationIsland];
+            var sourceStart = _islandOrganismStarts[sourceIsland];
+            var immigrantsToApply = Math.Min(immigrantsPerIsland, destinationCapacity);
+
+            for (var immigrantIdx = 0; immigrantIdx < immigrantsToApply; immigrantIdx++)
+            {
+                var immigrantParent = _organisms[sourceStart + Rnd.Random.Next(sourceCount)]!;
+                _newbornOrganisms[destinationStart + immigrantIdx] = immigrantParent.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+            }
+        }
+    }
+
+    protected void FindCrossoverPartnerArray(int islandStart, int islandCount)
     {
         // Fill array with random
         _crossoverPartnersCount = -1; //we set this to -1 because we use the count AFTER the increment
-        var maxPoolSize = Math.Min(CrossoverPartnerPoolSize, _organismsCount);
+        var maxPoolSize = Math.Min(CrossoverPartnerPoolSize, islandCount);
+        if (maxPoolSize <= 0)
+        {
+            _crossoverPartnersCount = 0;
+            return;
+        }
 
         Parallel.For(0, maxPoolSize, _ =>
         {
-            int randIdx = Rnd.Random.Next(_organismsCount);
+            int randIdx = islandStart + Rnd.Random.Next(islandCount);
             var organism = _organisms[randIdx]!;
             if (organism.Layer <= CrossoverLayerThreshold)
             {
@@ -1397,6 +1514,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected int _newbornOrganismsCount;
 
     protected int[] _scores;
+
+    protected int _activeIslandCount = 1;
+    protected int[] _islandOrganismStarts = [];
+    protected int[] _islandOrganismCounts = [];
+    protected int[] _islandNewbornStarts = [];
+    protected int[] _islandNewbornCapacities = [];
+    protected int[] _islandNewbornCounts = [];
     #endregion
 
     #region Total & Generation Counters

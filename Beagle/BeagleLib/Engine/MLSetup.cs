@@ -67,7 +67,10 @@ public abstract class MLSetup
     public virtual long TotalBirthsToResetColonyIfNoProgress => 25_000_000_000;
 
     public virtual bool RemoveRedundantCommandsAfterMutation => true;
-    public virtual double CrossoverRate => 0.3;    
+    public virtual double CrossoverRate => 0.3;
+
+    public virtual int IslandCount => 10;
+    public virtual int ImmigrationPerIsland => 100;
     #endregion
 
     #region Settings Proprties
