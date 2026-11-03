@@ -110,7 +110,7 @@ class BeagleModel:
                 varName = op.split(" ")[1]
                 a = copyPasteDict[varName]
                 stack.append(a)
-            print("Stack:", stack, "Operation:", op, "CopyPasteDict:", copyPasteDict)
+            #print("Stack:", stack, "Operation:", op, "CopyPasteDict:", copyPasteDict)
         return stack[0]
 
     def modelExpression(self):
@@ -222,7 +222,7 @@ class BeagleModel:
                 varName = op.split(" ")[1]
                 a = copyPasteDict[varName]
                 stack.append(a)
-            print("Stack:", stack, "Operation:", op, "CopyPasteDict:", copyPasteDict)
+            #print("Stack:", stack, "Operation:", op, "CopyPasteDict:", copyPasteDict)
         return stack
             
 class BeagleRegressor:
