@@ -106,6 +106,17 @@ public static class Program
                                 Console.WriteLine($"Typical is achieved ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
                                 break;
                             }
+
+                            //if running as hard no hope for typical, but we already have best
+                            if (equationsValidatedCount[eq - 1] > 0 &&
+                                NumberOfRunsPerEq - equationsRanCount[eq - 1] <
+                                MathF.Ceiling(NumberOfRunsPerEq / 2f) - equationsValidatedCount[eq - 1])
+                            {
+                                ranAs[eq - 1] = runningAs;
+                                GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, ranAs, startTime, DateTime.Now);
+                                Console.WriteLine($"Best is achieved, typical out of reach ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
+                                break;
+                            }
                         }
                         else if (exitCode == 1)
                         {
