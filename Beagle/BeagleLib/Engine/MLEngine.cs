@@ -252,6 +252,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 Output.WriteLine("[Q]uit");
                                 Output.WriteLine("Resu[M]e");
                                 Output.WriteLine("[S]ave colony");
+                                Output.WriteLine("[E]xport true Pareto front (front-0)");
                                 Output.WriteLine("Load & [R]eplace colony");
                                 Output.WriteLine("Load & [C]ombine colonies");
                                 Output.WriteLine("[I]nject organism[s] as string");
@@ -267,6 +268,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                                 if (input == "q") { done = true; break; }
                                 else if (input == "m") { Output.WriteLine("Resuming evolution...\n"); break; }
                                 else if (input == "s") SaveColony();
+                                else if (input == "e") ExportParetoFrontZero();
                                 else if (input == "r") LoadColony();
                                 else if (input == "c") LoadColony(combine: true);
                                 else if (input == "i") InjectOrganisms();
@@ -977,6 +979,84 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 #endif
     }
 
+    protected void ExportParetoFrontZero()
+    {
+        RecomputeTrueParetoFrontZeroForExport();
+
+        var now = DateTime.Now;
+        var fileName = $"{Output.FileName.Replace(".txt", "")}-pareto-front0-at-{now.Month:D2}-{now.Day:D2}-{now.Hour:D2}-{now.Minute:D2}-{now.Second:D2}-{now.Millisecond:D3}.txt";
+        using var fileStream = File.Open(fileName, FileMode.Create);
+        using var writer = new StreamWriter(fileStream);
+
+        writer.WriteLine($"Beagle {BConfig.Version}");
+        writer.WriteLine($"Run: {MLSetup.Current.Name}-{typeof(TFitFunc).Name}");
+        writer.WriteLine($"Machine: {Environment.MachineName}");
+        writer.WriteLine($"Generation: {_currentGeneration:N0}");
+        writer.WriteLine($"TotalBirths: {_totalBirths:N0}");
+
+        var paretoFrontZeroCount = 0;
+        for (var i = 0; i < _organismsCount; i++)
+        {
+            var organism = _organisms[i];
+            if (organism != null && organism.IsInParetoFrontZero) paretoFrontZeroCount++;
+        }
+
+        writer.WriteLine($"ParetoFrontZeroCount: {paretoFrontZeroCount:N0}");
+        writer.WriteLine();
+
+        var exportIdx = 0;
+        for (var i = 0; i < _organismsCount; i++)
+        {
+            var organism = _organisms[i];
+            if (organism == null || !organism.IsInParetoFrontZero) continue;
+
+            exportIdx++;
+            writer.WriteLine($"[{exportIdx}] Score={organism.Score}; Length={organism.Commands.Length}");
+            writer.WriteLine(organism.ToString(_inputLabels));
+            writer.WriteLine();
+        }
+
+        writer.Flush();
+
+        Output.WriteLine($"Exported {exportIdx:N0} true Pareto front model(s) to {fileName}!");
+        Output.WriteLine();
+    }
+
+    protected void RecomputeTrueParetoFrontZeroForExport()
+    {
+        ScoreCurrentOrganismsForExport();
+
+        for (var i = 0; i < _organismsCount; i++)
+        {
+            _organisms[i]!.Layer = -1000;
+        }
+
+        MarkTrueParetoFrontOrganismsInColony();
+    }
+
+    protected void ScoreCurrentOrganismsForExport()
+    {
+        var organismsPerAcceleratorCount = (int)Math.Ceiling((float)_organismsCount / _accelerators.Length);
+        Parallel.For(0, _accelerators.Length, i =>
+        {
+            var startIdx = i * organismsPerAcceleratorCount;
+            var endIdx = Math.Min(startIdx + organismsPerAcceleratorCount, _organismsCount);
+
+            if (endIdx > startIdx)
+            {
+                var length = endIdx - startIdx;
+                var acceleratorGrossScores = new Span<int>(_scores, startIdx, length);
+                var acceleratorOrganisms = new Span<Organism?>(_organisms, startIdx, length);
+                ScoreNewbornOrganismsOnSingleAccelerator(_accelerators[i], acceleratorOrganisms, acceleratorGrossScores, i == 0);
+            }
+        });
+
+        Parallel.For(0, _organismsCount, i =>
+        {
+            _organisms[i]!.Score = _scores[i];
+        });
+    }
+
     protected void SaveColony()
     {
         var now = DateTime.Now;
@@ -1430,7 +1510,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 #pragma warning restore IDE0044
 
     public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
-    public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
+    public const int CrossoverLayerThreshold = 8;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
     #endregion
 
