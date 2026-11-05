@@ -31,7 +31,7 @@ public static class Program
 
     // ReSharper disable once InconsistentNaming
     //If a ProblemType is listed in multiple arrays, very hard takes precedence over hard, etc. (veryHard > hard > medium).
-    //Anything not listed is assumed medium at start
+    //Anything not listed is assumed easy at start
     private static readonly int[] _veryHardProblems = [];
     private static readonly int[] _hardProblems = [];
     private static readonly int[] _mediumProblems = [];
@@ -42,7 +42,7 @@ public static class Program
         //- For easy and medium problems
         //      - We will only accept 5/5
         //      - If 5/5 is achieved, we are done with this problem otherwise the problem is upgraded to a higher category
-        //- If problem is considered hard or very hard:
+        //- If a problem is considered hard or very hard:
         //      - As soon as we get half successes, we are done with the problem
         //      - As soon as we have at least one solution (for best) and can no longer achieve typical anymore, we are done with the problem
         //      - We upgrade from hard to very hard only if we could not solve a problem as hard even once (can't solve at all!) 
