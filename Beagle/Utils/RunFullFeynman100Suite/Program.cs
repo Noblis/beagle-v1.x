@@ -15,8 +15,8 @@ public static class Program
     private const string RelativePathToRunProject = "../../../../../Run"; //if running from Visual Studio or Rider
     //private const string RelativePathToRunProject = "../../Run"; //if running from command line
 
-    private static readonly int[] _problems = [1, 2, 5, 44, 87, 90];
-    //private static readonly int[] _problems = Enumerable.Range(1, FeynmanEqCount).ToArray();
+    //private static readonly int[] _problems = [1, 2, 5, 44, 87, 90];
+    private static readonly int[] _problems = Enumerable.Range(1, FeynmanEqCount).ToArray();
 
 
     //Easy and hard will only accept 5/5 wile hard and very hard will try to run x/10
@@ -109,7 +109,6 @@ public static class Program
                             ranAs[eq - 1] = runningAs;
                             equationsValidatedCount[eq - 1]++;
                             if (equationsValidatedCount[eq - 1] >= MathF.Ceiling(NumberOfRunsPerEq / 2f))
-                                //&& equationsValidatedCount[eq - 1] == equationsRanCount[eq - 1])
                             {
                                 GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, ranAs, startTime, DateTime.Now);
                                 Console.WriteLine($"Typical is achieved ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
