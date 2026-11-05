@@ -1267,7 +1267,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_inputsArray, _correctOutputs);
         var expr = MathExpr.FromCommands(fullCommands, MLSetup.Current.GetInputLabels());
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Output.WriteLine($"\nFormula as LaTeX: {expr.AsLatexString()}");
+        Output.WriteLine($"\nFormula as LaTeX:\n{expr.AsLatexString()}");
         Console.ForegroundColor = ConsoleColor.White;
 
         if (VerifyModel())
