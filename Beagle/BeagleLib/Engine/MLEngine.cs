@@ -541,17 +541,22 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 else
                 {
                     frontTargetPerMember = _paretoFrontZeroCount > 0
-                        ? 0.5f * targetColonySize / _paretoFrontZeroCount
+                        ? 1.0f/PerLayerOffspringGenerationDecayFactor * targetColonySize / _paretoFrontZeroCount
                         : 0.0f;
                 }
 
                 // Non-front: geometric decay across layers, divided by layer size
                 int maxLayer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
-                float nonFrontTarget = 0.5f * targetColonySize;
+                float totalWeight = 0.0f;
+                for (int l = 0; l <= maxLayer+1; l++) totalWeight += 1 / MathF.Pow(PerLayerOffspringGenerationDecayFactor, l+1);
+                if (!_turboParetoSearch) frontTargetPerMember /= totalWeight;
                 for (int l = 0; l <= maxLayer; l++)
                 {
                     if (_turboParetoSearch) _perLayerOffspringTargets[l] = 0.0f;
-                    else _perLayerOffspringTargets[l] = nonFrontTarget / MathF.Pow(2f, l + 1) / _perLayerSizes[l];
+                    else
+                        _perLayerOffspringTargets[l] = targetColonySize /
+                                                       MathF.Pow(PerLayerOffspringGenerationDecayFactor, l + 2) /
+                                                       _perLayerSizes[l]/ totalWeight;
                 }
 
                 FindCrossoverPartnerArray();
@@ -1512,6 +1517,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
     public const int CrossoverLayerThreshold = 8;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
+    public const float PerLayerOffspringGenerationDecayFactor = 1.5f;
     #endregion
 
     #region SetParetoLayersInMicrocosm() and SelectNextParetoFrontInMicrocosm() -related arrays
