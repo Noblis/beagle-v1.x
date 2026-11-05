@@ -15,7 +15,7 @@ public static class Program
     private const string RelativePathToRunProject = "../../../../../Run"; //if running from Visual Studio or Rider
     //private const string RelativePathToRunProject = "../../Run"; //if running from command line
 
-    private static readonly int[] _problems = [1, 2, 5, 44];
+    private static readonly int[] _problems = [1, 2, 5, 44, 87, 90];
     //private static readonly int[] _problems = Enumerable.Range(1, FeynmanEqCount).ToArray();
 
 
@@ -226,11 +226,13 @@ public static class Program
     private static void GenerateAndDisplayResults(int[] equationsValidatedCount, int[] equationsRanCount, ProblemType?[] wasSolvingAs, DateTime startTime, DateTime completionTime)
     {
         var resultsSb = new StringBuilder();
-        for (var eqi = 1; eqi <= FeynmanEqCount; eqi++)
+        foreach (var eqi in _problems)
         {
             if (wasSolvingAs[eqi - 1] != null)
             {
-                resultsSb.AppendLine($"Equation {eqi}: {equationsValidatedCount[eqi - 1]}/{equationsRanCount[eqi - 1]} - as {wasSolvingAs[eqi - 1]} problem");
+                resultsSb.Append($"Equation {eqi}: {equationsValidatedCount[eqi - 1]}/{equationsRanCount[eqi - 1]} - as {wasSolvingAs[eqi - 1]} problem");
+                if (equationsValidatedCount[eqi - 1] == 0) resultsSb.AppendLine(" <--- NOT SOLVED!");
+                else resultsSb.AppendLine();
             }
             else
             {
