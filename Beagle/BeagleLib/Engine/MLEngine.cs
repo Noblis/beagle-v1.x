@@ -213,7 +213,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     #region Methods
     public override void Train(int stopAfterMin = -1, long stopAfterBirths = -1, bool noEscMenu = false, bool benchmarkRun = false)
     {
-        if (stopAfterMin != -1) Console.Title += $"; stop after {stopAfterMin}";
+        if (stopAfterMin != -1 && OperatingSystem.IsWindows()) Console.Title += $"; stop after {stopAfterMin}";
 
         try
         {
