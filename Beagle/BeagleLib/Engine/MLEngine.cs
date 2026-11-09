@@ -1177,6 +1177,81 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var url = $"https://arachnoid.com/latex/?equ={expr.AsLatexString()}";
         WebServer.OpenInBrowser(url);
     }
+    protected bool IdentifyErrorsForAL()
+    {
+        var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 4;
+        var inputsArray = new float[verificationExperimentsCount][];
+        Parallel.For(0, inputsArray.Length, i =>
+        {
+            inputsArray[i] = new float[_inputLabels.Length];
+        });
+        //var allInputs = new float[_inputLabels.Length * verificationExperimentsCount];
+        var correctOutputs = new float[verificationExperimentsCount];
+
+
+        //set up experiments (inputs and output), set correct output mean to 0
+        Parallel.For(0, verificationExperimentsCount, i =>
+        {
+            (inputsArray[i], correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+        });
+
+        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(inputsArray, correctOutputs).ToArray();
+        var error = false;
+        var currentForegroundColor = Console.ForegroundColor;
+
+        Output.WriteLine();
+        Output.Write("Model Genome: ");
+        _mostAccurateEverOrganism!.PrintCommandsInLine(_inputLabels, inputsArray, correctOutputs);
+
+        for (var i = 0; i < verificationExperimentsCount; i++)
+        {
+            Output.Write("IN: ");
+            for (var j = 0; j < _inputLabels.Length; j++)
+            {
+                Output.Write($"{_inputLabels[j]}={inputsArray[i][j]}; ");
+            }
+
+            var output = new CodeMachine().RunCommands(inputsArray[i], fullCommands);
+            Output.Write($"OUT: {output} (model) vs. {correctOutputs[i]} (target)");
+
+            if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
+            {
+                if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
+                {
+                    error = true;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Output.Write(" <- ERROR: Tolerance of 1/10 of 1% exceeded!");
+                    Console.ForegroundColor = currentForegroundColor;
+                }
+            }
+            else
+            {
+                if (output.IsValidNumber() ^ correctOutputs[i].IsValidNumber())
+                {
+                    //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
+                    error = true;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Output.Write(" <- ERROR: Valid/Invalid mismatch!");
+                    Console.ForegroundColor = currentForegroundColor;
+                }
+            }
+            Output.WriteLine();
+        }
+        Output.WriteLine();
+
+        if (error)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Output.WriteLine($"{MLSetup.Current.Name}-{typeof(TFitFunc).Name} Model NOT Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
+        }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Output.WriteLine($"{MLSetup.Current.Name}-{typeof(TFitFunc).Name} Model Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
+        }
+
+        return !error;
+    }
     protected bool VerifyModel()
     {
         var fgColor = Console.ForegroundColor;
@@ -1433,6 +1508,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
     #endregion
+
+    #region AL
+    protected readonly float[][] _adaptiveLearningInputs = new float[512][];
+    protected readonly int[] _adaptiveLearningIndices = new int[512];
+    protected readonly float[] _adaptiveLearningOutputs = new float[512];
+    #endregion    
 
     #region SetParetoLayersInMicrocosm() and SelectNextParetoFrontInMicrocosm() -related arrays
     //SetParetoLayersInMicrocosm
