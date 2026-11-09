@@ -891,7 +891,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                 while (true)
                 {
-                    if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score >= previousScore)
+                    if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score >/*=*/ previousScore)
                     {
                         mostAccurateInCurrentBucket.Layer = currentLayer;
                         currentBucket.RemoveAt(mostAccurateInCurrentBucketIdx);
@@ -1515,7 +1515,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 #pragma warning restore IDE0044
 
     public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
-    public const int CrossoverLayerThreshold = 8;       //change the number of layers used for monte-carlo elite pareto pool 
+    public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
     public const float PerLayerOffspringGenerationDecayFactor = 1.5f;
     #endregion
