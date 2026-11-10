@@ -328,10 +328,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             if (_adaptiveLearningCount > 0)
             {
-                for (int i = 0; i < Math.Min(_adaptiveLearningCount,MLSetup.Current.ExperimentsPerGeneration); i++)
+                var adaptiveRandomIndex = Rnd.Random.Next(_adaptiveLearningCount);
+                for (int i = 0; i < Math.Min(_adaptiveLearningCount,MLSetup.Current.ExperimentsPerGeneration/2); i++)
                 {
-                    _inputsArray[i] = _adaptiveLearningInputs[_adaptiveLearningIndices[i]];
-                    _correctOutputs[i] = _adaptiveLearningOutputs[_adaptiveLearningIndices[i]];
+                    _inputsArray[i] = _adaptiveLearningInputs[_adaptiveLearningIndices[adaptiveRandomIndex]];
+                    _correctOutputs[i] = _adaptiveLearningOutputs[_adaptiveLearningIndices[adaptiveRandomIndex]];
+                    adaptiveRandomIndex = Rnd.Random.Next(_adaptiveLearningCount);
                 }
             }
 
@@ -540,7 +542,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                 Debug.Assert(_organisms.All(x => x == null || x.IsLayerInitialized));
 
-                // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute offspring across layers
+                // Geometric decay to distribute offspring across layers
                 int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
                 float frontTargetPerMember;
                 if (_turboParetoSearch)
@@ -552,17 +554,22 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 else
                 {
                     frontTargetPerMember = _paretoFrontZeroCount > 0
-                        ? 0.5f * targetColonySize / _paretoFrontZeroCount
+                        ? 1.0f / PerLayerOffspringGenerationDecayFactor * targetColonySize / _paretoFrontZeroCount
                         : 0.0f;
                 }
 
                 // Non-front: geometric decay across layers, divided by layer size
                 int maxLayer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
-                float nonFrontTarget = 0.5f * targetColonySize;
+                float totalWeight = 0.0f;
+                for (int l = 0; l <= maxLayer + 1; l++) totalWeight += 1 / MathF.Pow(PerLayerOffspringGenerationDecayFactor, l + 1);
+                if (!_turboParetoSearch) frontTargetPerMember /= totalWeight;
                 for (int l = 0; l <= maxLayer; l++)
                 {
                     if (_turboParetoSearch) _perLayerOffspringTargets[l] = 0.0f;
-                    else _perLayerOffspringTargets[l] = nonFrontTarget / MathF.Pow(2f, l + 1) / _perLayerSizes[l];
+                    else
+                        _perLayerOffspringTargets[l] = targetColonySize /
+                                                       MathF.Pow(PerLayerOffspringGenerationDecayFactor, l + 2) /
+                                                       _perLayerSizes[l] / totalWeight;
                 }
 
                 FindCrossoverPartnerArray();
@@ -1193,7 +1200,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected void IdentifyErrorsForAL()
     {
         var verificationExperimentsCount = AdaptiveLearningSampleSize;//MLSetup.Current.ExperimentsPerGeneration / 4;
-        if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.01)
+        if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.99)
             verificationExperimentsCount *= AdaptiveLearningOversamplingRatio;
         //var inputsArray = new float[verificationExperimentsCount][];
         _adaptiveLearningCount = 0;
@@ -1219,10 +1226,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             var output = new CodeMachine().RunCommands(_adaptiveLearningInputs[i], fullCommands);
             if (output.IsValidNumber() && _adaptiveLearningOutputs[i].IsValidNumber())
             {
-                var err = Math.Abs(output / _adaptiveLearningOutputs[i] - 1);
+                var err = MathF.Abs(output / _adaptiveLearningOutputs[i] - 1);
                 if (err > maxErr) maxErr = err;
                 if (err < minErr) minErr = err;
-                if (Math.Abs(output / _adaptiveLearningOutputs[i] - 1) > (minErr+maxErr)/2.0f)//0.001)
+                if (err > (minErr+maxErr)/2.0f)//0.001)
                 { 
                     _adaptiveLearningIndices[_adaptiveLearningCount++] = i;
                 }
@@ -1235,6 +1242,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     _adaptiveLearningIndices[_adaptiveLearningCount++] = i;
                 }
             }
+
+            //if (_adaptiveLearningCount > MLSetup.Current.ExperimentsPerGeneration) break;
         }
         return;
     }
@@ -1493,6 +1502,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
     public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
+    public const float PerLayerOffspringGenerationDecayFactor = 1.5f;
     #endregion
 
     #region AL
