@@ -1193,8 +1193,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected void IdentifyErrorsForAL()
     {
         var verificationExperimentsCount = AdaptiveLearningSampleSize;//MLSetup.Current.ExperimentsPerGeneration / 4;
-        if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.99)
-            verificationExperimentsCount *= 4;
+        if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.01)
+            verificationExperimentsCount *= AdaptiveLearningOversamplingRatio;
         //var inputsArray = new float[verificationExperimentsCount][];
         _adaptiveLearningCount = 0;
         Parallel.For(0, _adaptiveLearningInputs.Length, i =>
@@ -1212,13 +1212,17 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         });
 
         var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_adaptiveLearningInputs, _adaptiveLearningOutputs).ToArray();
-        
+        float minErr = 0f;
+        float maxErr = 0f;
         for (var i = 0; i < verificationExperimentsCount; i++)
         {
             var output = new CodeMachine().RunCommands(_adaptiveLearningInputs[i], fullCommands);
             if (output.IsValidNumber() && _adaptiveLearningOutputs[i].IsValidNumber())
             {
-                if (Math.Abs(output / _adaptiveLearningOutputs[i] - 1) > 0.001)
+                var err = Math.Abs(output / _adaptiveLearningOutputs[i] - 1);
+                if (err > maxErr) maxErr = err;
+                if (err < minErr) minErr = err;
+                if (Math.Abs(output / _adaptiveLearningOutputs[i] - 1) > (minErr+maxErr)/2.0f)//0.001)
                 { 
                     _adaptiveLearningIndices[_adaptiveLearningCount++] = i;
                 }
@@ -1495,9 +1499,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     public int _adaptiveLearningCount = 0;
     public const int AdaptiveLearningSampleSize = 512;
-    protected float[][] _adaptiveLearningInputs = new float[AdaptiveLearningSampleSize*4][];
-    protected readonly int[] _adaptiveLearningIndices = new int[AdaptiveLearningSampleSize*4];
-    protected readonly float[] _adaptiveLearningOutputs = new float[AdaptiveLearningSampleSize*4];
+    public const int AdaptiveLearningOversamplingRatio = 16;
+    protected float[][] _adaptiveLearningInputs = new float[AdaptiveLearningSampleSize*AdaptiveLearningOversamplingRatio][];
+    protected readonly int[] _adaptiveLearningIndices = new int[AdaptiveLearningSampleSize * AdaptiveLearningOversamplingRatio];
+    protected readonly float[] _adaptiveLearningOutputs = new float[AdaptiveLearningSampleSize * AdaptiveLearningOversamplingRatio];
     #endregion    
 
     #region SetParetoLayersInMicrocosm() and SelectNextParetoFrontInMicrocosm() -related arrays
