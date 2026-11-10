@@ -338,7 +338,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             }
 
             //set up experiments (inputs and output), set correct output mean to 0
-            Parallel.For(_adaptiveLearningCount, MLSetup.Current.ExperimentsPerGeneration, i =>
+            Parallel.For(Math.Min(_adaptiveLearningCount, MLSetup.Current.ExperimentsPerGeneration / 2), MLSetup.Current.ExperimentsPerGeneration, i =>
             {
                 (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
             });
@@ -1199,9 +1199,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
     protected void IdentifyErrorsForAL()
     {
-        var verificationExperimentsCount = AdaptiveLearningSampleSize;//MLSetup.Current.ExperimentsPerGeneration / 4;
-        if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.99)
-            verificationExperimentsCount *= AdaptiveLearningOversamplingRatio;
+        var verificationExperimentsCount = 0;//AdaptiveLearningSampleSize;//MLSetup.Current.ExperimentsPerGeneration / 4;
+        if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.9)
+            verificationExperimentsCount = AdaptiveLearningSampleSize*AdaptiveLearningOversamplingRatio;
         //var inputsArray = new float[verificationExperimentsCount][];
         _adaptiveLearningCount = 0;
         Parallel.For(0, _adaptiveLearningInputs.Length, i =>
@@ -1219,8 +1219,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         });
 
         var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_adaptiveLearningInputs, _adaptiveLearningOutputs).ToArray();
-        float minErr = 0f;
-        float maxErr = 0f;
+        float minErr = float.MaxValue;
+        float maxErr = float.MinValue;
         for (var i = 0; i < verificationExperimentsCount; i++)
         {
             var output = new CodeMachine().RunCommands(_adaptiveLearningInputs[i], fullCommands);
