@@ -324,14 +324,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             _generationWatch.Restart();
 
             //identify challenge points
-            if (_currentGeneration>1) IdentifyErrorsForAL();
+            if (_mostAccurateOrganismsSinceLastColonyReset[0]!=null) IdentifyErrorsForAL();
 
             if (_adaptiveLearningCount > 0)
             {
                 var adaptiveRandomIndex = Rnd.Random.Next(_adaptiveLearningCount);
                 for (int i = 0; i < Math.Min(_adaptiveLearningCount,MLSetup.Current.ExperimentsPerGeneration/2); i++)
                 {
-                    _inputsArray[i] = _adaptiveLearningInputs[_adaptiveLearningIndices[adaptiveRandomIndex]];
+                    var adaptiveLearningInput = _adaptiveLearningInputs[_adaptiveLearningIndices[adaptiveRandomIndex]];
+                    Array.Copy(adaptiveLearningInput, _inputsArray[i], adaptiveLearningInput.Length);
                     _correctOutputs[i] = _adaptiveLearningOutputs[_adaptiveLearningIndices[adaptiveRandomIndex]];
                     adaptiveRandomIndex = Rnd.Random.Next(_adaptiveLearningCount);
                 }
@@ -1197,6 +1198,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var url = $"https://arachnoid.com/latex/?equ={expr.AsLatexString()}";
         WebServer.OpenInBrowser(url);
     }
+    protected static float GetNormalizedError(float output, float correctOutput)
+    {
+        var absoluteError = MathF.Abs(output - correctOutput);
+        var scale = MathF.Max(1f, MathF.Abs(correctOutput));
+        return absoluteError / scale;
+    }
     protected void IdentifyErrorsForAL()
     {
         var verificationExperimentsCount = 0;//AdaptiveLearningSampleSize;//MLSetup.Current.ExperimentsPerGeneration / 4;
@@ -1218,7 +1225,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             (_adaptiveLearningInputs[i], _adaptiveLearningOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_adaptiveLearningInputs[i]);
         });
 
-        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_adaptiveLearningInputs, _adaptiveLearningOutputs).ToArray();
+        var fullCommands = _mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommands(_adaptiveLearningInputs, _adaptiveLearningOutputs).ToArray();
         float minErr = float.MaxValue;
         float maxErr = float.MinValue;
         for (var i = 0; i < verificationExperimentsCount; i++)
@@ -1226,7 +1233,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             var output = new CodeMachine().RunCommands(_adaptiveLearningInputs[i], fullCommands);
             if (output.IsValidNumber() && _adaptiveLearningOutputs[i].IsValidNumber())
             {
-                var err = MathF.Abs(output / _adaptiveLearningOutputs[i] - 1);
+                var err = GetNormalizedError(output, _adaptiveLearningOutputs[i]);
                 if (err > maxErr) maxErr = err;
                 if (err < minErr) minErr = err;
                 if (err > (minErr+maxErr)/2.0f)//0.001)
@@ -1289,7 +1296,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
             {
-                if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
+                if (GetNormalizedError(output, correctOutputs[i]) > 0.001f)
                 {
                     error = true;
                     Console.ForegroundColor = ConsoleColor.Red;
