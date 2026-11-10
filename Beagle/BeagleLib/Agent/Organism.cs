@@ -642,11 +642,11 @@ public class Organism
 
             (double, double) lineRegression = Fit.Line(dblOutputs.ToArray(), dblCorrectOutputs.ToArray());
 
-            var offset = (float)lineRegression.Item1.RoundToSignificantDigits(4);
+            var offset = (float)lineRegression.Item1;//.RoundToSignificantDigits(4);
             Debug.Assert(offset.IsValidNumber());
             if (Math.Abs(offset / mean) < 1E-4) offset = 0;
 
-            var scale = (float)lineRegression.Item2.RoundToSignificantDigits(4);
+            var scale = (float)lineRegression.Item2;//.RoundToSignificantDigits(4);
             Debug.Assert(scale.IsValidNumber());
             if (Math.Abs(scale - 1) < 1E-4) scale = 1;
 
