@@ -580,6 +580,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                 // Offspring generation
                 Parallel.For(0, _organismsCount, i =>
+                //for (int i=0; i<_organismsCount; i++)
                 {
                     var organism = _organisms[i]!;
                     float pctProb = organism.IsInParetoFrontZero ? frontTargetPerMember : _perLayerOffspringTargets[organism.Layer];
@@ -1296,7 +1297,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
             {
-                if (GetNormalizedError(output, correctOutputs[i]) > 0.001f)
+                //if (GetNormalizedError(output, correctOutputs[i]) > 0.001f)
+                if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
                 {
                     error = true;
                     Console.ForegroundColor = ConsoleColor.Red;
