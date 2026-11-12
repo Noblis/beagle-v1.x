@@ -329,7 +329,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (_adaptiveLearningCount > 0)
             {
                 var adaptiveRandomIndex = Rnd.Random.Next(_adaptiveLearningCount);
-                for (int i = 0; i < Math.Min(_adaptiveLearningCount,MLSetup.Current.ExperimentsPerGeneration/2); i++)
+                for (int i = 0; i < Math.Min(_adaptiveLearningCount,MLSetup.Current.ExperimentsPerGeneration/*/2*/); i++)
                 {
                     var adaptiveLearningInput = _adaptiveLearningInputs[_adaptiveLearningIndices[adaptiveRandomIndex]];
                     Array.Copy(adaptiveLearningInput, _inputsArray[i], adaptiveLearningInput.Length);
@@ -339,7 +339,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             }
 
             //set up experiments (inputs and output), set correct output mean to 0
-            Parallel.For(Math.Min(_adaptiveLearningCount, MLSetup.Current.ExperimentsPerGeneration / 2), MLSetup.Current.ExperimentsPerGeneration, i =>
+            Parallel.For(Math.Min(_adaptiveLearningCount, MLSetup.Current.ExperimentsPerGeneration /*/ 2*/), MLSetup.Current.ExperimentsPerGeneration, i =>
             {
                 (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
             });
