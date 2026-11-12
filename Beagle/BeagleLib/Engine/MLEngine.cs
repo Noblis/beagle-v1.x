@@ -1217,9 +1217,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
     protected void IdentifyErrorsForAL()
     {
-        var verificationExperimentsCount = 0;//AdaptiveLearningSampleSize;//MLSetup.Current.ExperimentsPerGeneration / 4;
-        //if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.9)
-        verificationExperimentsCount = AdaptiveLearningSampleSize*AdaptiveLearningOversamplingRatio;
+        var verificationExperimentsCount = AdaptiveLearningSampleSize;//MLSetup.Current.ExperimentsPerGeneration / 4;
+        if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.99)
+            verificationExperimentsCount = AdaptiveLearningSampleSize*AdaptiveLearningOversamplingRatio;
         //var inputsArray = new float[verificationExperimentsCount][];
         _adaptiveLearningCount = 0;
         Parallel.For(0, _adaptiveLearningInputs.Length, i =>
