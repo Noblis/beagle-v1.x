@@ -1237,17 +1237,20 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         });
 
         var fullCommands = _mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommands(_adaptiveLearningInputs, _adaptiveLearningOutputs).ToArray();
-        float minErr = float.MaxValue;
-        float maxErr = float.MinValue;
+        //float minErr = float.MaxValue;
+        //float maxErr = float.MinValue;
+        float avgErr = 0;
         for (var i = 0; i < verificationExperimentsCount; i++)
         {
             var output = new CodeMachine().RunCommands(_adaptiveLearningInputs[i], fullCommands);
             if (output.IsValidNumber() && _adaptiveLearningOutputs[i].IsValidNumber())
             {
                 var err = GetNormalizedError(output, _adaptiveLearningOutputs[i]);
-                if (err > maxErr) maxErr = err;
-                if (err < minErr) minErr = err;
-                if (err > (minErr+maxErr)/2.0f)//0.001)
+                //if (err > maxErr) maxErr = err;
+                //if (err < minErr) minErr = err;
+                avgErr = (avgErr * (float)i + err) / (float)(i + 1);
+                //if (err > (minErr+maxErr)/2.0f)//0.001)
+                if (err >= avgErr)
                 { 
                     _adaptiveLearningIndices[_adaptiveLearningCount++] = i;
                 }
