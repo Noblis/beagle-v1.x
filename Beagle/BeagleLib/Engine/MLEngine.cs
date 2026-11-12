@@ -444,13 +444,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (_mlEngineNotificationsHandler?.Quit == true) return true;
 
             //we add the most accurate ones again with probability of 5%. It means approximately every 20 generations
-            //if (Rnd.RandomBoolWithChance(0.05))
-            //{
-            //    for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
-            //    {
-            //        if (_mostAccurateOrganismsSinceLastColonyReset[i] != null) _organisms[_organismsCount++] = _mostAccurateOrganismsSinceLastColonyReset[i];
-            //    }
-            //}
+            if (Rnd.RandomBoolWithChance(0.05))
+            {
+                for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+                {
+                    if (_mostAccurateOrganismsSinceLastColonyReset[i] != null) _organisms[_organismsCount++] = _mostAccurateOrganismsSinceLastColonyReset[i];
+                }
+            }
         }
         #endregion
 
@@ -1218,8 +1218,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected void IdentifyErrorsForAL()
     {
         var verificationExperimentsCount = 0;//AdaptiveLearningSampleSize;//MLSetup.Current.ExperimentsPerGeneration / 4;
-        if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.9)
-            verificationExperimentsCount = AdaptiveLearningSampleSize*AdaptiveLearningOversamplingRatio;
+        //if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.9)
+        verificationExperimentsCount = AdaptiveLearningSampleSize*AdaptiveLearningOversamplingRatio;
         //var inputsArray = new float[verificationExperimentsCount][];
         _adaptiveLearningCount = 0;
         Parallel.For(0, _adaptiveLearningInputs.Length, i =>
