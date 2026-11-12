@@ -1524,7 +1524,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
     public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
-    public const float PerLayerOffspringGenerationDecayFactor = 1.5f;
+    public const float PerLayerOffspringGenerationDecayFactor = 10.5f;
     #endregion
 
     #region AL
