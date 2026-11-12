@@ -139,8 +139,8 @@ public static class CommandSpanCrossoverExt
         if (crossoverEnd == crossoverStart) return (crossoverEnd, crossoverStart);
         stackEffect = 0;
         var initEnd = crossoverEnd;
-        crossoverEnd = crossoverStart-1;
-        while ((stackEffect != 1 || Rnd.Random.Next(10)<5 || (crossoverEnd - crossoverStart) < 1) && crossoverEnd != initEnd)
+        crossoverEnd = crossoverStart - 1;
+        while ((stackEffect != 1 || Rnd.Random.Next(10) < 5 || (crossoverEnd - crossoverStart) < 1) && crossoverEnd != initEnd)
         {
             crossoverEnd++;
             stackEffect += me[crossoverEnd].StackEffect;

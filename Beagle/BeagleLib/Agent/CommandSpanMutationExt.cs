@@ -137,30 +137,34 @@ public static class CommandSpanMutationExt
             {
                 var rnd = Rnd.Random.Next(100);
 
-                if (rnd > 60) //40%
+                if (rnd > 90/*60*/) //40%
                 {
                     //increment/decrement
                     me[addr] = new Command(OpEnum.Const, commandAtAddr.ConstValue + Rnd.RandomSign);
                 }
-                else if (rnd > 40) //20%
+                else if (rnd > 80/*40*/) //20%
                 {
                     //change sign
                     me[addr] = new Command(OpEnum.Const, commandAtAddr.ConstValue * -1);
                 }
-                else if (rnd > 20) //20%
+                else if (rnd > 70/*20*/) //20%
                 {
                     //double or half
                     me[addr] = new Command(OpEnum.Const, Rnd.RandomDoubleOrHalf(commandAtAddr.ConstValue));
                 }
-                else if (rnd > 10) //10%
+                else if (rnd > 60/*10*/) //10%
                 {
                     //x10 or /10 
                     me[addr] = new Command(OpEnum.Const, Rnd.RandomMul10OrDiv10(commandAtAddr.ConstValue));
                 }
-                else //10%
+                else if (rnd > 50)//10% //was just else
                 {
                     // +/- NextDouble(0.1)
                     me[addr] = new Command(OpEnum.Const, commandAtAddr.ConstValue + (float)(Rnd.Random.NextDouble() * 0.2 - 0.1));
+                }
+                else
+                {
+                    me[addr] = new Command(OpEnum.Const, commandAtAddr.ConstValue * (Rnd.Random.NextSingle() + 0.5f));
                 }
 
                 #if DEBUG
