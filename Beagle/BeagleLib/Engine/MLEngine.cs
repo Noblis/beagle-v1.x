@@ -1217,7 +1217,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     }
     protected void IdentifyErrorsForAL()
     {
-        var verificationExperimentsCount = AdaptiveLearningSampleSize;//MLSetup.Current.ExperimentsPerGeneration / 4;
+        var verificationExperimentsCount = 0;//AdaptiveLearningSampleSize;//MLSetup.Current.ExperimentsPerGeneration / 4;
         if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.99)
             verificationExperimentsCount = AdaptiveLearningSampleSize*AdaptiveLearningOversamplingRatio;
         //var inputsArray = new float[verificationExperimentsCount][];
