@@ -444,13 +444,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (_mlEngineNotificationsHandler?.Quit == true) return true;
 
             //we add the most accurate ones again with probability of 5%. It means approximately every 20 generations
-            if (Rnd.RandomBoolWithChance(0.05))
-            {
-                for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
-                {
-                    if (_mostAccurateOrganismsSinceLastColonyReset[i] != null) _organisms[_organismsCount++] = _mostAccurateOrganismsSinceLastColonyReset[i];
-                }
-            }
+            //if (Rnd.RandomBoolWithChance(0.05))
+            //{
+            //    for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+            //    {
+            //        if (_mostAccurateOrganismsSinceLastColonyReset[i] != null) _organisms[_organismsCount++] = _mostAccurateOrganismsSinceLastColonyReset[i];
+            //    }
+            //}
         }
         #endregion
 
