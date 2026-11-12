@@ -7,7 +7,7 @@ public static class Program
 {
     private enum ProblemType
     {
-        Easy, Medium, Hard 
+        Easy, Medium, Hard, VeryHard
     }
 
     private static readonly bool _runWithNoEscMenu = OperatingSystem.IsLinux();
@@ -15,36 +15,40 @@ public static class Program
     private const string RelativePathToRunProject = "../../../../../Run"; //if running from Visual Studio or Rider
     //private const string RelativePathToRunProject = "../../Run"; //if running from command line
 
-    //private static readonly int[] _problems = [44, 90];
-    private static readonly int[] _problems = Enumerable.Range(1, FeynmanEqCount).ToArray();
+    //private static readonly int[] _problems = [1, 2, 5, 44, 87, 90];
+    private static readonly int[] _problems = [5,44,90,91];//Enumerable.Range(1, FeynmanEqCount).ToArray();
 
 
-    private const int HardStopAfterMin = 10; 
-    private const int MediumStopAfterMin = 4;
+    //Easy and hard will only accept 5/5 wile hard and very hard will try to run x/10
     private const int EasyStopAfterMin = 1;
+    private const int MediumStopAfterMin = 4;
+    private const int HardStopAfterMin = 10;
+    private const int VeryHardStopAfterMin = 30;//30;
+
 
     private const int FeynmanEqCount = 100;
     private const int NumberOfRunsPerEq = 10;
 
     // ReSharper disable once InconsistentNaming
-    private static readonly int[] _easyProblems = Enumerable.Range(1, FeynmanEqCount).ToArray();
+    //If a ProblemType is listed in multiple arrays, very hard takes precedence over hard, etc. (veryHard > hard > medium).
+    //Anything not listed is assumed easy at start
+    private static readonly int[] _veryHardProblems = [];
     private static readonly int[] _hardProblems = [];
-
-    //private static readonly int[] _easyProblems = [1, 8, 10, 11, 12, 15, 16, 22, 25, 27, 28, 34, 37, 39, 40, 41, 42, 45, 46, 49, 53, 54, 55, 58, 59, 60, 66, 69, 70, 73, 74, 75, 76, 77, 78, 83, 84, 85, 88, 89, 92, 93, 96, 97, 100];
-    //private static readonly int[] _hardProblems = [2, 3, 4, 5, 6, 7, 14, 17, 18, 19, 20, 21, 26, 29, 30, 31, 33, 36, 38, 43, 44, 50, 56, 57, 64, 67, 68, 72, 80, 86, 87, 90, 91, 95];
-    //medium problems are all others
+    private static readonly int[] _mediumProblems = [];
 
     private static void Main()
     {
-        //Here is the logic for each formula
-        //1) If problem is in difficult problems, start with full timing at step 4
-        //2) If we get typical by: half successes in exactly half runs using express timing, we are done
-        //3) If we get a failure while doing #1, we start over using full timing
-        //4) As soon as we get half successes, we are done
-        //5) As soon as we have at least one solution (for best) and can no longer achieve typical anymore, we are done 
+        //Here is the logic 
+        //- For easy and medium problems
+        //      - We will only accept 5/5
+        //      - If 5/5 is achieved, we are done with this problem otherwise the problem is upgraded to a higher category
+        //- If a problem is considered hard or very hard:
+        //      - As soon as we get half successes, we are done with the problem
+        //      - As soon as we have at least one solution (for best) and can no longer achieve typical anymore, we are done with the problem
+        //      - We upgrade from hard to very hard only if we could not solve a problem as hard even once (can't solve at all!) 
 
         DateTime startTime = DateTime.Now;
-        
+
         var equationsValidatedCount = new int[FeynmanEqCount];
         var equationsRanCount = new int[FeynmanEqCount];
         var ranAs = new ProblemType?[FeynmanEqCount];
@@ -65,20 +69,25 @@ public static class Program
             foreach (var eq in _problems)
             {
                 ProblemType runningAs;
-                if (_hardProblems.Contains(eq))
+                if (_veryHardProblems.Contains(eq))
+                {
+                    runningAs = ProblemType.VeryHard;
+                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={VeryHardStopAfterMin} RunFeynman={eq} {(_runWithNoEscMenu ? "NoEscMenu" : "")} #useLibDevice";
+                }
+                else if (_hardProblems.Contains(eq))
                 {
                     runningAs = ProblemType.Hard;
                     startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={HardStopAfterMin} RunFeynman={eq} {(_runWithNoEscMenu ? "NoEscMenu" : "")} #useLibDevice";
                 }
-                else if (_easyProblems.Contains(eq))
-                {
-                    runningAs = ProblemType.Easy;
-                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={EasyStopAfterMin} RunFeynman={eq} {(_runWithNoEscMenu ? "NoEscMenu" : "")} #useLibDevice";
-                }
-                else
+                else if (_mediumProblems.Contains(eq))
                 {
                     runningAs = ProblemType.Medium;
                     startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={MediumStopAfterMin} RunFeynman={eq} {(_runWithNoEscMenu ? "NoEscMenu" : "")} #useLibDevice";
+                }
+                else
+                {
+                    runningAs = ProblemType.Easy;
+                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={EasyStopAfterMin} RunFeynman={eq} {(_runWithNoEscMenu ? "NoEscMenu" : "")} #useLibDevice";
                 }
 
                 for (var i = 1; i <= NumberOfRunsPerEq; i++)
@@ -93,21 +102,36 @@ public static class Program
                     {
                         process.WaitForExit();
                         var exitCode = process.ExitCode;
-                        
+
                         equationsRanCount[eq - 1]++;
-                        if (exitCode == 0)
+                        if (exitCode == 0) //solved
                         {
                             ranAs[eq - 1] = runningAs;
                             equationsValidatedCount[eq - 1]++;
                             if (equationsValidatedCount[eq - 1] >= MathF.Ceiling(NumberOfRunsPerEq / 2f))
-                                //&& equationsValidatedCount[eq - 1] == equationsRanCount[eq - 1])
                             {
                                 GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, ranAs, startTime, DateTime.Now);
                                 Console.WriteLine($"Typical is achieved ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
                                 break;
                             }
+
+                            //if running as hard or very hard with no hope for typical, but we already have best
+                            //the outer if statement is not even needed, we only get here if the problem is hard or very hard but 
+                            //I kept it for clarity of logic
+                            if (runningAs is ProblemType.Hard or ProblemType.VeryHard)
+                            {
+                                if (equationsValidatedCount[eq - 1] > 0 &&
+                                    NumberOfRunsPerEq - equationsRanCount[eq - 1] <
+                                    MathF.Ceiling(NumberOfRunsPerEq / 2f) - equationsValidatedCount[eq - 1])
+                                {
+                                    ranAs[eq - 1] = runningAs;
+                                    GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, ranAs, startTime, DateTime.Now);
+                                    Console.WriteLine($"Best is achieved, typical out of reach ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
+                                    break;
+                                }
+                            }
                         }
-                        else if (exitCode == 1)
+                        else if (exitCode == 1) //unsolved
                         {
                             if (runningAs == ProblemType.Easy)
                             {
@@ -123,9 +147,31 @@ public static class Program
                                 startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={HardStopAfterMin} RunFeynman={eq} {(_runWithNoEscMenu ? "NoEscMenu" : "")} #useLibDevice";
                                 i = 0;
                             }
-                            else
+                            else if (runningAs == ProblemType.Hard)
                             {
                                 //if running as hard no hope for typical, but we already have best
+                                if (equationsValidatedCount[eq - 1] > 0 &&
+                                    NumberOfRunsPerEq - equationsRanCount[eq - 1] <
+                                    MathF.Ceiling(NumberOfRunsPerEq / 2f) - equationsValidatedCount[eq - 1])
+                                {
+                                    ranAs[eq - 1] = runningAs;
+                                    GenerateAndDisplayResults(equationsValidatedCount, equationsRanCount, ranAs, startTime, DateTime.Now);
+                                    Console.WriteLine($"Best is achieved, typical out of reach ({equationsValidatedCount[eq - 1]}/{equationsRanCount[eq - 1]}), skipping the remaining runs...");
+                                    break;
+                                }
+
+                                //if unsolved on last iteration
+                                if (i == NumberOfRunsPerEq)
+                                {
+                                    runningAs = ProblemType.VeryHard;
+                                    equationsRanCount[eq - 1] = equationsValidatedCount[eq - 1] = 0;
+                                    startInfo.Arguments = $"run --configuration Release --no-launch-profile -- StopAfterMin={VeryHardStopAfterMin} RunFeynman={eq} {(_runWithNoEscMenu ? "NoEscMenu" : "")} #useLibDevice";
+                                    i = 0;
+                                }
+                            }
+                            else //problem is very hard 
+                            {
+                                //if running as hard with no hope for typical, but we already have best
                                 if (equationsValidatedCount[eq - 1] > 0 &&
                                     NumberOfRunsPerEq - equationsRanCount[eq - 1] <
                                     MathF.Ceiling(NumberOfRunsPerEq / 2f) - equationsValidatedCount[eq - 1])
@@ -179,11 +225,13 @@ public static class Program
     private static void GenerateAndDisplayResults(int[] equationsValidatedCount, int[] equationsRanCount, ProblemType?[] wasSolvingAs, DateTime startTime, DateTime completionTime)
     {
         var resultsSb = new StringBuilder();
-        for (var eqi = 1; eqi <= FeynmanEqCount; eqi++)
+        foreach (var eqi in _problems)
         {
             if (wasSolvingAs[eqi - 1] != null)
             {
-                resultsSb.AppendLine($"Equation {eqi}: {equationsValidatedCount[eqi - 1]}/{equationsRanCount[eqi - 1]} - as {wasSolvingAs[eqi - 1]} problem");
+                resultsSb.Append($"Equation {eqi}: {equationsValidatedCount[eqi - 1]}/{equationsRanCount[eqi - 1]} - as {wasSolvingAs[eqi - 1]} problem");
+                if (equationsValidatedCount[eqi - 1] == 0) resultsSb.AppendLine(" <--- NOT SOLVED!");
+                else resultsSb.AppendLine();
             }
             else
             {
@@ -193,7 +241,7 @@ public static class Program
 
         var eqRan = equationsRanCount.Count(x => x > 0);
         resultsSb.AppendLine("----------------------");
-        resultsSb.AppendLine($"Typical Solved: {equationsValidatedCount.Count(x => x >= MathF.Ceiling(NumberOfRunsPerEq/2f))}/{eqRan}");
+        resultsSb.AppendLine($"Typical Solved: {equationsValidatedCount.Count(x => x >= MathF.Ceiling(NumberOfRunsPerEq / 2f))}/{eqRan}");
         resultsSb.AppendLine($"Best Solved: {equationsValidatedCount.Count(x => x > 0)}/{eqRan}");
         resultsSb.AppendLine();
         resultsSb.AppendLine($"Started: {startTime}");
