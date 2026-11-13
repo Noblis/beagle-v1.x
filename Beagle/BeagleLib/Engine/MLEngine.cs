@@ -329,7 +329,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (_adaptiveLearningCount > 0)
             {
                 var adaptiveRandomIndex = Rnd.Random.Next(_adaptiveLearningCount);
-                for (int i = 0; i < Math.Min(_adaptiveLearningCount,MLSetup.Current.ExperimentsPerGeneration/*/2*/); i++)
+                for (int i = 0; i < Math.Min(_adaptiveLearningCount,(int)((float)MLSetup.Current.ExperimentsPerGeneration/1.2f)); i++)
                 {
                     var adaptiveLearningInput = _adaptiveLearningInputs[_adaptiveLearningIndices[adaptiveRandomIndex]];
                     Array.Copy(adaptiveLearningInput, _inputsArray[i], adaptiveLearningInput.Length);
@@ -339,7 +339,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             }
 
             //set up experiments (inputs and output), set correct output mean to 0
-            Parallel.For(Math.Min(_adaptiveLearningCount, MLSetup.Current.ExperimentsPerGeneration /*/ 2*/), MLSetup.Current.ExperimentsPerGeneration, i =>
+            Parallel.For(Math.Min(_adaptiveLearningCount, (int)((float)MLSetup.Current.ExperimentsPerGeneration / 1.2f)), MLSetup.Current.ExperimentsPerGeneration, i =>
             {
                 (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
             });
@@ -555,7 +555,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 else
                 {
                     frontTargetPerMember = _paretoFrontZeroCount > 0
-                        ? 1.0f / PerLayerOffspringGenerationDecayFactor * targetColonySize*0.9f / _paretoFrontZeroCount
+                        ? 1.0f / PerLayerOffspringGenerationDecayFactor * targetColonySize / _paretoFrontZeroCount
                         : 0.0f;
                 }
 
@@ -568,7 +568,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 {
                     if (_turboParetoSearch) _perLayerOffspringTargets[l] = 0.0f;
                     else
-                        _perLayerOffspringTargets[l] = targetColonySize*0.9f /
+                        _perLayerOffspringTargets[l] = targetColonySize /
                                                        MathF.Pow(PerLayerOffspringGenerationDecayFactor, l + 2) /
                                                        _perLayerSizes[l] / totalWeight;
                 }
@@ -632,12 +632,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 //        _newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
                 //    }
                 //}
-                Parallel.For(_newbornOrganismsCount, targetColonySize, i =>
-                {
-                    var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
-                    var idx = Interlocked.Increment(ref _newbornOrganismsCount);
-                    _newbornOrganisms[idx] = newOrganism;
-                });
+                //Parallel.For(_newbornOrganismsCount, targetColonySize, i =>
+                //{
+                //    var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                //    var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+                //    _newbornOrganisms[idx] = newOrganism;
+                //});
 
                 //move current colony into dead pool and null the _organisms array
                 Parallel.For(0, _organismsCount, i =>
@@ -1529,7 +1529,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
     public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
-    public const float PerLayerOffspringGenerationDecayFactor = 1.1f;//1.5f;
+    public const float PerLayerOffspringGenerationDecayFactor = 1.5f;//1.5f;
     #endregion
 
     #region AL
