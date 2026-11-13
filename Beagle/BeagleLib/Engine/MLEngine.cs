@@ -555,7 +555,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 else
                 {
                     frontTargetPerMember = _paretoFrontZeroCount > 0
-                        ? 1.0f / PerLayerOffspringGenerationDecayFactor * targetColonySize / _paretoFrontZeroCount
+                        ? 1.0f / PerLayerOffspringGenerationDecayFactor * targetColonySize*0.9f / _paretoFrontZeroCount
                         : 0.0f;
                 }
 
@@ -568,7 +568,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 {
                     if (_turboParetoSearch) _perLayerOffspringTargets[l] = 0.0f;
                     else
-                        _perLayerOffspringTargets[l] = targetColonySize /
+                        _perLayerOffspringTargets[l] = targetColonySize*0.9f /
                                                        MathF.Pow(PerLayerOffspringGenerationDecayFactor, l + 2) /
                                                        _perLayerSizes[l] / totalWeight;
                 }
@@ -632,7 +632,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 //        _newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
                 //    }
                 //}
-
+                Parallel.For(_newbornOrganismsCount, targetColonySize, i =>
+                {
+                    var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+                    _newbornOrganisms[idx] = newOrganism;
+                });
 
                 //move current colony into dead pool and null the _organisms array
                 Parallel.For(0, _organismsCount, i =>
@@ -1218,7 +1223,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected void IdentifyErrorsForAL()
     {
         var verificationExperimentsCount = AdaptiveLearningSampleSize;//MLSetup.Current.ExperimentsPerGeneration / 4;
-        if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.99)
+        if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > MLSetup.MaxGenerationScore * 0.90)
             verificationExperimentsCount = AdaptiveLearningSampleSize*AdaptiveLearningOversamplingRatio;
         //var inputsArray = new float[verificationExperimentsCount][];
         _adaptiveLearningCount = 0;
@@ -1524,7 +1529,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
     public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
-    public const float PerLayerOffspringGenerationDecayFactor = 1.5f;
+    public const float PerLayerOffspringGenerationDecayFactor = 1.1f;//1.5f;
     #endregion
 
     #region AL
