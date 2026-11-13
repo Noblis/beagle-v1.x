@@ -485,7 +485,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _totalBirthAtLastHighestScoreSinceLastColonyReset = _totalBirths;
             }
 
-            if (MLSetup.Current.TotalBirthsToResetColonyIfNoProgress > 0 && _totalBirths - _totalBirthAtLastHighestScoreSinceLastColonyReset >= MLSetup.Current.TotalBirthsToResetColonyIfNoProgress)
+            if (MLSetup.Current.TotalBirthsToResetColonyIfNoProgress > 0 && _totalBirths - _totalBirthAtLastHighestScoreSinceLastColonyReset >= MLSetup.Current.TargetColonySize(_currentGeneration-_generationAtLastColonyReset)*10/*MLSetup.Current.TotalBirthsToResetColonyIfNoProgress*/)
             {
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Output.WriteLine("Resetting the colony fresh...");
