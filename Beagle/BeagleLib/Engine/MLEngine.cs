@@ -455,7 +455,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         #endregion
 
         #region set up layers for the true pareto front
-        MarkTrueParetoFrontOrganismsInColony();
+        //MarkTrueParetoFrontOrganismsInColony();
         #endregion
 
         #region population micorcosm with organisms not on the true pareto front
@@ -485,7 +485,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _totalBirthAtLastHighestScoreSinceLastColonyReset = _totalBirths;
             }
 
-            if (MLSetup.Current.TotalBirthsToResetColonyIfNoProgress > 0 && _totalBirths - _totalBirthAtLastHighestScoreSinceLastColonyReset >= MLSetup.Current.TargetColonySize(_currentGeneration-_generationAtLastColonyReset)*10/*MLSetup.Current.TotalBirthsToResetColonyIfNoProgress*/)
+            if (MLSetup.Current.TotalBirthsToResetColonyIfNoProgress > 0 && _totalBirths - _totalBirthAtLastHighestScoreSinceLastColonyReset >= MLSetup.Current.TotalBirthsToResetColonyIfNoProgress)
             {
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Output.WriteLine("Resetting the colony fresh...");
@@ -569,7 +569,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     if (_turboParetoSearch) _perLayerOffspringTargets[l] = 0.0f;
                     else
                         _perLayerOffspringTargets[l] = targetColonySize /
-                                                       MathF.Pow(PerLayerOffspringGenerationDecayFactor, l + 2) /
+                                                       MathF.Pow(PerLayerOffspringGenerationDecayFactor, l + 2 - 1/*remove -1*/) /
                                                        _perLayerSizes[l] / totalWeight;
                 }
 
@@ -623,15 +623,15 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                     }
                     while (pctProb > 0);
                 });
-
-                //for (int elites = 0; elites < _organismsCount; elites++)
-                //{
-                //    if (_organisms[elites]!.IsInParetoFrontZero)
-                //    {
-                //        var idx = Interlocked.Increment(ref _newbornOrganismsCount);
-                //        _newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
-                //    }
-                //}
+                MarkTrueParetoFrontOrganismsInColony();
+                for (int elites = 0; elites < _organismsCount; elites++)
+                {
+                    if (_organisms[elites]!.IsInParetoFrontZero)
+                    {
+                        var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+                        _newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
+                    }
+                }
                 //Parallel.For(_newbornOrganismsCount, targetColonySize, i =>
                 //{
                 //    var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
@@ -1529,7 +1529,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
     public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
-    public const float PerLayerOffspringGenerationDecayFactor = 1.5f;//1.5f;
+    public const float PerLayerOffspringGenerationDecayFactor = 2.0f;//1.5f;
     #endregion
 
     #region AL
