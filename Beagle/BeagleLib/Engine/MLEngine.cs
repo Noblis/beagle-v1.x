@@ -552,29 +552,44 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
                 Debug.Assert(_organisms.All(x => x == null || x.IsLayerInitialized));
 
-                // Offspring targets: 50% to true front-0, 50% non-front using geometric decay to distribute offspring across layers
+                // Geometric decay to distribute offspring across layers
                 int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
+
                 float frontTargetPerMember;
                 if (_turboParetoSearch)
                 {
-                    frontTargetPerMember = _paretoFrontZeroCount > 0
-                        ? 1.0f * targetColonySize / _paretoFrontZeroCount
-                        : 0.0f;
+                    frontTargetPerMember = _paretoFrontZeroCount > 0 ? 
+                        1.0f * targetColonySize / _paretoFrontZeroCount : 
+                        0.0f;
                 }
+
                 else
                 {
-                    frontTargetPerMember = _paretoFrontZeroCount > 0
-                        ? 0.5f * targetColonySize / _paretoFrontZeroCount
-                        : 0.0f;
+                    frontTargetPerMember = _paretoFrontZeroCount > 0 ? 
+                        1.0f / PerLayerOffspringGenerationDecayFactor * targetColonySize / _paretoFrontZeroCount : 
+                        0.0f;
                 }
 
                 // Non-front: geometric decay across layers, divided by layer size
                 int maxLayer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
-                float nonFrontTarget = 0.5f * targetColonySize;
+                float totalWeight = 0.0f;
+                for (int l = 0; l <= maxLayer + 1; l++)
+                {
+                    totalWeight += 1 / MathF.Pow(PerLayerOffspringGenerationDecayFactor, l + 1);
+                }
+
+                if (!_turboParetoSearch) frontTargetPerMember /= totalWeight;
+
                 for (int l = 0; l <= maxLayer; l++)
                 {
-                    if (_turboParetoSearch) _perLayerOffspringTargets[l] = 0.0f;
-                    else _perLayerOffspringTargets[l] = nonFrontTarget / MathF.Pow(2f, l + 1) / _perLayerSizes[l];
+                    if (_turboParetoSearch)
+                    {
+                        _perLayerOffspringTargets[l] = 0.0f;
+                    }
+                    else
+                    {
+                        _perLayerOffspringTargets[l] = targetColonySize / MathF.Pow(PerLayerOffspringGenerationDecayFactor, l + 2) / _perLayerSizes[l] / totalWeight;
+                    }
                 }
 
                 FindCrossoverPartnerArray();
@@ -1505,12 +1520,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
     public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
+
+    public const float PerLayerOffspringGenerationDecayFactor = 1.5f;
     #endregion
 
     #region Adaptive Learning
     public const int AdaptiveLearningSampleSize = 512 * 16;
     
-    public float[] _adaptiveLearningErrors = new float[AdaptiveLearningSampleSize];
+    public readonly float[] _adaptiveLearningErrors = new float[AdaptiveLearningSampleSize];
     protected readonly float[][] _adaptiveLearningInputs = new float[AdaptiveLearningSampleSize][];
     protected readonly int[] _adaptiveLearningIndices = new int[AdaptiveLearningSampleSize];
     protected readonly float[] _adaptiveLearningOutputs = new float[AdaptiveLearningSampleSize];
@@ -1518,16 +1535,16 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
     #region SetParetoLayersInMicrocosm() and SelectNextParetoFrontInMicrocosm() -related arrays
     //SetParetoLayersInMicrocosm
-    protected readonly int[] _organismsIdentifiedToParetoFrontsIndices = new int[ParetoMicrocosmSize];
-    protected readonly bool[] _selectedQ = new bool[ParetoMicrocosmSize];
+    //protected readonly int[] _organismsIdentifiedToParetoFrontsIndices = new int[ParetoMicrocosmSize];
+    //protected readonly bool[] _selectedQ = new bool[ParetoMicrocosmSize];
 
-    protected Organism[] _tmpMicrocosmOrganisms = new Organism[ParetoMicrocosmSize];
+    //protected Organism[] _tmpMicrocosmOrganisms = new Organism[ParetoMicrocosmSize];
     //protected readonly int[] _tmpSizeLayers = new int[ParetoMicrocosmSize];
     //protected readonly int[] _tmpScoreLayers = new int[ParetoMicrocosmSize];
     //protected readonly int[] _tmpLayerNumbers = new int[ParetoMicrocosmSize];
 
     //SelectNextParetoFrontInMicrocosm
-    protected readonly bool[] _isOnCurrentlyBeingSelectedFrontQ = new bool[ParetoMicrocosmSize];
+    //protected readonly bool[] _isOnCurrentlyBeingSelectedFrontQ = new bool[ParetoMicrocosmSize];
     #endregion
 
     #region SetParetoLayersInMicrocosm()-related arrays
