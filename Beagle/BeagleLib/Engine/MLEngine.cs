@@ -194,6 +194,13 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Output.WriteLine();
             #endregion
 
+            #region Set up arrays for Adaptive Learning
+            Parallel.For(0, _adaptiveLearningInputs.Length, i =>
+            {
+                _adaptiveLearningInputs[i] = new float[_inputLabels.Length];
+            });
+            #endregion
+
             #region Save and set GC latency mode
             _gcLatencyMode = GCSettings.LatencyMode;
             GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
@@ -324,8 +331,24 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             //reset stuff for new generation
             _generationWatch.Restart();
 
-            //set up experiments (inputs and output), set correct output mean to 0
-            Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
+            //identify challenge points
+            var adaptiveLearningCount = 0;
+            if (_mostAccurateOrganismsSinceLastColonyReset[0] != null) adaptiveLearningCount = IdentifyErrorsForAdaptiveLearningAndReturnAdaptiveLearningCount();
+
+            if (adaptiveLearningCount > 0)
+            {
+                for (int i = 0; i < Math.Min(adaptiveLearningCount, MLSetup.Current.ExperimentsPerGeneration / 2); i++)
+                {
+                    var adaptiveRandomIndex = Rnd.Random.Next(adaptiveLearningCount);
+                    var adaptiveLearningInput = _adaptiveLearningInputs[_adaptiveLearningIndices[adaptiveRandomIndex]];
+                    Debug.Assert(adaptiveLearningInput.Length == _inputsArray[i].Length);
+                    Array.Copy(adaptiveLearningInput, _inputsArray[i], adaptiveLearningInput.Length);
+                    _correctOutputs[i] = _adaptiveLearningOutputs[_adaptiveLearningIndices[adaptiveRandomIndex]];
+                }
+            }
+
+            //set up experiments (inputs and output)
+            Parallel.For(Math.Min(adaptiveLearningCount, MLSetup.Current.ExperimentsPerGeneration / 2), MLSetup.Current.ExperimentsPerGeneration, i =>
             {
                 (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
             });
@@ -1221,7 +1244,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
             {
-                if (Math.Abs(output / correctOutputs[i] - 1) > 0.001)
+                if (GetErrorSafely(output, correctOutputs[i]) > 0.001)
                 {
                     error = true;
                     Console.ForegroundColor = ConsoleColor.Red;
@@ -1280,6 +1303,54 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
             Environment.ExitCode = 1;
         }
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected static float GetErrorSafely(float output, float correctOutput)
+    {
+        if (Math.Abs(correctOutput - 0) < 0.00005 && Math.Abs(output - 0) < 0.00005) return 0;
+        return Math.Abs(output/correctOutput - 1);
+    }
+    protected int IdentifyErrorsForAdaptiveLearningAndReturnAdaptiveLearningCount()
+    {
+        if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score <= MLSetup.MaxGenerationScore * 0.95f) return 0;
+         
+        //set up experiments (inputs and outputs)
+        Parallel.For(0, AdaptiveLearningSampleSize, i =>
+        {
+            (_adaptiveLearningInputs[i], _adaptiveLearningOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_adaptiveLearningInputs[i]);
+        });
+
+        float maxErr = float.MinValue;
+        float avgErr = 0;
+        var fullCommands = _mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommands(_adaptiveLearningInputs, _adaptiveLearningOutputs).ToArray();
+        var codeMachine = new CodeMachine();
+        for (var i = 0; i < AdaptiveLearningSampleSize; i++)
+        {
+            var output = codeMachine.RunCommands(_adaptiveLearningInputs[i], fullCommands);
+            if (output.IsValidNumber() && _adaptiveLearningOutputs[i].IsValidNumber())
+            {
+                _adaptiveLearningErrors[i] = GetErrorSafely(output, _adaptiveLearningOutputs[i]);
+                if (_adaptiveLearningErrors[i] > maxErr) maxErr = _adaptiveLearningErrors[i];
+                avgErr = (avgErr * i + _adaptiveLearningErrors[i]) / (i + 1);
+            }
+            else
+            {
+                //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
+                if (output.IsValidNumber() ^ _adaptiveLearningOutputs[i].IsValidNumber()) _adaptiveLearningErrors[i] = float.NaN;
+            }
+        }
+
+        var adaptiveLearningCount = -1;
+        Parallel.For(0, AdaptiveLearningSampleSize, i =>
+        {
+            if (float.IsNaN(_adaptiveLearningErrors[i]) || Math.Abs(_adaptiveLearningErrors[i] - maxErr) < Math.Abs(_adaptiveLearningErrors[i] - avgErr))
+            {
+                _adaptiveLearningIndices[Interlocked.Increment(ref adaptiveLearningCount)] = i;
+            }
+        }); 
+
+        return adaptiveLearningCount + 1;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1427,14 +1498,23 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     #region Pareto Selection
     private int _paretoFrontZeroCount;
 
-#pragma warning disable IDE0044
+    #pragma warning disable IDE0044
     public bool _turboParetoSearch = false;             //toggle for extreme greedy Pareto front search
-#pragma warning restore IDE0044
+    #pragma warning restore IDE0044
 
     public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
     public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
     public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
     #endregion
+
+    #region Adaptive Learning
+    public const int AdaptiveLearningSampleSize = 512 * 16;
+    
+    public float[] _adaptiveLearningErrors = new float[AdaptiveLearningSampleSize];
+    protected readonly float[][] _adaptiveLearningInputs = new float[AdaptiveLearningSampleSize][];
+    protected readonly int[] _adaptiveLearningIndices = new int[AdaptiveLearningSampleSize];
+    protected readonly float[] _adaptiveLearningOutputs = new float[AdaptiveLearningSampleSize];
+    #endregion  
 
     #region SetParetoLayersInMicrocosm() and SelectNextParetoFrontInMicrocosm() -related arrays
     //SetParetoLayersInMicrocosm

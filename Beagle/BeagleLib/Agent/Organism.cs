@@ -644,11 +644,11 @@ public class Organism
 
             var offset = (float)lineRegression.Item1;
             Debug.Assert(offset.IsValidNumber());
-            if (Math.Abs(offset / mean) < 1E-4) offset = 0;
+            if (Math.Abs(offset / mean) < 5E-5) offset = 0;
 
             var scale = (float)lineRegression.Item2;
             Debug.Assert(scale.IsValidNumber());
-            if (Math.Abs(scale - 1) < 1E-4) scale = 1;
+            if (Math.Abs(scale - 1) < 5E-5) scale = 1;
 
             SetScaleAndOffset(scale, offset);
         }
