@@ -135,6 +135,26 @@ public static class CommandSpanCrossoverExt
         // for generalizability to select one if we find multiple
         crossoverStart = possibleCrossoverStarts[Rnd.Random.Next(possibleCrossoverStartsCount)];
 
+        // Attempt at shorter crossover pieces
+        if (crossoverEnd == crossoverStart) return (crossoverEnd, crossoverStart);
+        
+        stackEffect = 0;
+        var initEnd = crossoverEnd;
+        crossoverEnd = crossoverStart - 1;
+
+        while (crossoverEnd != initEnd)
+        {
+            crossoverEnd++;
+            stackEffect += me[crossoverEnd].StackEffect;
+
+            if (stackEffect == 1 && crossoverEnd - crossoverStart >= 1 && Rnd.Random.Next(10) < 5) break;
+        }
+        //while ((stackEffect != 1 || Rnd.Random.Next(10) < 5 || (crossoverEnd - crossoverStart) < 1) && crossoverEnd != initEnd)
+        //{
+        //    crossoverEnd++;
+        //    stackEffect += me[crossoverEnd].StackEffect;
+        //}
+
         return (crossoverEnd, crossoverStart);
     }
     private static int InsertCrossoverChunk(this Span<Command> me, Span<Command> partner, int myCommandsLength, int crossoverEnd, int crossoverStart, int partnerCrossoverEnd, int partnerCrossoverStart)
