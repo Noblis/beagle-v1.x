@@ -99,8 +99,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (Environment.GetEnvironmentVariable("CUDA_PATH") != null && !forceCPUAccelerator)
             {
                 //https://github.com/m4rs-mt/ILGPU/pull/707
-                if (useLibDevice) _context = Context.Create(builder => builder.Cuda().LibDevice().EnableAlgorithms());
-                else _context = Context.Create(builder => builder.Cuda().EnableAlgorithms());
+                if (useLibDevice) _context = Context.Create(builder => builder.Cuda().LibDevice().EnableAlgorithms().Optimize(OptimizationLevel.O2));
+                else _context = Context.Create(builder => builder.Cuda().EnableAlgorithms().Optimize(OptimizationLevel.O2));
             }
             else
             {
@@ -215,7 +215,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         _context.Dispose();
         Console.CursorVisible = true;
     }
-#endregion
+    #endregion
 
     #region Methods
     public override void Train(int stopAfterMin = -1, long stopAfterBirths = -1, bool noEscMenu = false, bool benchmarkRun = false)
