@@ -77,52 +77,142 @@ public static class CommandSpanMutationExt
         {
             var commandAtAddr = me[addr];
 
-            stackEffect = -commandAtAddr.StackEffect;
-            compensatingAddr = addr;
-            newStackSize = stackAtAddr + stackEffect; //used to be without stackEffect
-
-            //we don't modify copy adjunct operation directly
-            if (commandAtAddr.Operation == OpEnum.Copy) return 0;
-
-            //Special handling for copy/paste pair
-            if (commandAtAddr.Operation == OpEnum.Paste)
+            if (commandAtAddr.Operation is OpEnum.Arccos or OpEnum.Arcsin or OpEnum.Arctan or OpEnum.Cbrt or OpEnum.Cos
+                or OpEnum.Cube or OpEnum.Exp or OpEnum.Ln or OpEnum.Sign or OpEnum.Sin or OpEnum.Sqrt or OpEnum.Square
+                or OpEnum.Swap or OpEnum.Tan or OpEnum.Tanh)
             {
-                var idx = commandAtAddr.Idx;
-                var copyAddr = me.GetCopyAddr(idx, addr);
-
-                Debug.Assert(addr > copyAddr);
+                // simple delete
                 me.RemoveAt(ref length, addr);
-                me.RemoveAt(ref length, copyAddr);
-                compensatingAddr--;
-
-                Debug.Assert(stackEffect == -1);
-                addrDelta = -2 + me.InsertRandomAt(ref length, compensatingAddr, -stackEffect, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
-
-                #if DEBUG
-                me.VerifyScriptValid(length, true);
-                #endif
-
-                return addrDelta;
-            }
-
-            me.RemoveAt(ref length, addr);
-
-            if (stackEffect == 0)
-            {
-                #if DEBUG
-                me.VerifyScriptValid(length, true);
-                #endif
-
                 return -1;
             }
-            
-            addrDelta = -1 + me.InsertRandomAt(ref length, compensatingAddr, -stackEffect, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
-            
-            #if DEBUG
-            me.VerifyScriptValid(length, true);
-            #endif
+            else if (commandAtAddr.Operation is OpEnum.Add or OpEnum.Div or OpEnum.Mul or OpEnum.Pow or OpEnum.Sub or OpEnum.Del)
+            {
+                // binary element delete and del
+                int offset = 0;
+                int deleteEnd = addr - 1;
+                int firstOrSecondOperand = Rnd.Random.Next(2);
+                int deleteStart = me.FindStartOfValidMutationChunk(deleteEnd);
+                if (firstOrSecondOperand == 0 && commandAtAddr.Operation != OpEnum.Del)
+                {
+                    deleteEnd = deleteStart - 1;
+                    deleteStart = me.FindStartOfValidMutationChunk(deleteEnd);
+                }
+                me.RemoveAt(ref length, addr);
+                offset -= 1;
+                for (int i = deleteEnd; i >= deleteStart; i--)
+                {
+                    if (me[i].Operation == OpEnum.Copy) continue;
+                    if (me[i].Operation == OpEnum.Paste)
+                    {
+                        var idx = me[i].Idx;
+                        var copyIndex = me.GetCopyAddr(idx, i);
+                        me.RemoveAt(ref length, i);
+                        me.RemoveAt(ref length, copyIndex);
+                        if (copyIndex < deleteStart) deleteStart--;
+                        i--;
+                        offset -= 2;
+                    }
+                    else
+                    {
+                        me.RemoveAt(ref length, i);
+                        offset -= 1;
+                    }
+                }
 
-            return addrDelta;
+                return offset;
+            }
+            else if (commandAtAddr.Operation is OpEnum.Const or OpEnum.Load or OpEnum.Dup or OpEnum.Copy or OpEnum.Paste)
+            {
+                int copyDeleteOffset = 0;
+                if (commandAtAddr.Operation == OpEnum.Paste)
+                {
+                    var idx = me[addr].Idx;
+                    var copyIndex = me.GetCopyAddr(idx, addr);
+                    me.RemoveAt(ref length, copyIndex);
+                    copyDeleteOffset = -1;
+                }
+
+                if (commandAtAddr.Operation == OpEnum.Copy)
+                {
+                    return 0;
+                }
+
+                bool brokePattern = false; // to track end of unary ops
+                stackEffect = 1;
+                me.RemoveAt(ref length, addr+copyDeleteOffset);
+                int rightTracking = 0;
+                while (stackEffect != 0)
+                {
+                    if (me[addr].StackEffect == 0 && brokePattern == false)
+                    {
+                        me.RemoveAt(ref length, addr+copyDeleteOffset);
+                    }
+                    else if (me[addr].StackEffect == -1 && stackEffect == 1)
+                    {
+                        me.RemoveAt(ref length, addr+rightTracking+copyDeleteOffset);
+                    }
+                    else
+                    {
+                        stackEffect += me[addr + rightTracking].StackEffect;
+                        rightTracking += 1;
+                        brokePattern = true;
+                    }
+                }
+
+                return -1+copyDeleteOffset;
+            }
+            
+            
+
+            //return addrDelta;
+                //var commandAtAddr = me[addr];
+
+                //stackEffect = -commandAtAddr.StackEffect;
+                //compensatingAddr = addr;
+                //newStackSize = stackAtAddr + stackEffect; //used to be without stackEffect
+
+                ////we don't modify copy adjunct operation directly
+                //if (commandAtAddr.Operation == OpEnum.Copy) return 0;
+
+                ////Special handling for copy/paste pair
+                //if (commandAtAddr.Operation == OpEnum.Paste)
+                //{
+                //    var idx = commandAtAddr.Idx;
+                //    var copyAddr = me.GetCopyAddr(idx, addr);
+
+                //    Debug.Assert(addr > copyAddr);
+                //    me.RemoveAt(ref length, addr);
+                //    me.RemoveAt(ref length, copyAddr);
+                //    compensatingAddr--;
+
+                //    Debug.Assert(stackEffect == -1);
+                //    addrDelta = -2 + me.InsertRandomAt(ref length, compensatingAddr, -stackEffect, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
+
+                //    #if DEBUG
+                //    me.VerifyScriptValid(length, true);
+                //    #endif
+
+                //    return addrDelta;
+            //}
+
+            //me.RemoveAt(ref length, addr);
+
+            //if (stackEffect == 0)
+            //{
+            //    #if DEBUG
+            //    me.VerifyScriptValid(length, true);
+            //    #endif
+
+            //    return -1;
+            //}
+            
+            //addrDelta = -1 + me.InsertRandomAt(ref length, compensatingAddr, -stackEffect, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
+            
+            //#if DEBUG
+            //me.VerifyScriptValid(length, true);
+            //#endif
+
+            //return addrDelta;
         }
         
         if (mutationType == MutationTypeEnum.Replace)
@@ -309,4 +399,30 @@ public static class CommandSpanMutationExt
         throw new Exception("Unknown mutation type");
     }
     #endregion
+
+    private static int FindStartOfValidMutationChunk(this Span<Command> me, int end)
+    {
+
+        int mutationEnd = end;
+        int mutationStart = 0;
+
+        int stackEffect = 0;
+
+
+        // find mutation candidate chunks
+        for (int i = mutationEnd; i >= 0; i--)
+        {
+            // abort if a copy or paste
+            //if (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste) return (-1);
+
+            stackEffect += me[i].StackEffect;
+            if (stackEffect == 1) // check if valid chunk found
+            {
+                mutationStart = i;
+                break;
+            }
+        }
+
+        return (mutationStart);
+    }
 }
