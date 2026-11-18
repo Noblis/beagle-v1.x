@@ -90,7 +90,7 @@ public static class CommandSpanMutationExt
                 // binary element delete and del
                 int offset = 0;
                 int deleteEnd = addr - 1;
-                int firstOrSecondOperand = Rnd.Random.Next(2);
+                int firstOrSecondOperand = 1;//Rnd.Random.Next(2);
                 int deleteStart = me.FindStartOfValidMutationChunk(deleteEnd);
                 if (firstOrSecondOperand == 0 && commandAtAddr.Operation != OpEnum.Del)
                 {
@@ -143,17 +143,18 @@ public static class CommandSpanMutationExt
                 int rightTracking = 0;
                 while (stackEffect != 0)
                 {
-                    if (me[addr].StackEffect == 0 && brokePattern == false)
+                    if (me[addr+copyDeleteOffset].StackEffect == 0 && brokePattern == false)
                     {
                         me.RemoveAt(ref length, addr+copyDeleteOffset);
                     }
-                    else if (me[addr].StackEffect == -1 && stackEffect == 1)
+                    else if (me[addr+rightTracking+copyDeleteOffset].StackEffect == -1 && stackEffect == 1)
                     {
                         me.RemoveAt(ref length, addr+rightTracking+copyDeleteOffset);
+                        stackEffect -= 1;
                     }
                     else
                     {
-                        stackEffect += me[addr + rightTracking].StackEffect;
+                        stackEffect += me[addr + rightTracking + copyDeleteOffset].StackEffect;
                         rightTracking += 1;
                         brokePattern = true;
                     }
