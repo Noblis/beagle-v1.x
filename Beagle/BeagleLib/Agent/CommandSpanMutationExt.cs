@@ -162,7 +162,7 @@ public static class CommandSpanMutationExt
                     // +/- NextDouble(0.1)
                     me[addr] = new Command(OpEnum.Const, commandAtAddr.ConstValue + (float)(Rnd.Random.NextDouble() * 0.2 - 0.1));
                 }
-                else
+                else //50%
                 {
                     me[addr] = new Command(OpEnum.Const, commandAtAddr.ConstValue * (Rnd.Random.NextSingle() + 0.5f));
                 }
