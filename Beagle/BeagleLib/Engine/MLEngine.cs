@@ -1151,6 +1151,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _organismsCount = 0;
             }
 
+            Parallel.For(0, _organisms.Length, i =>
+            {
+                _organisms[i] = null;
+            });
+
             Span<Command> commandsBuffer = stackalloc Command[BConfig.MaxScriptLength];
             Output.Write("Loading: ");
             var step = organismsInFileCount / 80;
