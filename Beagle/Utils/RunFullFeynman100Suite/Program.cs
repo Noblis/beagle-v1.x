@@ -257,7 +257,7 @@ public static class Program
 
         File.WriteAllText("AppOutput/results.txt", results);
 
-        Console.WriteLine("Waiting for 1 second before starting next...");
-        Thread.Sleep(1_000);
+        //Console.WriteLine("Waiting for 1 second before starting next...");
+        //Thread.Sleep(1_000);
     }
 }
