@@ -73,7 +73,7 @@ public static class CommandSpanMutationExt
         int newStackSize;
         int addrDelta;
 
-        if (mutationType == MutationTypeEnum.Delete && Rnd.Random.Next(100)<10)
+        if (mutationType == MutationTypeEnum.Delete && Rnd.Random.Next(100)<40)
         {
             var commandAtAddr = me[addr];
             //for (int i = 0; i < length; i++) Console.Write(me[i]);
