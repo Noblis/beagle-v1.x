@@ -233,7 +233,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             _mostAccurateEverOrganism = null;
             _mostAccurateOrganismsSinceLastColonyReset = new Organism?[BConfig.TopMostAccurateOrganismsToKeep];
-            for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++) _mostAccurateOrganismsSinceLastColonyReset[i] = null;
+            for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+            {
+                _mostAccurateOrganismsSinceLastColonyReset[i] = null;
+            }
             _highestOrganismsScoreSinceLastColonyReset = int.MinValue;
             _mostAccurateEverOrganismTotalTime = TimeSpan.Zero;
             _totalBirthAtLastHighestScoreSinceLastColonyReset = 0;

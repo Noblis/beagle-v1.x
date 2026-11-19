@@ -25,3 +25,4 @@ copilot-chat/
 /.vs/Beagle/v18/DocumentLayout.backup.json
 Beagle/Run/AppOutput*/
 FeynmanAppOutput*/
+*.testlog
