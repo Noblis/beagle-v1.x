@@ -73,7 +73,7 @@ public static class CommandSpanMutationExt
         int newStackSize;
         int addrDelta;
 
-        if (mutationType == MutationTypeEnum.Delete)
+        if (mutationType == MutationTypeEnum.Delete && Rnd.Random.Next(100)<10)
         {
             var commandAtAddr = me[addr];
             //for (int i = 0; i < length; i++) Console.Write(me[i]);
@@ -204,7 +204,7 @@ public static class CommandSpanMutationExt
                     }
                 }
                 int swapIndex = addr + rightTracking + copyDeleteOffset;
-                while (me[swapIndex].Operation == OpEnum.Swap)
+                while (me[swapIndex].Operation == OpEnum.Swap && swapIndex < length)
                 {
                     me.RemoveAt(ref length, swapIndex);
                 }
@@ -267,7 +267,58 @@ public static class CommandSpanMutationExt
 
             //return addrDelta;
         }
-        
+        else if (mutationType == MutationTypeEnum.Delete)
+        {
+            var commandAtAddr = me[addr];
+
+            stackEffect = -commandAtAddr.StackEffect;
+            compensatingAddr = addr;
+            newStackSize = stackAtAddr + stackEffect; //used to be without stackEffect
+
+            //we don't modify copy adjunct operation directly
+            if (commandAtAddr.Operation == OpEnum.Copy) return 0;
+
+            //Special handling for copy/paste pair
+            if (commandAtAddr.Operation == OpEnum.Paste)
+            {
+                var idx = commandAtAddr.Idx;
+                var copyAddr = me.GetCopyAddr(idx, addr);
+
+                Debug.Assert(addr > copyAddr);
+                me.RemoveAt(ref length, addr);
+                me.RemoveAt(ref length, copyAddr);
+                compensatingAddr--;
+
+                Debug.Assert(stackEffect == -1);
+                addrDelta = -2 + me.InsertRandomAt(ref length, compensatingAddr, -stackEffect, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
+
+#if DEBUG
+                me.VerifyScriptValid(length, true);
+#endif
+
+                return addrDelta;
+            }
+
+            me.RemoveAt(ref length, addr);
+
+            if (stackEffect == 0)
+            {
+#if DEBUG
+                me.VerifyScriptValid(length, true);
+#endif
+
+                return -1;
+            }
+
+            addrDelta = -1 + me.InsertRandomAt(ref length, compensatingAddr, -stackEffect, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
+
+#if DEBUG
+            me.VerifyScriptValid(length, true);
+#endif
+
+            return addrDelta;
+        }
+
         if (mutationType == MutationTypeEnum.Replace)
         {
             var commandAtAddr = me[addr];
