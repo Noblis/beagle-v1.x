@@ -56,7 +56,7 @@ namespace ExecuteGenome
             {
                 Console.WriteLine("Please enter inputs:");
                 var inputs = ReadInputsFromUser(inputLabels);
-                var output = ThreadStaticCodeMachine.Instance.RunCommands(inputs, organism.Commands);
+                var output = ThreadStaticCodeMachine.Instance64.RunCommands(inputs, organism.Commands);
                 Console.WriteLine($"Output: {output}");
                 Console.WriteLine();
             }

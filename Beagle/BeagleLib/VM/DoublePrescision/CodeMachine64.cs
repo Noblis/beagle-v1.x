@@ -1,0 +1,467 @@
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using BeagleLib.Util;
+using ILGPU;
+
+namespace BeagleLib.VM.DoublePrescision;
+
+public struct CodeMachine64
+{
+    #region Methods
+    [NotInsideKernel]
+    public double RunCommands(float[] inputsArr, Command[] commands)
+    {
+        Stack = new double[BConfig.StackSize];
+        StackPointer = 0;
+        Clipboard = new ClipboardItem64[BConfig.ClipboardSize];
+
+        for (var i = 0; i < commands.Length; i++)
+        {
+            //we do special handling for Load command because we do not have ArrayView setup. Otherwise, we run normal Execute with no LibDevice
+            if (commands[i].Operation == OpEnum.Load) ExecuteLoadFromArray(inputsArr, commands[i].Idx);
+            else Execute(commands[i]);
+        }
+        Debug.Assert(StackPointer == 1);
+        return StackPop();
+    }
+
+    //public double RunCommands(ArrayView<double> inputs, ArrayView<Command> commands)
+    //{
+    //    Stack = new double[BConfig.StackSize];
+    //    StackPointer = 0;
+    //    Clipboard = new ClipboardItem64[BConfig.ClipboardSize];
+        
+    //    Inputs = inputs;
+
+    //    for (var i = 0; i < commands.Length; i++)
+    //    {
+    //        Execute(commands[i]);
+    //    }
+    //    Debug.Assert(StackPointer == 1);
+    //    return StackPop();
+    //}
+    #endregion
+
+    #region Private Methods
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void Execute(Command command)
+    {
+        switch (command.Operation)
+        {
+            case OpEnum.Add: ExecuteAdd(); return;
+            case OpEnum.Const: ExecuteConst(command.ConstValue); return;
+            case OpEnum.Div: ExecuteDiv(); return;
+            case OpEnum.Dup: ExecuteDup(); return;
+            case OpEnum.Del: ExecuteDel(); return;
+            case OpEnum.Load: ExecuteLoad(command.Idx); return;
+            case OpEnum.Mul: ExecuteMul(); return;
+            case OpEnum.Sign: ExecuteSign(); return;
+
+            case OpEnum.Sqrt: ExecuteSqrt(); return;
+
+            case OpEnum.Cbrt: ExecuteCbrt(); return;
+            
+            case OpEnum.Sub: ExecuteSub(); return;
+            case OpEnum.Swap: ExecuteSwap(); return;
+            case OpEnum.Copy: ExecuteCopy(command.Idx); return;
+            case OpEnum.Paste: ExecutePaste(command.Idx); return;
+            case OpEnum.Square: ExecuteSquare(); return;
+            case OpEnum.Cube: ExecuteCube(); return;
+
+            case OpEnum.Ln: ExecuteLn(); return;
+
+            case OpEnum.Sin: ExecuteSin(); return;
+
+            case OpEnum.Cos: ExecuteCos(); return;
+
+            case OpEnum.Tan: ExecuteTan(); return;
+
+            case OpEnum.Arccos: ExecuteArccos(); return;
+
+            case OpEnum.Arcsin: ExecuteArcsin(); return;
+
+            case OpEnum.Arctan: ExecuteArctan(); return;
+
+            case OpEnum.Tanh: ExecuteTanh(); return;
+
+            case OpEnum.Exp: ExecuteExp(); return;
+
+            case OpEnum.Pow: ExecutePow(); return;
+
+            //case (OpEnum.Abs, false): ExecuteAbs(); return;
+
+            //case OpEnum.Round: ExecuteRound(); return;
+
+            default: Debug.Assert(false, "Unknown OperationEnum"); return;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteAdd()
+    {
+        var x = StackPop();
+        var y = StackPop();
+        StackPush(x + y);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteConst(double constValue)
+    {
+        StackPush(constValue);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteDiv()
+    {
+        var x = StackPop();
+        var y = StackPop();
+        StackPush(y / x);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteDup()
+    {
+        var x = StackPeek();
+        StackPush(x);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteDel()
+    {
+        StackPop();
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteLoad(int idx)
+    {
+        StackPush(Inputs[idx]);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining), NotInsideKernel]
+    private void ExecuteLoadFromArray(float[] inputs, int idx)
+    {
+        StackPush(inputs[idx]);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteMul()
+    {
+        var x = StackPop();
+        var y = StackPop();
+        StackPush(x * y);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteSign()
+    {
+        var x = StackPop();
+        StackPush(-x);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteSqrt()
+    {
+        var x = StackPop();
+        x = Math.Sqrt(x);
+        StackPush(x);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteCbrt()
+    {
+        var x = StackPop();
+        x = Cbrt(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteSub()
+    {
+        var x = StackPop();
+        var y = StackPop();
+        StackPush(y - x);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteSwap()
+    {
+        var x = StackPop();
+        var y = StackPop();
+        StackPush(x);
+        StackPush(y);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteCopy(int idx)
+    {
+        var x = StackPeek();
+        PushToClipboard(idx, x);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecutePaste(int idx)
+    {
+        var x = PopFromClipboard(idx);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void StackClear()
+    {
+        StackPointer = 0;
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void StackPush(double x)
+    {
+        Debug.Assert(StackPointer < BConfig.StackSize);
+        Stack[StackPointer] = x;
+        StackPointer++;
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private double StackPop()
+    {
+        Debug.Assert(StackPointer > 0);
+        StackPointer--;
+        return Stack[StackPointer];
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private double StackPeek()
+    {
+        Debug.Assert(StackPointer > 0);
+        return Stack[StackPointer - 1];
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void PushToClipboard(int idx, double val)
+    {
+        for (var i = 0; i < Clipboard.Length; i++)
+        {
+            if (!Clipboard[i].InUse)
+            {
+                Clipboard[i].InUse = true;
+                Clipboard[i].Index = idx;
+                Clipboard[i].Value = val;
+                return;
+            }
+        }
+        Debug.Assert(false, "Unable to write to clipboard because it is full");
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private double PopFromClipboard(int idx)
+    {
+        for (var i = 0; i < Clipboard.Length; i++)
+        {
+            if (Clipboard[i].InUse && Clipboard[i].Index == idx)
+            {
+                Clipboard[i].InUse = false;
+                return Clipboard[i].Value;
+            }
+        }
+        Debug.Assert(false, "Unable to find variable in clipboard");
+        return double.NaN;
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteSquare()
+    {
+        var x = StackPop();
+        StackPush(x * x);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteCube()
+    {
+        var x = StackPop();
+        StackPush(x * x * x);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteLn()
+    {
+        var x = StackPop();
+        x = Math.Log(x);
+        StackPush(x);
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteSin()
+    {
+        var x = StackPop();
+        x = Math.Sin(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteCos()
+    {
+        var x = StackPop();
+        x = Math.Cos(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteTan()
+    {
+        var x = StackPop();
+        x = Math.Tan(x);
+        //x = Math.Sin(x) / Math.Cos(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteArccos()
+    {
+        var x = StackPop();
+        x = Math.Acos(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteArcsin()
+    {
+        var x = StackPop();
+        x = Math.Asin(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteArctan()
+    {
+        var x = StackPop();
+        x = Math.Atan(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteTanh()
+    {
+        var x = StackPop();
+        x = Math.Tanh(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecuteExp()
+    {
+        var x = StackPop();
+        x = Math.Exp(x);
+        StackPush(x);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ExecutePow()
+    {
+        var x = StackPop();
+        var y = StackPop();
+        StackPush(Math.Pow(y, x));
+    }
+
+
+    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //private void ExecuteAbs()
+    //{
+    //    var x = StackPop();
+    //    x = MathF.Abs(x);
+    //    StackPush(x);
+    //}
+    //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //private void ExecuteRound()
+    //{
+    //    var x = StackPop();
+    //    StackPush((int)(x + 0.5));
+    //}
+
+    //This is a port from Rust https://github.com/rust-lang/libm/blob/master/src/math/cbrt.rs
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private double Cbrt(double x)
+    {
+        const int b1 = 715094163; /* B1 = (1023-1023/3-0.03306235651)*2**20 */
+        const int b2 = 696219795; /* B2 = (1023-1023/3-54/3-0.03306235651)*2**20 */
+
+        const double p0 = 1.87595182427177009643; /* 0x3ffe03e6, 0x0f61e692 */
+        const double p1 = -1.88497979543377169875; /* 0xbffe28e0, 0x92f02420 */
+        const double p2 = 1.621429720105354466140; /* 0x3ff9f160, 0x4a49d6c2 */
+        const double p3 = -0.758397934778766047437; /* 0xbfe844cb, 0xbee751d9 */
+        const double p4 = 0.145996192886612446982; /* 0x3fc2b000, 0xd4e4edd7 */
+
+        double x1P54 = Interop.IntAsFloat(0x4350000000000000); // 0x1p54 === 2 ^ 54
+        ulong ui = Interop.FloatAsInt(x);
+        double r;
+        double s;
+        double t;
+        double w;
+        uint hx = ((uint)(ui >> 32)) & 0x7fffffff;
+
+        if (hx >= 0x7ff00000)
+        {
+            /* cbrt(NaN,INF) is itself */
+            return x + x;
+        }
+
+        /*
+         * Rough cbrt to 5 bits:
+         *    cbrt(2**e*(1+m) ~= 2**(e/3)*(1+(e%3+m)/3)
+         * where e is integral and >= 0, m is real and in [0, 1), and "/" and
+         * "%" are integer division and modulus with rounding towards minus
+         * infinity.  The RHS is always >= the LHS and has a maximum relative
+         * error of about 1 in 16.  Adding a bias of -0.03306235651 to the
+         * (e%3+m)/3 term reduces the error to about 1 in 32. With the IEEE
+         * floating point representation, for finite positive normal values,
+         * ordinary integer divison of the value in bits magically gives
+         * almost exactly the RHS of the above provided we first subtract the
+         * exponent bias (1023 for doubles) and later add it back.  We do the
+         * subtraction virtually to keep e >= 0 so that ordinary integer
+         * division rounds towards minus infinity; this is also efficient.
+         */
+        if (hx < 0x00100000)
+        {
+            /* zero or subnormal? */
+            ui = Interop.FloatAsInt(x * x1P54);
+            hx = (uint)(ui >> 32) & 0x7fffffff;
+            if (hx == 0) return x; /* cbrt(0) is itself */
+            hx = hx / 3 + b2;
+        }
+        else
+        {
+            hx = hx / 3 + b1;
+        }
+        ui &= (ulong)1 << 63;
+        ui |= (ulong)hx << 32;
+        t = Interop.IntAsFloat(ui);
+
+        /*
+         * New cbrt to 23 bits:
+         *    cbrt(x) = t*cbrt(x/t**3) ~= t*P(t**3/x)
+         * where P(r) is a polynomial of degree 4 that approximates 1/cbrt(r)
+         * to within 2**-23.5 when |r - 1| < 1/10.  The rough approximation
+         * has produced t such than |t/cbrt(x) - 1| ~< 1/32, and cubing this
+         * gives us bounds for r = t**3/x.
+         *
+         * Try to optimize for parallel evaluation as in __tanf.c.
+         */
+        r = (t * t) * (t / x);
+        t = t * ((p0 + r * (p1 + r * p2)) + ((r * r) * r) * (p3 + r * p4));
+
+        /*
+         * Round t away from zero to 23 bits (sloppily except for ensuring that
+         * the result is larger in magnitude than cbrt(x) but not much more than
+         * 2 23-bit ulps larger).  With rounding towards zero, the error bound
+         * would be ~5/6 instead of ~4/6.  With a maximum error of 2 23-bit ulps
+         * in the rounded t, the infinite-precision error in the Newton
+         * approximation barely affects third digit in the final error
+         * 0.667; the error in the rounded t can be up to about 3 23-bit ulps
+         * before the final error is larger than 0.667 ulps.
+         */
+        ui = Interop.FloatAsInt(t);
+        ui = (ui + 0x80000000) & 0xffffffffc0000000;
+        t = Interop.IntAsFloat(ui);
+
+        /* one-step Newton iteration to 53 bits with error < 0.667 ulps */
+        s = t * t; /* t*t is exact */
+        r = x / s; /* error <= 0.5 ulps; |r| < |t| */
+        w = t + t; /* t+t is exact */
+        r = (r - t) / (w + r); /* r-t is exact; w+r ~= 3*t */
+        t = t + t * r; /* error <= 0.5 + 0.5/3 + epsilon */
+        return t;
+    }
+    #endregion
+
+    #region Properties
+    // ReSharper disable once UnusedAutoPropertyAccessor.Local
+    public ArrayView<double> Inputs { get; private set; }
+
+    private double[] Stack { get; set; }
+    private int StackPointer { get; set; }
+
+    private ClipboardItem64[] Clipboard { get; set; }
+    #endregion
+}

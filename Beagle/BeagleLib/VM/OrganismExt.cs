@@ -23,10 +23,10 @@ public static class OrganismExt
         int score = 0;
 
         //We want to call this method in multi-threaded way, so we don't want nested multi-threading here and use a normal array
-        if (_myOutputs == null) _myOutputs = new float[MLSetup.Current.ExperimentsPerGeneration];
+        if (_myOutputs == null) _myOutputs = new double[MLSetup.Current.ExperimentsPerGeneration];
         for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
         {
-            _myOutputs[experiment] = ThreadStaticCodeMachine.Instance.RunCommands(inputsArray[experiment], me.Commands);
+            _myOutputs[experiment] = ThreadStaticCodeMachine.Instance64.RunCommands(inputsArray[experiment], me.Commands);
         }
 
         if (fitFunc.UseCorrelationFit)
@@ -116,7 +116,7 @@ public static class OrganismExt
                 //if (isOutputValid && isCorrectOutputValid) Interlocked.Add(ref score, fitFunc.FitFunction(output, correctOutput));
                 //else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid));
 
-                if (isOutputValid && isCorrectOutputValid) score += fitFunc.FitFunction(output, correctOutput);
+                if (isOutputValid && isCorrectOutputValid) score += fitFunc.FitFunction((float)output, correctOutput);
                 else score += fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid);
             }
         }
@@ -125,6 +125,6 @@ public static class OrganismExt
         me.ScoreRecalcCount++;
     }
 
-    [ThreadStatic] private static float[]? _myOutputs;
+    [ThreadStatic] private static double[]? _myOutputs;
     #endregion
 }

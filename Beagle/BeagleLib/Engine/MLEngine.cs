@@ -1262,7 +1262,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Output.Write($"{_inputLabels[j]}={inputsArray[i][j]}; ");
             }
             
-            var output = ThreadStaticCodeMachine.Instance.RunCommands(inputsArray[i], fullCommands);
+            var output = ThreadStaticCodeMachine.Instance64.RunCommands(inputsArray[i], fullCommands);
             Output.Write($"OUT: {output} (model) vs. {correctOutputs[i]} (target)");
 
             if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
@@ -1334,6 +1334,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         if (Math.Abs(correctOutput - 0) < 0.00005 && Math.Abs(output - 0) < 0.00005) return 0;
         return Math.Abs(output/correctOutput - 1);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected static double GetErrorSafely(double output, double correctOutput)
+    {
+        if (Math.Abs(correctOutput - 0) < 0.00005 && Math.Abs(output - 0) < 0.00005) return 0;
+        return Math.Abs(output / correctOutput - 1);
+    }
+
     protected int IdentifyErrorsForAdaptiveLearningAndReturnAdaptiveLearningCount()
     {
         if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score <= MLSetup.MaxGenerationScore * 0.95f) return 0;
@@ -1344,12 +1352,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             (_adaptiveLearningInputs[i], _adaptiveLearningOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_adaptiveLearningInputs[i]);
         });
 
-        float maxErr = float.MinValue;
-        float avgErr = 0;
+        double maxErr = float.MinValue;
+        double avgErr = 0;
         var fullCommands = _mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommands(_adaptiveLearningInputs, _adaptiveLearningOutputs).ToArray();
         for (var i = 0; i < AdaptiveLearningSampleSize; i++)
         {
-            var output = ThreadStaticCodeMachine.Instance.RunCommands(_adaptiveLearningInputs[i], fullCommands);
+            var output = ThreadStaticCodeMachine.Instance64.RunCommands(_adaptiveLearningInputs[i], fullCommands);
             if (output.IsValidNumber() && _adaptiveLearningOutputs[i].IsValidNumber())
             {
                 _adaptiveLearningErrors[i] = GetErrorSafely(output, _adaptiveLearningOutputs[i]);
@@ -1366,7 +1374,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var adaptiveLearningCount = -1;
         Parallel.For(0, AdaptiveLearningSampleSize, i =>
         {
-            if (float.IsNaN(_adaptiveLearningErrors[i]) || Math.Abs(_adaptiveLearningErrors[i] - maxErr) < Math.Abs(_adaptiveLearningErrors[i] - avgErr))
+            if (double.IsNaN(_adaptiveLearningErrors[i]) || Math.Abs(_adaptiveLearningErrors[i] - maxErr) < Math.Abs(_adaptiveLearningErrors[i] - avgErr))
             {
                 _adaptiveLearningIndices[Interlocked.Increment(ref adaptiveLearningCount)] = i;
             }
@@ -1534,7 +1542,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     #region Adaptive Learning
     public const int AdaptiveLearningSampleSize = 512 * 16;
     
-    public readonly float[] _adaptiveLearningErrors = new float[AdaptiveLearningSampleSize];
+    public readonly double[] _adaptiveLearningErrors = new double[AdaptiveLearningSampleSize];
     protected readonly float[][] _adaptiveLearningInputs = new float[AdaptiveLearningSampleSize][];
     protected readonly int[] _adaptiveLearningIndices = new int[AdaptiveLearningSampleSize];
     protected readonly float[] _adaptiveLearningOutputs = new float[AdaptiveLearningSampleSize];

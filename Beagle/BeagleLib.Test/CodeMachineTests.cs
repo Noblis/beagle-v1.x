@@ -25,7 +25,10 @@ public class CodeMachineTests
             new Command(OpEnum.Add)
         };
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, 6);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
+        ClassicAssert.AreEqual(result, 6f);
+        ClassicAssert.AreEqual(result64, 6.0);
     }
     [Test] public void TestMulLoadDup()
     {
@@ -36,7 +39,10 @@ public class CodeMachineTests
             new Command(OpEnum.Mul)
         };
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, 4);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
+        ClassicAssert.AreEqual(result, 4f);
+        ClassicAssert.AreEqual(result64, 4.0);
     }
     [Test] public void TestSubLoadConst()
     {
@@ -46,8 +52,12 @@ public class CodeMachineTests
             new Command(OpEnum.Load, 2),
             new Command(OpEnum.Sub)
         };
+        
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, 1);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
+        ClassicAssert.AreEqual(result, 1f);
+        ClassicAssert.AreEqual(result64, 1.0);
     }
     [Test] public void TestDivLoadConstSign()
     {
@@ -58,8 +68,12 @@ public class CodeMachineTests
             new Command(OpEnum.Div),
             new Command(OpEnum.Sign)
         };
+
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, -3);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
+        ClassicAssert.AreEqual(result, -3f);
+        ClassicAssert.AreEqual(result64, -3.0);
     }
     [Test] public void TestConstDupSqrt()
     {
@@ -70,8 +84,12 @@ public class CodeMachineTests
             new Command(OpEnum.Mul),
             new Command(OpEnum.Sqrt)
         };
+
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, 9);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
+        ClassicAssert.AreEqual(result, 9f);
+        ClassicAssert.AreEqual(result64, 9.0);
     }
     [Test] public void TestConstDupCbrt()
     {
@@ -84,8 +102,12 @@ public class CodeMachineTests
             new Command(OpEnum.Mul),
             new Command(OpEnum.Cbrt)
         };
+
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, -9);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
+        ClassicAssert.AreEqual(result, -9f);
+        ClassicAssert.AreEqual(result64, -9.0);
     }
     [Test] public void TestConstSwap()
     {
@@ -96,8 +118,12 @@ public class CodeMachineTests
             new Command(OpEnum.Swap),
             new Command(OpEnum.Sub)
         };
+        
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, 1);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
+        ClassicAssert.AreEqual(result, 1f);
+        ClassicAssert.AreEqual(result64, 1.0);
     }
     [Test] public void TestCopyPaste()
     {
@@ -115,7 +141,10 @@ public class CodeMachineTests
             new Command(OpEnum.Sub)
         };
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, 0);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
+        ClassicAssert.AreEqual(result, 0f);
+        ClassicAssert.AreEqual(result64, 0.0);
     }
     [Test] public void TestSquareAndCube()
     {
@@ -125,8 +154,12 @@ public class CodeMachineTests
             new Command(OpEnum.Square),
             new Command(OpEnum.Cube)
         };
+
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, 64);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
+        ClassicAssert.AreEqual(result, 64f);
+        ClassicAssert.AreEqual(result64, 64.0);
     }
     [Test] public void TestLn()
     {
@@ -135,8 +168,12 @@ public class CodeMachineTests
             new Command(OpEnum.Const, 16.0f),
             new Command(OpEnum.Ln),
         };
+
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
         ClassicAssert.AreEqual(result, 2.77258873f);
+        ClassicAssert.AreEqual(result64, 2.77258873, 1e-5);
     }
     [Test] public void TestSin()
     {
@@ -145,67 +182,85 @@ public class CodeMachineTests
             new Command(OpEnum.Const, MathF.PI/2),
             new Command(OpEnum.Sin),
         };
+        
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
         ClassicAssert.AreEqual(result, MathF.Sin(MathF.PI / 2));
+        ClassicAssert.AreEqual(result64, Math.Sin(Math.PI / 2), 1e-7);
     }
-    [Test]
-    public void TestCos()
+    [Test] public void TestCos()
     {
         var commands = new[]
         {
             new Command(OpEnum.Const, MathF.PI/2),
             new Command(OpEnum.Cos),
         };
+        
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
         ClassicAssert.AreEqual(result, MathF.Cos(MathF.PI / 2));
+        ClassicAssert.AreEqual(result64, Math.Cos(Math.PI / 2), 1e-7);
     }
 
-    [Test]
-    public void TestTan()
+    [Test] public void TestTan()
     {
         var commands = new[]
         {
-            new Command(OpEnum.Const, MathF.PI/2),
+            new Command(OpEnum.Const, MathF.PI/4),
             new Command(OpEnum.Tan),
         };
+
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, MathF.Sin(MathF.PI / 2)/ MathF.Cos(MathF.PI / 2));
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+        
+        ClassicAssert.AreEqual(result, MathF.Sin(MathF.PI / 4)/ MathF.Cos(MathF.PI / 4));
+        ClassicAssert.AreEqual(result64, Math.Sin(Math.PI / 4)/Math.Cos(Math.PI / 4), 1e-7);
     }
-    [Test]
-    public void TestArccos()
+    [Test] public void TestArccos()
     {
         var commands = new[]
         {
             new Command(OpEnum.Const, MathF.PI/2),
             new Command(OpEnum.Arccos),
         };
+        
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
         ClassicAssert.AreEqual(result, MathF.Acos(MathF.PI / 2));
+        ClassicAssert.AreEqual(result64, Math.Acos(Math.PI / 2));
     }
-    [Test]
-    public void TestArcsin()
+    [Test] public void TestArcsin()
     {
         var commands = new[]
         {
             new Command(OpEnum.Const, MathF.PI/2),
             new Command(OpEnum.Arcsin),
         };
+        
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
         ClassicAssert.AreEqual(result, MathF.Asin(MathF.PI / 2));
+        ClassicAssert.AreEqual(result64, Math.Asin(Math.PI / 2));
     }
-    [Test]
-    public void TestArctan()
+    [Test] public void TestArctan()
     {
         var commands = new[]
         {
             new Command(OpEnum.Const, MathF.PI/2),
             new Command(OpEnum.Arctan),
         };
+       
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
         ClassicAssert.AreEqual(result, MathF.Atan(MathF.PI / 2));
+        ClassicAssert.AreEqual(result64, Math.Atan(Math.PI / 2), 1e-7);
     }
-    [Test]
-    public void TestTanh()
+    [Test] public void TestTanh()
     {
         var commands = new[]
         {
@@ -213,22 +268,27 @@ public class CodeMachineTests
             new Command(OpEnum.Tanh),
         };
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
         ClassicAssert.AreEqual(result, MathF.Tanh(MathF.PI / 2));
+        ClassicAssert.AreEqual(result64, Math.Tanh(Math.PI / 2), 1e-7);
     }
-    [Test]
-    public void TestExp()
+    [Test] public void TestExp()
     {
         var commands = new[]
         {
             new Command(OpEnum.Const, MathF.PI/2),
             new Command(OpEnum.Exp),
         };
+        
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
         ClassicAssert.AreEqual(result, MathF.Exp(MathF.PI / 2));
+        ClassicAssert.AreEqual(result64, Math.Exp(Math.PI / 2), 1e-6);
     }
 
-    [Test]
-    public void TestPowLoadDup()
+    [Test] public void TestPowLoadDup()
     {
         var commands = new[]
         {
@@ -236,8 +296,12 @@ public class CodeMachineTests
             new Command(OpEnum.Dup),
             new Command(OpEnum.Pow)
         };
+        
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
-        ClassicAssert.AreEqual(result, 4);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
+        ClassicAssert.AreEqual(result, 4f);
+        ClassicAssert.AreEqual(result64, 4.0);
     }
     //[Test] public void TestAbs()
     //{
@@ -259,7 +323,10 @@ public class CodeMachineTests
             new Command(OpEnum.Del)
         };
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
         ClassicAssert.AreEqual(result, 1f);
+        ClassicAssert.AreEqual(result64, 1.0);
     }
     [Test] public void TestDel2()
     {
@@ -269,8 +336,12 @@ public class CodeMachineTests
             new Command(OpEnum.Del),
             new Command(OpEnum.Const, 2f)
         };
+        
         var result = ThreadStaticCodeMachine.Instance.RunCommands(_inputs, commands);
+        var result64 = ThreadStaticCodeMachine.Instance64.RunCommands(_inputs, commands);
+
         ClassicAssert.AreEqual(result, 2f);
+        ClassicAssert.AreEqual(result64, 2.0);
     }
 
     //[Test]
