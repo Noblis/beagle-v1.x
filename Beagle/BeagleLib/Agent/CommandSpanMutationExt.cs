@@ -76,8 +76,8 @@ public static class CommandSpanMutationExt
         if (mutationType == MutationTypeEnum.Delete)
         {
             var commandAtAddr = me[addr];
-            for (int i = 0; i < length; i++) Console.Write(me[i]);
-            Console.WriteLine(addr);
+            //for (int i = 0; i < length; i++) Console.Write(me[i]);
+            //Console.WriteLine(addr);
 
             if (commandAtAddr.Operation is OpEnum.Arccos or OpEnum.Arcsin or OpEnum.Arctan or OpEnum.Cbrt or OpEnum.Cos
                 or OpEnum.Cube or OpEnum.Exp or OpEnum.Ln or OpEnum.Sign or OpEnum.Sin or OpEnum.Sqrt or OpEnum.Square
@@ -139,7 +139,7 @@ public static class CommandSpanMutationExt
                     }
                 }
 
-                //?
+                // Might need this to eliminate swaps that no longer work. 
                 int tmpStackEffect = 0;
                 for (int i = 0; i < length; i++)
                 {

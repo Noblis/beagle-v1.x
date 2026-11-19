@@ -99,8 +99,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (Environment.GetEnvironmentVariable("CUDA_PATH") != null && !forceCPUAccelerator)
             {
                 //https://github.com/m4rs-mt/ILGPU/pull/707
-                if (useLibDevice) _context = Context.Create(builder => builder.Cuda().LibDevice().EnableAlgorithms());
-                else _context = Context.Create(builder => builder.Cuda().EnableAlgorithms());
+                if (useLibDevice) _context = Context.Create(builder => builder.Cuda().LibDevice().EnableAlgorithms().Optimize(OptimizationLevel.O2));
+                else _context = Context.Create(builder => builder.Cuda().EnableAlgorithms().Optimize(OptimizationLevel.O2));
             }
             else
             {
@@ -176,6 +176,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 //Create new organisms in multithreaded fashion
                 _organismsCount = MLSetup.Current.TargetColonySize(0);
                 Parallel.For(0, _organismsCount, i =>
+                //for ( int i=0; i<_organismsCount; i++)
                 {
                     var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
                     _organisms[i] = newOrganism;
