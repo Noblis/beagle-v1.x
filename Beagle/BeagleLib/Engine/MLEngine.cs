@@ -1259,7 +1259,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Output.Write($"{_inputLabels[j]}={inputsArray[i][j]}; ");
             }
             
-            var output = new CodeMachine().RunCommands(inputsArray[i], fullCommands);
+            var output = ThreadStaticCodeMachine.Instance.RunCommands(inputsArray[i], fullCommands);
             Output.Write($"OUT: {output} (model) vs. {correctOutputs[i]} (target)");
 
             if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
@@ -1344,10 +1344,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         float maxErr = float.MinValue;
         float avgErr = 0;
         var fullCommands = _mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommands(_adaptiveLearningInputs, _adaptiveLearningOutputs).ToArray();
-        var codeMachine = new CodeMachine();
         for (var i = 0; i < AdaptiveLearningSampleSize; i++)
         {
-            var output = codeMachine.RunCommands(_adaptiveLearningInputs[i], fullCommands);
+            var output = ThreadStaticCodeMachine.Instance.RunCommands(_adaptiveLearningInputs[i], fullCommands);
             if (output.IsValidNumber() && _adaptiveLearningOutputs[i].IsValidNumber())
             {
                 _adaptiveLearningErrors[i] = GetErrorSafely(output, _adaptiveLearningOutputs[i]);

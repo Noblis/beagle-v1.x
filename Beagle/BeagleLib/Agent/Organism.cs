@@ -628,7 +628,7 @@ public class Organism
                 {
                     if (correctOutputs[i].IsValidNumber())
                     {
-                        var output = new CodeMachine().RunCommands(inputsArray[i], Commands);
+                        var output = ThreadStaticCodeMachine.Instance.RunCommands(inputsArray[i], Commands);
                         if (output.IsValidNumber())
                         {
                             dblCorrectOutputs.Add(correctOutputs[i]);

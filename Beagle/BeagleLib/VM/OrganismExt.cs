@@ -26,8 +26,7 @@ public static class OrganismExt
         if (_myOutputs == null) _myOutputs = new float[MLSetup.Current.ExperimentsPerGeneration];
         for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
         {
-            var codeMachineCPU = new CodeMachine();
-            _myOutputs[experiment] = codeMachineCPU.RunCommands(inputsArray[experiment], me.Commands);
+            _myOutputs[experiment] = ThreadStaticCodeMachine.Instance.RunCommands(inputsArray[experiment], me.Commands);
         }
 
         if (fitFunc.UseCorrelationFit)
