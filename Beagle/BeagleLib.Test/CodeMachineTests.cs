@@ -1,4 +1,5 @@
 using BeagleLib.VM;
+using BeagleLib.VM.DoublePrescision;
 using NUnit.Framework.Legacy;
 
 namespace BeagleLib.Test;
@@ -342,6 +343,18 @@ public class CodeMachineTests
 
         ClassicAssert.AreEqual(result, 2f);
         ClassicAssert.AreEqual(result64, 2.0);
+    }
+
+    [Test] public void TestCbrtMethods()
+    {
+        for (var i = 0; i < 1000; i++)
+        {
+            var dbl = Random.Shared.NextDouble() * 2000000 - 1000000;
+            var flt = (float)dbl;
+
+            ClassicAssert.AreEqual(CodeMachine.Cbrt(flt), MathF.Cbrt(flt), 1e-5);
+            ClassicAssert.AreEqual(CodeMachine64.Cbrt(dbl), Math.Cbrt(dbl), 1e-5);
+        }
     }
 
     //[Test]

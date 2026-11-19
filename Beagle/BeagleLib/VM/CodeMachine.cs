@@ -362,8 +362,7 @@ public struct CodeMachine
 
     //This is a port from Rust https://github.com/rust-lang/libm/blob/master/src/math/cbrt.rs
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-
-    private static float Cbrt(float x)
+    public static float Cbrt(float x)
     {
         const uint b1 = 709958130;
         const uint b2 = 642849266;

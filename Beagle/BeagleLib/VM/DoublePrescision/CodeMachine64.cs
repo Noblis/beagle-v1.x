@@ -362,7 +362,7 @@ public struct CodeMachine64
 
     //This is a port from Rust https://github.com/rust-lang/libm/blob/master/src/math/cbrt.rs
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private double Cbrt(double x)
+    public static double Cbrt(double x)
     {
         const int b1 = 715094163; /* B1 = (1023-1023/3-0.03306235651)*2**20 */
         const int b2 = 696219795; /* B2 = (1023-1023/3-54/3-0.03306235651)*2**20 */
