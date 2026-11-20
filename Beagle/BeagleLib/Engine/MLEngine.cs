@@ -1352,8 +1352,8 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             (_adaptiveLearningInputs[i], _adaptiveLearningOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_adaptiveLearningInputs[i]);
         });
 
-        double maxErr = float.MinValue;
-        double avgErr = 0;
+        float maxErr = float.MinValue;
+        float avgErr = 0;
         var fullCommands = _mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommands(_adaptiveLearningInputs, _adaptiveLearningOutputs).ToArray();
         for (var i = 0; i < AdaptiveLearningSampleSize; i++)
         {
@@ -1374,7 +1374,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var adaptiveLearningCount = -1;
         Parallel.For(0, AdaptiveLearningSampleSize, i =>
         {
-            if (double.IsNaN(_adaptiveLearningErrors[i]) || Math.Abs(_adaptiveLearningErrors[i] - maxErr) < Math.Abs(_adaptiveLearningErrors[i] - avgErr))
+            if (float.IsNaN(_adaptiveLearningErrors[i]) || Math.Abs(_adaptiveLearningErrors[i] - maxErr) < Math.Abs(_adaptiveLearningErrors[i] - avgErr))
             {
                 _adaptiveLearningIndices[Interlocked.Increment(ref adaptiveLearningCount)] = i;
             }
