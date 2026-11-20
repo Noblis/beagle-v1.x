@@ -73,7 +73,7 @@ public static class CommandSpanMutationExt
         int newStackSize;
         int addrDelta;
 
-        if (mutationType == MutationTypeEnum.Delete && Rnd.Random.Next(100)<33)
+        if (mutationType == MutationTypeEnum.Delete && Rnd.Random.Next(100)<50) // large delete
         {
             var commandAtAddr = me[addr];
             //for (int i = 0; i < length; i++) Console.Write(me[i]);
@@ -267,7 +267,7 @@ public static class CommandSpanMutationExt
 
             //return addrDelta;
         }
-        else if (mutationType == MutationTypeEnum.Delete && Rnd.Random.Next(100) < 50)
+        else if (mutationType == MutationTypeEnum.Delete && Rnd.Random.Next(100) < 50) //small delete
         {
             var commandAtAddr = me[addr];
             if (commandAtAddr.Operation is OpEnum.Arccos or OpEnum.Arcsin or OpEnum.Arctan or OpEnum.Cbrt or OpEnum.Cos
