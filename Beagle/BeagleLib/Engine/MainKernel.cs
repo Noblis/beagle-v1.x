@@ -89,8 +89,13 @@ public static class MainKernel
                 if (sxy.IsValidNumber() && sxx.IsValidNumber() && syy.IsValidNumber())
                 {
                     double denominator = sxx * syy;
-                    float rSquared = 0f;
-                    if (denominator != 0.0) rSquared = (float)(sxy * sxy / denominator);
+                    //float rSquared = 0f;
+                    //if (denominator != 0.0) rSquared = (float)(sxy * sxy / denominator);
+                    double rSquared = 0.0;
+                    if (denominator != 0.0)
+                    {
+                        rSquared = sxy * sxy / denominator;
+                    }
                     int mismatches = (int)numberOfExperiments - validCount - invalidMatchCount;
                     score = (int)(BConfig.MaxScore * validCount * rSquared * rSquared) - BConfig.MaxScore * (mismatches - invalidMatchCount);
                 }
