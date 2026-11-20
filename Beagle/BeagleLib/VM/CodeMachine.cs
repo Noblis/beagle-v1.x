@@ -164,7 +164,7 @@ public struct CodeMachine
     private void ExecuteCbrt()
     {
         var x = StackPop();
-        x = (float)Cbrt(x);
+        x = Cbrt(x);
         StackPush(x);
     }
 
@@ -362,96 +362,47 @@ public struct CodeMachine
 
     //This is a port from Rust https://github.com/rust-lang/libm/blob/master/src/math/cbrt.rs
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private double Cbrt(double x)
+    public static float Cbrt(float x)
     {
-        const int b1 = 715094163; /* B1 = (1023-1023/3-0.03306235651)*2**20 */
-        const int b2 = 696219795; /* B2 = (1023-1023/3-54/3-0.03306235651)*2**20 */
+        const uint b1 = 709958130;
+        const uint b2 = 642849266;
 
-        const double p0 = 1.87595182427177009643; /* 0x3ffe03e6, 0x0f61e692 */
-        const double p1 = -1.88497979543377169875; /* 0xbffe28e0, 0x92f02420 */
-        const double p2 = 1.621429720105354466140; /* 0x3ff9f160, 0x4a49d6c2 */
-        const double p3 = -0.758397934778766047437; /* 0xbfe844cb, 0xbee751d9 */
-        const double p4 = 0.145996192886612446982; /* 0x3fc2b000, 0xd4e4edd7 */
+        uint bits = (uint)BitConverter.SingleToInt32Bits(x);
+        uint hx = bits & 0x7FFFFFFF;
 
-        double x1P54 = Interop.IntAsFloat(0x4350000000000000); // 0x1p54 === 2 ^ 54
-        ulong ui = Interop.FloatAsInt(x);
-        double r;
-        double s;
-        double t;
-        double w;
-        uint hx = ((uint)(ui >> 32)) & 0x7fffffff;
+        // NaN or infinity
+        if (hx >= 0x7F800000) return x + x;
 
-        if (hx >= 0x7ff00000)
+        // Preserve positive and negative zero
+        if (hx == 0) return x;
+
+        // Initial approximation (~5 bits)
+        if (hx < 0x00800000)
         {
-            /* cbrt(NaN,INF) is itself */
-            return x + x;
-        }
-
-        /*
-         * Rough cbrt to 5 bits:
-         *    cbrt(2**e*(1+m) ~= 2**(e/3)*(1+(e%3+m)/3)
-         * where e is integral and >= 0, m is real and in [0, 1), and "/" and
-         * "%" are integer division and modulus with rounding towards minus
-         * infinity.  The RHS is always >= the LHS and has a maximum relative
-         * error of about 1 in 16.  Adding a bias of -0.03306235651 to the
-         * (e%3+m)/3 term reduces the error to about 1 in 32. With the IEEE
-         * floating point representation, for finite positive normal values,
-         * ordinary integer divison of the value in bits magically gives
-         * almost exactly the RHS of the above provided we first subtract the
-         * exponent bias (1023 for doubles) and later add it back.  We do the
-         * subtraction virtually to keep e >= 0 so that ordinary integer
-         * division rounds towards minus infinity; this is also efficient.
-         */
-        if (hx < 0x00100000)
-        {
-            /* zero or subnormal? */
-            ui = Interop.FloatAsInt(x * x1P54);
-            hx = (uint)(ui >> 32) & 0x7fffffff;
-            if (hx == 0) return x; /* cbrt(0) is itself */
-            hx = hx / 3 + b2;
+            // Subnormal: multiply by 2^24
+            float scaled = x * 16777216.0f;
+            hx = (uint)BitConverter.SingleToInt32Bits(scaled);
+            hx = (hx & 0x7FFFFFFF) / 3 + b2;
         }
         else
         {
             hx = hx / 3 + b1;
         }
-        ui &= (ulong)1 << 63;
-        ui |= (ulong)hx << 32;
-        t = Interop.IntAsFloat(ui);
 
-        /*
-         * New cbrt to 23 bits:
-         *    cbrt(x) = t*cbrt(x/t**3) ~= t*P(t**3/x)
-         * where P(r) is a polynomial of degree 4 that approximates 1/cbrt(r)
-         * to within 2**-23.5 when |r - 1| < 1/10.  The rough approximation
-         * has produced t such than |t/cbrt(x) - 1| ~< 1/32, and cubing this
-         * gives us bounds for r = t**3/x.
-         *
-         * Try to optimize for parallel evaluation as in __tanf.c.
-         */
-        r = (t * t) * (t / x);
-        t = t * ((p0 + r * (p1 + r * p2)) + ((r * r) * r) * (p3 + r * p4));
+        // Restore sign
+        bits = (bits & 0x80000000) | hx;
+        double t = BitConverter.Int32BitsToSingle(unchecked((int)bits));
+        double xd = x;
 
-        /*
-         * Round t away from zero to 23 bits (sloppily except for ensuring that
-         * the result is larger in magnitude than cbrt(x) but not much more than
-         * 2 23-bit ulps larger).  With rounding towards zero, the error bound
-         * would be ~5/6 instead of ~4/6.  With a maximum error of 2 23-bit ulps
-         * in the rounded t, the infinite-precision error in the Newton
-         * approximation barely affects third digit in the final error
-         * 0.667; the error in the rounded t can be up to about 3 23-bit ulps
-         * before the final error is larger than 0.667 ulps.
-         */
-        ui = Interop.FloatAsInt(t);
-        ui = (ui + 0x80000000) & 0xffffffffc0000000;
-        t = Interop.IntAsFloat(ui);
+        // First iteration: approximately 16 bits
+        double r = t * t * t;
+        t = t * (2.0 * xd + r) / (xd + 2.0 * r);
 
-        /* one-step Newton iteration to 53 bits with error < 0.667 ulps */
-        s = t * t; /* t*t is exact */
-        r = x / s; /* error <= 0.5 ulps; |r| < |t| */
-        w = t + t; /* t+t is exact */
-        r = (r - t) / (w + r); /* r-t is exact; w+r ~= 3*t */
-        t = t + t * r; /* error <= 0.5 + 0.5/3 + epsilon */
-        return t;
+        // Second iteration: approximately 47 bits
+        r = t * t * t;
+        t = t * (2.0 * xd + r) / (xd + 2.0 * r);
+
+        return (float)t;
     }
     #endregion
 

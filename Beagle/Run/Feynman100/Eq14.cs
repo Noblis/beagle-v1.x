@@ -19,7 +19,7 @@ public class Eq14 : FeynmanMLSetup
         inputs[3] = r1;
         inputs[4] = r2;
 
-        var result = g * m1 * m2 * ((1f / (r2)) - (1f / (r1)));
+        var result = g * m1 * m2 * (1f/r2 - 1f/r1);
         return (inputs, result);
     }
     public override string[] GetInputLabels()

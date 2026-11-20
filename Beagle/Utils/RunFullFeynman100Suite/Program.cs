@@ -16,8 +16,8 @@ public static class Program
     //private const string RelativePathToRunProject = "../../Run"; //if running from command line
 
     //private static readonly int[] _problems = [44, 90];
-    //private static readonly int[] _problems = [5, 14, 20, 26, 29, 31, 44, 56, 80, 86, 87, 90, 91]; //these are not solved 5/5
-    private static readonly int[] _problems = Enumerable.Range(1, FeynmanEqCount).ToArray();
+    private static readonly int[] _problems = [5, 20, 26, 29, 31, 44, 56, 80, 86, 87, 90, 91]; //these are not solved 5/5
+    //private static readonly int[] _problems = Enumerable.Range(1, FeynmanEqCount).ToArray();
 
     //Easy and hard will only accept 5/5 wile hard and very hard will try to run x/10
     private const int EasyStopAfterMin = 1;
@@ -257,7 +257,7 @@ public static class Program
 
         File.WriteAllText("AppOutput/results.txt", results);
 
-        Console.WriteLine("Waiting for 5 seconds before starting next...");
-        Thread.Sleep(5_000);
+        //Console.WriteLine("Waiting for 1 second before starting next...");
+        //Thread.Sleep(1_000);
     }
 }

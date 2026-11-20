@@ -56,7 +56,7 @@ namespace ExecuteGenome
             {
                 Console.WriteLine("Please enter inputs:");
                 var inputs = ReadInputsFromUser(inputLabels);
-                var output = new CodeMachine().RunCommands(inputs, organism.Commands);
+                var output = ThreadStaticCodeMachine.Instance.RunCommands(inputs, organism.Commands);
                 Console.WriteLine($"Output: {output}");
                 Console.WriteLine();
             }
@@ -70,6 +70,7 @@ namespace ExecuteGenome
                 try
                 {
                     var inputStr = Console.ReadLine();
+                    // ReSharper disable once InvocationIsCultureSensitive
                     var input = float.Parse(inputStr!);
                     return input;
                 }

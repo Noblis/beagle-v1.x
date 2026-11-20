@@ -23,11 +23,10 @@ public static class OrganismExt
         int score = 0;
 
         //We want to call this method in multi-threaded way, so we don't want nested multi-threading here and use a normal array
-        if (_myOutputs == null) _myOutputs = new float[MLSetup.Current.ExperimentsPerGeneration];
+        if (_myOutputs == null) _myOutputs = new double[MLSetup.Current.ExperimentsPerGeneration];
         for (var experiment = 0; experiment < MLSetup.Current.ExperimentsPerGeneration; experiment++)
         {
-            var codeMachineCPU = new CodeMachine();
-            _myOutputs[experiment] = codeMachineCPU.RunCommands(inputsArray[experiment], me.Commands);
+            _myOutputs[experiment] = ThreadStaticCodeMachine.Instance.RunCommands(inputsArray[experiment], me.Commands);
         }
 
         if (fitFunc.UseCorrelationFit)
@@ -91,13 +90,8 @@ public static class OrganismExt
             if (sums[0].IsValidNumber() && sums[1].IsValidNumber() && sums[2].IsValidNumber())
             {
                 var denominator = sums[1] * sums[2];
-                //float rSquared = 0;
-                //if (denominator != 0) rSquared = (float)(sums[0] * sums[0] / denominator);
                 double rSquared = 0;
-                if (denominator != 0)
-                {
-                    rSquared = sums[0] * sums[0] / denominator;
-                }
+                if (denominator != 0) rSquared = sums[0] * sums[0] / denominator;
 
                 //r can range from 0 to 1
                 //punishment is based on the percentage of mismatches, number of experiments cancels out
@@ -122,7 +116,7 @@ public static class OrganismExt
                 //if (isOutputValid && isCorrectOutputValid) Interlocked.Add(ref score, fitFunc.FitFunction(output, correctOutput));
                 //else Interlocked.Add(ref score, fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid));
 
-                if (isOutputValid && isCorrectOutputValid) score += fitFunc.FitFunction(output, correctOutput);
+                if (isOutputValid && isCorrectOutputValid) score += fitFunc.FitFunction((float)output, correctOutput);
                 else score += fitFunc.FitFunctionIfInvalid(isOutputValid, isCorrectOutputValid);
             }
         }
@@ -131,6 +125,6 @@ public static class OrganismExt
         me.ScoreRecalcCount++;
     }
 
-    [ThreadStatic] private static float[]? _myOutputs;
+    [ThreadStatic] private static double[]? _myOutputs;
     #endregion
 }

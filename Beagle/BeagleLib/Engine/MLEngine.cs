@@ -216,7 +216,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         _context.Dispose();
         Console.CursorVisible = true;
     }
-#endregion
+    #endregion
 
     #region Methods
     public override void Train(int stopAfterMin = -1, long stopAfterBirths = -1, bool noEscMenu = false, bool benchmarkRun = false)
@@ -234,7 +234,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             _mostAccurateEverOrganism = null;
             _mostAccurateOrganismsSinceLastColonyReset = new Organism?[BConfig.TopMostAccurateOrganismsToKeep];
-            for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++) _mostAccurateOrganismsSinceLastColonyReset[i] = null;
+            for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+            {
+                _mostAccurateOrganismsSinceLastColonyReset[i] = null;
+            }
             _highestOrganismsScoreSinceLastColonyReset = int.MinValue;
             _mostAccurateEverOrganismTotalTime = TimeSpan.Zero;
             _totalBirthAtLastHighestScoreSinceLastColonyReset = 0;
@@ -734,9 +737,9 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Console.ForegroundColor = ConsoleColor.Red;
             Output.Write($"{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}");
             Console.ForegroundColor = ConsoleColor.White;
-            Output.WriteLine("): length = ");
+            Output.Write("): length = ");
             Console.ForegroundColor = ConsoleColor.Red;
-            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
+            Output.WriteLine($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
             Console.ForegroundColor = ConsoleColor.White;
             _mostAccurateOrganismsSinceLastColonyReset[0]!.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
         }
@@ -1159,6 +1162,11 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 _organismsCount = 0;
             }
 
+            Parallel.For(0, _organisms.Length, i =>
+            {
+                _organisms[i] = null;
+            });
+
             Span<Command> commandsBuffer = stackalloc Command[BConfig.MaxScriptLength];
             Output.Write("Loading: ");
             var step = organismsInFileCount / 80;
@@ -1262,7 +1270,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 Output.Write($"{_inputLabels[j]}={inputsArray[i][j]}; ");
             }
             
-            var output = new CodeMachine().RunCommands(inputsArray[i], fullCommands);
+            var output = ThreadStaticCodeMachine.Instance.RunCommands(inputsArray[i], fullCommands);
             Output.Write($"OUT: {output} (model) vs. {correctOutputs[i]} (target)");
 
             if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
@@ -1334,6 +1342,14 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         if (Math.Abs(correctOutput - 0) < 0.00005 && Math.Abs(output - 0) < 0.00005) return 0;
         return Math.Abs(output/correctOutput - 1);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected static double GetErrorSafely(double output, double correctOutput)
+    {
+        if (Math.Abs(correctOutput - 0) < 0.00005 && Math.Abs(output - 0) < 0.00005) return 0;
+        return Math.Abs(output / correctOutput - 1);
+    }
+
     protected int IdentifyErrorsForAdaptiveLearningAndReturnAdaptiveLearningCount()
     {
         if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score <= MLSetup.MaxGenerationScore * 0.95f) return 0;
@@ -1344,13 +1360,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             (_adaptiveLearningInputs[i], _adaptiveLearningOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_adaptiveLearningInputs[i]);
         });
 
-        float maxErr = float.MinValue;
-        float avgErr = 0;
+        double maxErr = float.MinValue;
+        double avgErr = 0;
         var fullCommands = _mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommands(_adaptiveLearningInputs, _adaptiveLearningOutputs).ToArray();
-        var codeMachine = new CodeMachine();
         for (var i = 0; i < AdaptiveLearningSampleSize; i++)
         {
-            var output = codeMachine.RunCommands(_adaptiveLearningInputs[i], fullCommands);
+            var output = ThreadStaticCodeMachine.Instance.RunCommands(_adaptiveLearningInputs[i], fullCommands);
             if (output.IsValidNumber() && _adaptiveLearningOutputs[i].IsValidNumber())
             {
                 _adaptiveLearningErrors[i] = GetErrorSafely(output, _adaptiveLearningOutputs[i]);
@@ -1367,7 +1382,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         var adaptiveLearningCount = -1;
         Parallel.For(0, AdaptiveLearningSampleSize, i =>
         {
-            if (float.IsNaN(_adaptiveLearningErrors[i]) || Math.Abs(_adaptiveLearningErrors[i] - maxErr) < Math.Abs(_adaptiveLearningErrors[i] - avgErr))
+            if (double.IsNaN(_adaptiveLearningErrors[i]) || Math.Abs(_adaptiveLearningErrors[i] - maxErr) < Math.Abs(_adaptiveLearningErrors[i] - avgErr))
             {
                 _adaptiveLearningIndices[Interlocked.Increment(ref adaptiveLearningCount)] = i;
             }

@@ -39,11 +39,8 @@ public abstract class MLSetup
 
     public virtual int TargetColonySize(int generation)
     {
-        var remainder = generation % 1500;
-        if (remainder < 5) return 10_000_000;
-        if (remainder < 10) return 5_000_000;
-        if (remainder < 15) return 3_000_000;
-        return 1_000_000;
+        if (generation < 20) return 5_000_000;
+        return 300_000; //250_000;
     }
     public int OrganismsArraySize
     {
@@ -64,7 +61,7 @@ public abstract class MLSetup
     protected int? _organismArraySize;
 
     public virtual uint ExperimentsPerGeneration => 512;
-    public virtual long TotalBirthsToResetColonyIfNoProgress => 25_000_000_000;
+    public virtual long TotalBirthsToResetColonyIfNoProgress => 10_000_000_000;
 
     public virtual bool RemoveRedundantCommandsAfterMutation => true;
     public virtual double CrossoverRate => 0.3;    

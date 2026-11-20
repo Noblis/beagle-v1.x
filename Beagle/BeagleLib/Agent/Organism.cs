@@ -587,7 +587,7 @@ public class Organism
             var dblCorrectOutputs = new List<double>();
             var dblOutputs = new List<double>();
 
-            float total;
+            double total;
             int count = 0;
             do
             {
@@ -628,7 +628,7 @@ public class Organism
                 {
                     if (correctOutputs[i].IsValidNumber())
                     {
-                        var output = new CodeMachine().RunCommands(inputsArray[i], Commands);
+                        var output = ThreadStaticCodeMachine.Instance.RunCommands(inputsArray[i], Commands);
                         if (output.IsValidNumber())
                         {
                             dblCorrectOutputs.Add(correctOutputs[i]);
@@ -638,7 +638,7 @@ public class Organism
                     }
                 }
             } while (dblOutputs.Count != dblCorrectOutputs.Count || dblOutputs.Count < 2);
-            float mean = total / dblOutputs.Count;
+            double mean = total / dblOutputs.Count;
 
             (double, double) lineRegression = Fit.Line(dblOutputs.ToArray(), dblCorrectOutputs.ToArray());
 

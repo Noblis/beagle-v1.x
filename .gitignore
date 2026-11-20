@@ -23,5 +23,6 @@ copilot-chat/
 /Voyage/Server/WebWM/wwwroot/assets/*
 /.vs/Beagle/v18/DocumentLayout.json
 /.vs/Beagle/v18/DocumentLayout.backup.json
-Beagle/Run/AppOutput/
+Beagle/Run/AppOutput*/
 FeynmanAppOutput*/
+*.testlog
