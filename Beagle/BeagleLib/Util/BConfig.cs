@@ -24,7 +24,7 @@ public static class BConfig
     public const int StackSize = 32;
     public const int ClipboardSize = 32;
 
-    public const int MaxScore = 100000;
+    public const int MaxScore = 1_000_000;
     public const int MaxScriptLength = 100; //320;
 
     public const int TopMostAccurateOrganismsToKeep = 10;
