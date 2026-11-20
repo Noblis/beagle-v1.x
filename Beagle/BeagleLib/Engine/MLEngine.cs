@@ -676,7 +676,10 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         Output.WriteLine($"{_totalTimeWatch.Elapsed:c}: Generation {_currentGeneration:N0} took {_acceleratorGenerationTime:c}/{_generationTime:c}");
         Output.WriteLine($"Colony size: {_organismsCount:N0}: (target: {MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset):N0}). Total births: {_totalBirths:N0}");
 
-        var mostAccurateColor = _mostAccurateEverOrganism!.Score == MLSetup.MaxGenerationScore ? ConsoleColor.Green : ConsoleColor.White;
+        ConsoleColor mostAccurateColor;
+        if (_mostAccurateEverOrganism!.Score == MLSetup.MaxGenerationScore) mostAccurateColor = ConsoleColor.Green;
+        else if (MLSetup.MaxGenerationScore - _mostAccurateEverOrganism!.Score == 1) mostAccurateColor = ConsoleColor.Yellow;
+        else mostAccurateColor = ConsoleColor.White;
 
         Console.ForegroundColor = mostAccurateColor;
         Output.Write("Most accurate ever genome (");
