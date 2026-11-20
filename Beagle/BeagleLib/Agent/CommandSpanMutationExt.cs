@@ -73,7 +73,7 @@ public static class CommandSpanMutationExt
         int newStackSize;
         int addrDelta;
 
-        if (mutationType == MutationTypeEnum.Delete && Rnd.Random.Next(100)<50)
+        if (mutationType == MutationTypeEnum.Delete && Rnd.Random.Next(100)<0)
         {
             var commandAtAddr = me[addr];
             //for (int i = 0; i < length; i++) Console.Write(me[i]);
@@ -266,6 +266,120 @@ public static class CommandSpanMutationExt
             //#endif
 
             //return addrDelta;
+        }
+        else if (mutationType == MutationTypeEnum.Delete && Rnd.Random.Next(100) < 100)
+        {
+            var commandAtAddr = me[addr];
+            if (commandAtAddr.Operation is OpEnum.Arccos or OpEnum.Arcsin or OpEnum.Arctan or OpEnum.Cbrt or OpEnum.Cos
+                or OpEnum.Cube or OpEnum.Exp or OpEnum.Ln or OpEnum.Sign or OpEnum.Sin or OpEnum.Sqrt or OpEnum.Square
+                or OpEnum.Swap or OpEnum.Tan or OpEnum.Tanh)
+            {
+                // simple delete
+                me.RemoveAt(ref length, addr);
+                return -1;
+            }
+            else if (commandAtAddr.Operation is OpEnum.Add or OpEnum.Div or OpEnum.Mul or OpEnum.Pow or OpEnum.Sub or OpEnum.Del)
+            {
+
+                //int swapIndex = addr + 1;
+                //while (me[swapIndex].Operation == OpEnum.Swap && swapIndex < length)
+                //{
+                //    me.RemoveAt(ref length, swapIndex);
+                //}
+
+                // binary element delete and del
+                int offset = 0;
+                
+                me.RemoveAt(ref length, addr);
+                offset -= 1;
+                for (int i = addr-1; i >= 0; i--)
+                {
+                    if (me[i].Operation == OpEnum.Paste)
+                    {
+                        var idx = me[i].Idx;
+                        var copyIndex = me.GetCopyAddr(idx, i);
+                        me.RemoveAt(ref length, i);
+                        me.RemoveAt(ref length, copyIndex);
+                        i--;
+                        offset -= 2;
+                        break;
+                    }
+                    else if (me[i].StackEffect==1)
+                    {
+                        me.RemoveAt(ref length, i);
+                        offset -= 1;
+                        break;
+                    }
+                }
+
+                // Might need this to eliminate swaps that no longer work. 
+                int tmpStackEffect = 0;
+                for (int i = 0; i < length; i++)
+                {
+                    if (me[i].MinStackRequired > tmpStackEffect)
+                    {
+                        me.RemoveAt(ref length, i);
+                        if (i < addr + offset) offset -= 1;
+                        i--;
+                        continue; // don't run tmpStackEffect for shift
+                    }
+
+                    tmpStackEffect += me[i].StackEffect;
+                }
+
+                return offset;
+            }
+            else if (commandAtAddr.Operation is OpEnum.Const or OpEnum.Load or OpEnum.Dup or OpEnum.Copy or OpEnum.Paste)
+            {
+                int copyDeleteOffset = 0;
+                if (commandAtAddr.Operation == OpEnum.Paste)
+                {
+                    var idx = me[addr].Idx;
+                    var copyIndex = me.GetCopyAddr(idx, addr);
+                    me.RemoveAt(ref length, copyIndex);
+                    copyDeleteOffset = -1;
+                }
+
+                if (commandAtAddr.Operation == OpEnum.Copy)
+                {
+                    return 0;
+                }
+
+                stackEffect = 1;
+                me.RemoveAt(ref length, addr + copyDeleteOffset);
+                int rightTracking = 0;
+                while ((addr + rightTracking + copyDeleteOffset) < length)
+                {
+                    if (me[addr + copyDeleteOffset + rightTracking].Operation == OpEnum.Swap && stackEffect <= 2)
+                    {
+                        me.RemoveAt(ref length, addr + copyDeleteOffset + rightTracking);
+                    }
+                    else if (me[addr + rightTracking + copyDeleteOffset].StackEffect==-1)//me[addr+rightTracking+copyDeleteOffset].StackEffect == -1 && stackEffect == 1)
+                    {
+                        me.RemoveAt(ref length, addr + rightTracking + copyDeleteOffset);
+                        stackEffect -= 1;
+                        break;
+                    }
+                    else
+                    {
+                        stackEffect += me[addr + rightTracking + copyDeleteOffset].StackEffect;
+                        rightTracking += 1;
+                    }
+                }
+                int swapIndex = addr + rightTracking + copyDeleteOffset;
+                while (me[swapIndex].Operation == OpEnum.Swap && swapIndex < length)
+                {
+                    me.RemoveAt(ref length, swapIndex);
+                }
+
+
+                return -1 + copyDeleteOffset;
+            }
+#if DEBUG
+                        me.VerifyScriptValid(length, true);
+#endif
+            return 0;
+
         }
         else if (mutationType == MutationTypeEnum.Delete)
         {
