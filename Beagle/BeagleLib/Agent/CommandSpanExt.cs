@@ -403,6 +403,8 @@ namespace BeagleLib.Agent
         }
         public static int GetStackAt(this Span<Command> me, int addr)
         {
+            Debug.Assert(addr < me.Length);
+
             var totalStackEffect = 0;
             // ReSharper disable once ForCanBeConvertedToForeach
             // ReSharper disable once LoopCanBeConvertedToQuery
