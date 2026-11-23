@@ -4,7 +4,6 @@ using BeagleLib.VM;
 using System.Diagnostics;
 using System.Net.Mail;
 using System.Text;
-using ILGPU.IR;
 
 namespace BeagleLib.Agent
 {
