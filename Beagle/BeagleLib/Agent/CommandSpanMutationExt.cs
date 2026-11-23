@@ -95,7 +95,7 @@ public static class CommandSpanMutationExt
                 {
 
                     int swapIndex = addr + 1;
-                    while (me[swapIndex].Operation == OpEnum.Swap && swapIndex < length)
+                    while (swapIndex < length && me[swapIndex].Operation == OpEnum.Swap)
                     {
                         me.RemoveAt(ref length, swapIndex);
                     }
@@ -208,7 +208,7 @@ public static class CommandSpanMutationExt
                         }
                     }
                     int swapIndex = addr + rightTracking + copyDeleteOffset;
-                    while (me[swapIndex].Operation == OpEnum.Swap && swapIndex < length)
+                    while (swapIndex < length && me[swapIndex].Operation == OpEnum.Swap )
                     {
                         me.RemoveAt(ref length, swapIndex);
                     }
@@ -321,7 +321,7 @@ public static class CommandSpanMutationExt
                         }
                     }
                     int swapIndex = addr + rightTracking + copyDeleteOffset;
-                    while (me[swapIndex].Operation == OpEnum.Swap && swapIndex < length)
+                    while (swapIndex < length && me[swapIndex].Operation == OpEnum.Swap)
                     {
                         me.RemoveAt(ref length, swapIndex);
                     }
