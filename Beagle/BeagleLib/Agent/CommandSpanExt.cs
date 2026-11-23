@@ -4,6 +4,7 @@ using BeagleLib.VM;
 using System.Diagnostics;
 using System.Net.Mail;
 using System.Text;
+using ILGPU.IR;
 
 namespace BeagleLib.Agent
 {
@@ -403,6 +404,8 @@ namespace BeagleLib.Agent
         }
         public static int GetStackAt(this Span<Command> me, int addr)
         {
+            Debug.Assert(addr < me.Length);
+            
             var totalStackEffect = 0;
             // ReSharper disable once ForCanBeConvertedToForeach
             // ReSharper disable once LoopCanBeConvertedToQuery
