@@ -94,17 +94,16 @@ public static class CommandSpanMutationExt
                 {
                     int offset = -1;
                     me.RemoveAt(ref length, addr);
-                    while (me[addr + 1].StackEffect == 0 && me[addr + 1].Operation != OpEnum.Copy && Rnd.Random.Next(10) < 5 && addr+1<length)
-                    {
-                        me.RemoveAt(ref length, addr+1);
-                    }
+                    //while (addr < length && me[addr].StackEffect == 0 && me[addr].Operation != OpEnum.Copy && Rnd.Random.Next(10) < 5)
+                    //{
+                    //    me.RemoveAt(ref length, addr+1);
+                    //}
 
-                    while (me[addr + offset].StackEffect == 0 && me[addr + offset].Operation != OpEnum.Copy &&
-                           Rnd.Random.Next(10) < 5)
-                    {
-                        me.RemoveAt(ref length, addr + offset);
-                        offset--;
-                    }
+                    //while (me[addr + offset].StackEffect == 0 && me[addr + offset].Operation != OpEnum.Copy && Rnd.Random.Next(10) < 5)
+                    //{
+                    //    me.RemoveAt(ref length, addr + offset);
+                    //    offset--;
+                    //}
                     return offset;
                 }
 
