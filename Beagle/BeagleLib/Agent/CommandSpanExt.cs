@@ -61,7 +61,7 @@ namespace BeagleLib.Agent
                 me[i - 1] = me[i];
             }
             length--;
-            Debug.Assert(length > 0);
+            Debug.Assert(length >= 0);
             me[length] = Command.EndOfScript;
         }
         #endregion
