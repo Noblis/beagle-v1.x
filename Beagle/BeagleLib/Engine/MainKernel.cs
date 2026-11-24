@@ -92,7 +92,7 @@ public static class MainKernel
                     double rSquared = 0f;
                     if (denominator != 0.0) rSquared = sxy * sxy / denominator;
                     int mismatches = (int)numberOfExperiments - validCount - invalidMatchCount;
-                    score = (int)(BConfig.MaxScore * validCount * rSquared * rSquared) - BConfig.MaxScore * (mismatches - invalidMatchCount);
+                    score = (int)Math.Round(BConfig.MaxScore * validCount * rSquared * rSquared) - BConfig.MaxScore * (mismatches - invalidMatchCount);
                 }
                 else
                 {
