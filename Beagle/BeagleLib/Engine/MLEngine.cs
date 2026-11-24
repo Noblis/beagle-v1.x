@@ -1289,7 +1289,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
             {
                 var error = GetErrorSafely(output, correctOutputs[i]);
-                if (GetErrorSafely(output, correctOutputs[i]) > 0.001)
+                if (error > 0.001)
                 {
                     isThereAnError = true;
                     Console.ForegroundColor = ConsoleColor.Red;

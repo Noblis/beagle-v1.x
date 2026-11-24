@@ -1,0 +1,1622 @@
+﻿using BeagleLib.Agent;
+using BeagleLib.Engine.FitFunc;
+using BeagleLib.MathStackLib;
+using BeagleLib.Util;
+using BeagleLib.VM;
+using ILGPU;
+using ILGPU.Runtime;
+using ILGPU.Runtime.Cuda;
+using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Runtime;
+using System.Runtime.CompilerServices;
+using WebMonk;
+
+namespace BeagleLib.Engine;
+
+public abstract class MLEngineCore : IDisposable
+{
+    public abstract void Train(int stopAfterMin = -1, long stopAfterBirths = -1, bool noEscMenu = false, bool benchmarkRun = false);
+    public abstract void Dispose();
+}
+
+public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
+    where TMLSetup : MLSetup, new()
+    where TFitFunc : struct, IFitFunc
+{
+    #region Constructors & Dispose
+    public MLEngine(bool forceCPUAccelerator = false, bool useSingleAccelerator = false, bool useLibDevice = false, IMLEngineNotificationsHandler? mlEngineNotificationsHandler = null)
+    {
+        Console.ResetColor();
+        
+        //This is to not show ^[ on Linux when escape is pressed early
+        //if (Console.KeyAvailable) Console.ReadKey(true);
+
+        checked
+        {
+            #region IMLEngineNotificationsHandler setup
+            _mlEngineNotificationsHandler = mlEngineNotificationsHandler;
+            #endregion
+
+            #region Save ML Setup & init IsCorrelationFunctionRun flag
+            // ReSharper disable once ObjectCreationAsStatement
+            new TMLSetup(); //this will automatically save into MLSetup.Current
+            MLSetup.IsCorrelationFunctionRun = FitFunc.UseCorrelationFit;
+            #endregion
+
+            #region Set up Console 
+            if (!Console.IsOutputRedirected)
+            {
+                Console.ResetColor();
+
+                Console.CursorVisible = false;
+
+                Console.Clear();
+                Console.Title = $"Beagle {BConfig.Version}: {MLSetup.Current.Name}-{typeof(TFitFunc).Name}";
+            }
+            #endregion
+
+            #region Set up Json settings
+            JsonConvert.DefaultSettings = () =>
+            {
+                var settings = new JsonSerializerSettings();
+                settings.Converters.Add(new CommandConverter());
+                return settings;
+            };
+            #endregion
+
+            #region Create Input and Output arrays
+            _inputLabels = MLSetup.Current.GetInputLabels();
+            _inputsArray = new float[MLSetup.Current.ExperimentsPerGeneration][];
+            Parallel.For(0, _inputsArray.Length, i =>
+            {
+                _inputsArray[i] = new float[_inputLabels.Length];
+            });
+            _allInputs = new float[_inputLabels.Length * MLSetup.Current.ExperimentsPerGeneration];
+            _correctOutputs = new float[MLSetup.Current.ExperimentsPerGeneration];
+            #endregion
+
+            #region Create AppOutput directory & Set up output file
+            var fullDirPath = Path.Combine(Directory.GetCurrentDirectory(), "AppOutput");
+            if (!Directory.Exists(fullDirPath)) Directory.CreateDirectory(fullDirPath);
+            Directory.SetCurrentDirectory(fullDirPath);
+
+            var now = DateTime.Now;
+            Output.FileName = $"{MLSetup.Current.Name}-{typeof(TFitFunc).Name}_{now.Year}-{now.Month:D2}-{now.Day:D2}-{now.Hour:D2}-{now.Minute:D2}-{now.Second:D2}.txt";
+            #endregion
+
+            #region Set up read-only properties
+            _allowedOperations = MLSetup.Current.GetAllowedOperations();
+            _allowedAdjunctOperationsCount = MLSetup.Current.GetAllowedAdjunctOperationsCount();
+
+            _generationWatch = new Stopwatch();
+            _generationAcceleratorWatch = new Stopwatch();
+            _totalTimeWatch = new Stopwatch();
+            #endregion
+
+            #region Construct GPU-related stuff
+            //Lib Device is only available on CUDA devices
+            if (Environment.GetEnvironmentVariable("CUDA_PATH") != null && !forceCPUAccelerator)
+            {
+                //https://github.com/m4rs-mt/ILGPU/pull/707
+                if (useLibDevice) _context = Context.Create(builder => builder.Cuda().LibDevice().EnableAlgorithms().Optimize(OptimizationLevel.O2));
+                else _context = Context.Create(builder => builder.Cuda().EnableAlgorithms().Optimize(OptimizationLevel.O2));
+            }
+            else
+            {
+                _context = Context.Create(builder => builder.Default().EnableAlgorithms());
+            }
+            
+            //Get CUDA devices. If CUDA device does not exist, OpenCL devices, otherwise CPU device
+            var firstDevice =
+                _context.Devices.FirstOrDefault(x => x.AcceleratorType == AcceleratorType.Cuda) ??
+                _context.Devices.FirstOrDefault(x => x.AcceleratorType == AcceleratorType.OpenCL) ??
+                _context.Devices.Single(x => x.AcceleratorType == AcceleratorType.CPU);
+            if (forceCPUAccelerator) firstDevice = _context.Devices.Single(x => x.AcceleratorType == AcceleratorType.CPU);
+            var devices = _context.Devices.Where(x => x.AcceleratorType == firstDevice.AcceleratorType).ToArray();
+
+            var acceleratorCount = useSingleAccelerator ? 1 : devices.Length; //this is for benchmarking One vs Multiple GPUs
+            if (firstDevice.AcceleratorType == AcceleratorType.CPU) Output.WriteLine($"Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} exclusively on a CPU using a GPU emulator");
+            else Output.WriteLine($"{Environment.MachineName}: Running {MLSetup.Current.Name}-{typeof(TFitFunc).Name} on {Environment.ProcessorCount} CPU(s) & {acceleratorCount} {devices.First().Name} GPU(s)");
+
+            _accelerators = new AcceleratorInfo<TFitFunc>[acceleratorCount];
+            for (var i = 0; i < _accelerators.Length; i++)
+            {
+                _accelerators[i] = new AcceleratorInfo<TFitFunc>();
+
+                if (i == 0)
+                {
+                    if (devices[0].AcceleratorType == AcceleratorType.CPU) _accelerators[0].Accelerator = _context.GetPreferredDevice(true).CreateAccelerator(_context);
+                    else _accelerators[i].Accelerator = devices[i].CreateAccelerator(_context);
+                }
+                else
+                {
+                    _accelerators[i].Accelerator = devices[i].CreateAccelerator(_context);
+                }
+
+                _accelerators[i].GroupSize = (uint)Math.Min(_accelerators[i].Accelerator.MaxNumThreadsPerGroup, MLSetup.Current.ExperimentsPerGeneration);
+
+                //for CPU we cap memory at 1 Gb
+                long memorySize;
+                if (devices[i].AcceleratorType == AcceleratorType.CPU) memorySize = Math.Min(_accelerators[i].Accelerator.MemorySize, 1024L * 1024L * 1024L);
+                else memorySize = _accelerators[i].Accelerator.MemorySize;
+
+                _accelerators[i].MaxCommandBufferSize = Math.Min(memorySize / _accelerators[i].GroupSize * 75, 0X7FEFFFFF); //first we divide, then we multiply to reduce the change of overflow, we cap by .net max array size (0X7FEFFFFF)
+                _accelerators[i].AllCommands = new Command[_accelerators[i].MaxCommandBufferSize];
+                _accelerators[i].ScriptStarts = new int[(int)Math.Ceiling((double)MLSetup.Current.OrganismsArraySize / _accelerators.Length)];
+
+                _accelerators[i].AllInputsMB = _accelerators[i].Accelerator.Allocate1D<float>(_allInputs.Length);
+                _accelerators[i].CorrectOutputsMB = _accelerators[i].Accelerator.Allocate1D<float>(MLSetup.Current.ExperimentsPerGeneration);
+
+                _accelerators[i].Stream = _accelerators[i].Accelerator.CreateStream();
+
+                _accelerators[i].Kernel = _accelerators[i].Accelerator.LoadKernel<uint, ArrayView<int>, ArrayView<Command>, uint, ArrayView<float>, uint, ArrayView<float>, ArrayView<int>, TFitFunc>(MainKernel.Kernel);
+            }
+            #endregion
+
+            #region Create Initial Colony
+            //create all needed arrays
+            _organisms = new Organism[MLSetup.Current.OrganismsArraySize];
+            _newbornOrganisms = new Organism[MLSetup.Current.OrganismsArraySize];
+            _scores = new int[MLSetup.Current.OrganismsArraySize];
+
+            //additions for NSGA selection
+            _microcosmOrganisms = new Organism[ParetoMicrocosmSize];
+            //_microcosmOrganismScores = new int[ParetoMicrocosmSize];
+            //_microcosmOrganismLengths = new int[ParetoMicrocosmSize];
+            //_microcosmOrganismLayerNumbers = new int[ParetoMicrocosmSize];
+
+            _perLayerOffspringTargets = new float[ParetoMicrocosmSize];
+            _perLayerSizes = new int[ParetoMicrocosmSize];
+
+            _crossoverPartners = new Organism[CrossoverPartnerPoolSize];
+
+            using (new ConsoleTimer($"creating initial colony of {MLSetup.Current.TargetColonySize(0):N0} organisms", true, ConsoleColor.Blue))
+            {
+                //Create new organisms in multithreaded fashion
+                _organismsCount = MLSetup.Current.TargetColonySize(0);
+                Parallel.For(0, _organismsCount, i =>
+                //for ( int i=0; i<_organismsCount; i++)
+                {
+                    var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    _organisms[i] = newOrganism;
+                });
+                
+                //#if DEBUG
+                ////Calculate length distribution
+                //int[] lengthBuckets = new int[BConfig.MaxScriptLength];
+                //for (var i = 0; i < _organismsCount; i++)
+                //{
+                //    lengthBuckets[_organisms[i]!.Commands.Length]++;
+                //}
+                //Debugger.Break();
+                //#endif
+            }
+            Output.WriteLine();
+            #endregion
+
+            #region Set up arrays for Adaptive Learning
+            Parallel.For(0, _adaptiveLearningInputs.Length, i =>
+            {
+                _adaptiveLearningInputs[i] = new float[_inputLabels.Length];
+            });
+            #endregion
+
+            #region Save and set GC latency mode
+            _gcLatencyMode = GCSettings.LatencyMode;
+            GCSettings.LatencyMode = GCLatencyMode.SustainedLowLatency;
+            #endregion
+        }
+    }
+    public override void Dispose()
+    {
+        _mlEngineNotificationsHandler?.Dispose();
+        GCSettings.LatencyMode = _gcLatencyMode;
+        foreach (var accelerator in _accelerators) accelerator.Dispose();
+        _context.Dispose();
+        Console.CursorVisible = true;
+    }
+    #endregion
+
+    #region Methods
+    public override void Train(int stopAfterMin = -1, long stopAfterBirths = -1, bool noEscMenu = false, bool benchmarkRun = false)
+    {
+        if (stopAfterMin != -1 && OperatingSystem.IsWindows()) Console.Title += $"; stop after {stopAfterMin}";
+
+        try
+        {
+            _showProfilingInfo = benchmarkRun;
+
+            _currentGeneration = 0;
+            _generationAtLastColonyReset = 0;
+            _totalTimeWatch.Start();
+            _totalBirths = _organismsCount;
+
+            _mostAccurateEverOrganism = null;
+            _mostAccurateOrganismsSinceLastColonyReset = new Organism?[BConfig.TopMostAccurateOrganismsToKeep];
+            for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+            {
+                _mostAccurateOrganismsSinceLastColonyReset[i] = null;
+            }
+            _highestOrganismsScoreSinceLastColonyReset = int.MinValue;
+            _mostAccurateEverOrganismTotalTime = TimeSpan.Zero;
+            _totalBirthAtLastHighestScoreSinceLastColonyReset = 0;
+
+            while (true)
+            {
+                _currentGeneration++;
+                var done = TrainingLoopBody();
+
+                if (!noEscMenu)
+                {
+                    while (Console.KeyAvailable)
+                    {
+                        if (Console.ReadKey(true).Key == ConsoleKey.Escape)
+                        {
+                            _totalTimeWatch.Stop();
+
+                            //We only handle the first Escape, ignore all the others
+                            while (Console.KeyAvailable) Console.ReadKey(true);
+
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            Output.WriteLine("Evolution paused...\n");
+                            while (true)
+                            {
+                                Output.WriteLine("[Q]uit");
+                                Output.WriteLine("Resu[M]e");
+                                Output.WriteLine("[S]ave colony");
+                                Output.WriteLine("Load & [R]eplace colony");
+                                Output.WriteLine("Load & [C]ombine colonies");
+                                Output.WriteLine("[I]nject organism[s] as string");
+                                Output.WriteLine("[D]isplay best organism as LaTeX formula");
+                                Output.WriteLine("[V]erify best organism as ~25% run");
+                                Output.Write("Please choose: ");
+                                Output.FlushFileStream();
+
+                                var input = Output.ReadLine();
+                                Output.WriteLine();
+
+                                input = input.Trim().ToLower();
+                                if (input == "q") { done = true; break; }
+                                else if (input == "m") { Output.WriteLine("Resuming evolution...\n"); break; }
+                                else if (input == "s") SaveColony();
+                                else if (input == "r") LoadColony();
+                                else if (input == "c") LoadColony(combine: true);
+                                else if (input == "i") InjectOrganisms();
+                                else if (input == "d") DisplayModelAsLatex();
+                                else if (input == "v") VerifyModel();
+                                else Output.WriteLine("Invalid input. Please choose again.\n");
+                            }
+                            Console.ResetColor();
+
+                            _totalTimeWatch.Start();
+                        }
+                    }
+                }
+
+                if (done || benchmarkRun) break;
+                
+                if (stopAfterMin > 0 && _totalTimeWatch.Elapsed.TotalMinutes > stopAfterMin)
+                {
+                    Output.WriteLine("Allotted time exceeded");
+                    VerifyAndComplete();
+                    break;
+                }
+
+                if (stopAfterBirths > 0 && _totalBirths > stopAfterBirths)
+                {
+                    Output.WriteLine("Allotted number of births exceeded");
+                    VerifyAndComplete();
+                    break;
+                }
+
+            }
+            Console.WriteLine("Training Stopped...");
+        }
+        catch(Exception ex)
+        {
+            Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle Run Error on {Environment.MachineName}", $"Beagle {BConfig.Version}: Error occurred on {Environment.MachineName} while running {MLSetup.Current.Name}\n\n{ex}");
+            Output.WriteLine(ex.ToString());
+            
+            throw;
+        }
+        finally
+        {
+            Output.FlushFileStream();
+            Output.Dispose();
+        }
+    }
+
+    protected bool TrainingLoopBody()
+    {
+        #region reset stuff for new generation, set up experiments (inputs/output), convert inputs to one long array
+        using (new ConsoleTimer("reset stuff for new generation, set up experiments (inputs/output), convert inputs to one long array", _showProfilingInfo))
+        {
+            //reset stuff for new generation
+            _generationWatch.Restart();
+
+            //identify challenge points
+            var adaptiveLearningCount = 0;
+            if (_mostAccurateOrganismsSinceLastColonyReset[0] != null) adaptiveLearningCount = IdentifyErrorsForAdaptiveLearningAndReturnAdaptiveLearningCount();
+
+            if (adaptiveLearningCount > 0)
+            {
+                for (int i = 0; i < Math.Min(adaptiveLearningCount, MLSetup.Current.ExperimentsPerGeneration / 2); i++)
+                {
+                    var adaptiveRandomIndex = Rnd.Random.Next(adaptiveLearningCount);
+                    var adaptiveLearningInput = _adaptiveLearningInputs[_adaptiveLearningIndices[adaptiveRandomIndex]];
+                    Debug.Assert(adaptiveLearningInput.Length == _inputsArray[i].Length);
+                    Array.Copy(adaptiveLearningInput, _inputsArray[i], adaptiveLearningInput.Length);
+                    _correctOutputs[i] = _adaptiveLearningOutputs[_adaptiveLearningIndices[adaptiveRandomIndex]];
+                }
+            }
+
+            //set up experiments (inputs and output)
+            Parallel.For(Math.Min(adaptiveLearningCount, MLSetup.Current.ExperimentsPerGeneration / 2), MLSetup.Current.ExperimentsPerGeneration, i =>
+            {
+                (_inputsArray[i], _correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+            });
+
+            //convert inputs to one long array
+            Parallel.For(0, MLSetup.Current.ExperimentsPerGeneration, i =>
+            {
+                var inputs = _inputsArray[i];
+                // ReSharper disable once ForCanBeConvertedToForeach
+                for (var j = 0; j < inputs.Length; j++)
+                {
+                    _allInputs[i * inputs.Length + j] = inputs[j];
+                }
+            });
+        }
+        #endregion
+
+        #region run parallel loop on multiple accelerators (if available)
+        //Console.ForegroundColor = ConsoleColor.DarkYellow;
+        using (new ConsoleTimer($"run parallel loop on {_accelerators.Length} accelerator(s)", _showProfilingInfo))
+        {
+            _generationAcceleratorWatch.Restart();
+            var organismsPerAcceleratorCount = (int)Math.Ceiling((float)_organismsCount / _accelerators.Length);
+            Parallel.For(0, _accelerators.Length, i =>
+            {
+                var startIdx = i * organismsPerAcceleratorCount;
+                var endIdx = Math.Min(startIdx + organismsPerAcceleratorCount, _organismsCount);
+
+                if (endIdx > startIdx)
+                {
+                    var length = endIdx - startIdx;
+                    var acceleratorGrossScores = new Span<int>(_scores, startIdx, length);
+                    var acceleratorNewbornOrganisms = new Span<Organism?>(_organisms, startIdx, length);
+                    ScoreNewbornOrganismsOnSingleAccelerator(_accelerators[i], acceleratorNewbornOrganisms, acceleratorGrossScores, i == 0);
+                }
+            });
+            _acceleratorGenerationTime = _generationAcceleratorWatch.Elapsed;
+        }
+        //Console.ResetColor();
+        #endregion
+
+        #region set scores on _organisms array, update average scores on _mostAccurateOrganismsSinceLastColonyReset and _mostAccurateEverOrganism
+        using (new ConsoleTimer("set scores on _organisms array", _showProfilingInfo))
+        {
+            Parallel.For(0, _organismsCount, i =>
+            {
+                Debug.Assert(Math.Abs(_scores[i]) <= BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration);
+                Debug.Assert(!IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_organisms[i]!));
+
+                _organisms[i]!.Score = _scores[i];
+            });
+        }
+
+        #if DEBUG
+        for (var i = 0; i < _organismsCount; i++)
+        {
+            Debug.Assert(_organisms[i] == null || !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_organisms[i]!));
+        }
+        #endif
+        Debug.Assert(!AnyDuplicatesInMostAccurateOrganismsSinceLastColonyReset());
+        if (IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_mostAccurateEverOrganism!))
+        {
+            Parallel.For(0, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
+            {
+                var organism = _mostAccurateOrganismsSinceLastColonyReset[i];
+                Debug.Assert(organism == null || !organism.IsInDeadPool);
+                organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
+            });
+        }
+        else
+        {
+            Debug.Assert(!IsOrganismInMostAccurateOrganismsSinceLastColonyReset(_mostAccurateEverOrganism!));
+
+            Parallel.For(-1, _mostAccurateOrganismsSinceLastColonyReset.Length, i =>
+            //for (var i = -1; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+            {
+                var organism = i == -1 ? _mostAccurateEverOrganism : _mostAccurateOrganismsSinceLastColonyReset[i];
+                Debug.Assert(organism == null || !organism.IsInDeadPool);
+                //if (i == -1) Debugger.Break();
+                organism?.UpdateScoreByAveraging(_inputsArray, _correctOutputs, FitFunc);
+            });
+        }
+        
+        Array.Sort(_mostAccurateOrganismsSinceLastColonyReset, new OrganismScoreReverseComparer()); 
+        #endregion
+
+        #region update most accurate & shortest satisfactory organisms
+        var oldMostAccurateEverOrganism = _mostAccurateEverOrganism;
+        using (new ConsoleTimer("update most accurate & shortest satisfactory organisms", _showProfilingInfo))
+        {
+            for (var i = 0; i < _organismsCount; i++)
+            {
+                var organism = _organisms[i]!;
+                Debug.Assert(!organism.IsInDeadPool);
+
+                //update most accurate organisms
+                UpdateMostAccurateOrganismsWith(organism);
+            }
+            Debug.Assert(_generationAtLastColonyReset != 0 || ReferenceEquals(_mostAccurateEverOrganism, _mostAccurateOrganismsSinceLastColonyReset[0]));
+
+            if (!ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mlEngineNotificationsHandler?.HandleMostAccurateEverOrganismUpdated(_mostAccurateEverOrganism!.CloneForExport(_inputsArray, _correctOutputs), (uint)_currentGeneration);
+            if (_mlEngineNotificationsHandler?.Quit == true) return true;
+
+            //we add the most accurate ones again with probability of 5%. It means approximately every 20 generations
+            if (Rnd.RandomBoolWithChance(0.05))
+            {
+                for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+                {
+                    if (_mostAccurateOrganismsSinceLastColonyReset[i] != null) _organisms[_organismsCount++] = _mostAccurateOrganismsSinceLastColonyReset[i];
+                }
+            }
+        }
+        #endregion
+
+        #region set up layers for the true pareto front
+        MarkTrueParetoFrontOrganismsInColony();
+        #endregion
+
+        #region population micorcosm with organisms not on the true pareto front
+        Parallel.For(0, ParetoMicrocosmSize, i =>
+        {
+            do
+            {
+                int pick = Rnd.Random.Next(_organismsCount);
+                _microcosmOrganisms[i] = _organisms[pick]!;
+            } 
+            while (_microcosmOrganisms[i].IsInParetoFrontZero);
+            
+            _perLayerSizes[i] = 0;
+        });
+        #endregion
+
+        #region set up layers in mictocosm
+        SetParetoLayersInMicrocosm();
+        #endregion
+
+        #region births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays
+        using (new ConsoleTimer("births and deaths loop, reset colony if needed, swap _organisms and _newbornOrganisms arrays", _showProfilingInfo))
+        {
+            if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score > _highestOrganismsScoreSinceLastColonyReset)
+            {
+                _highestOrganismsScoreSinceLastColonyReset = _mostAccurateOrganismsSinceLastColonyReset[0]!.Score;
+                _totalBirthAtLastHighestScoreSinceLastColonyReset = _totalBirths;
+            }
+
+            if (MLSetup.Current.TotalBirthsToResetColonyIfNoProgress > 0 && _totalBirths - _totalBirthAtLastHighestScoreSinceLastColonyReset >= MLSetup.Current.TotalBirthsToResetColonyIfNoProgress)
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Output.WriteLine("Resetting the colony fresh...");
+                Output.WriteLine();
+                Console.ResetColor();
+
+                //set up the new "beginning of times"
+                _generationAtLastColonyReset = _currentGeneration;
+
+                //kill all current organisms
+                Parallel.For(0, _organismsCount, i =>
+                {
+                    var organism = _organisms[i]!;
+
+                    //death (100% chance)
+                    if (!ReferenceEquals(organism, _mostAccurateEverOrganism) &&
+                        !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
+                    {
+                        Organism.SaveOrganismToDeadPool(organism);
+                    }
+                    _organisms[i] = null;
+                });
+
+                //kill _mostAccurateOrganismSinceLastColonyReset
+                for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+                {
+                    if (_mostAccurateOrganismsSinceLastColonyReset[i] != null &&
+                        !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[i], _mostAccurateEverOrganism))
+                    {
+                        Organism.SaveOrganismToDeadPool(_mostAccurateOrganismsSinceLastColonyReset[i]!);
+                    }
+                    _mostAccurateOrganismsSinceLastColonyReset[i] = null;
+                }
+                _highestOrganismsScoreSinceLastColonyReset = int.MinValue;
+
+                //Create new organisms in multithreaded fashion. We always begin with the initial number of organisms - TargetColonySize(0)
+                _newbornOrganismsCount = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
+                Parallel.For(0, _newbornOrganismsCount, i =>
+                {
+                    var newOrganism = Organism.CreateByRandomLoadOrConstCommandThenMutate((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                    _newbornOrganisms[i] = newOrganism;
+                });
+            }
+            else
+            {
+                _newbornOrganismsCount = -1;
+
+                // Record per-organism layer + tier for offspring targets
+                Parallel.For(0, _organismsCount, i =>
+                {
+                    var organism = _organisms[i]!;
+                    CalcEstimatedParetoLayerForOrganism(organism);
+                    if (!_organisms[i]!.IsInParetoFrontZero) Interlocked.Increment(ref _perLayerSizes[organism.Layer]);
+                });
+
+                Debug.Assert(_organisms.All(x => x == null || x.IsLayerInitialized));
+
+                // Geometric decay to distribute offspring across layers
+                int targetColonySize = MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset);
+
+                float frontTargetPerMember;
+                if (_turboParetoSearch)
+                {
+                    frontTargetPerMember = _paretoFrontZeroCount > 0 ? 
+                        1.0f * targetColonySize / _paretoFrontZeroCount : 
+                        0.0f;
+                }
+
+                else
+                {
+                    frontTargetPerMember = _paretoFrontZeroCount > 0 ? 
+                        1.0f / PerLayerOffspringGenerationDecayFactor * targetColonySize / _paretoFrontZeroCount : 
+                        0.0f;
+                }
+
+                // Non-front: geometric decay across layers, divided by layer size
+                int maxLayer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
+                float totalWeight = 0.0f;
+                for (int l = 0; l <= maxLayer + 1; l++)
+                {
+                    totalWeight += 1 / MathF.Pow(PerLayerOffspringGenerationDecayFactor, l + 1);
+                }
+
+                if (!_turboParetoSearch) frontTargetPerMember /= totalWeight;
+
+                for (int l = 0; l <= maxLayer; l++)
+                {
+                    if (_turboParetoSearch)
+                    {
+                        _perLayerOffspringTargets[l] = 0.0f;
+                    }
+                    else
+                    {
+                        _perLayerOffspringTargets[l] = targetColonySize / MathF.Pow(PerLayerOffspringGenerationDecayFactor, l + 2) / _perLayerSizes[l] / totalWeight;
+                    }
+                }
+
+                FindCrossoverPartnerArray();
+
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+                Debug.Assert(_crossoverPartners.All(x => x == null || x.IsLayerInitialized));
+
+                // Offspring generation
+                Parallel.For(0, _organismsCount, i =>
+                {
+                    var organism = _organisms[i]!;
+                    float pctProb = organism.IsInParetoFrontZero ? frontTargetPerMember : _perLayerOffspringTargets[organism.Layer];
+                    
+                    var randomizedScale = 0.75f + Rnd.Random.NextSingle() * 0.5f;
+                    pctProb *= randomizedScale;
+
+                    do
+                    {
+                        if (pctProb >= 1 || Rnd.Random.NextDouble() < pctProb)
+                        {
+                            //we want to store a local copy of idx in OUR thread, so we can work with it
+                            //while another thread may increment _newbornOrganismsCount
+                            var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+
+                            #if DEBUG
+                            if (idx >= _newbornOrganisms.Length)
+                            {
+                                Notifications.SendSystemMessageSMTP(BConfig.ToEmail, $"Beagle {BConfig.Version}: idx >= _newbornOrganisms.Length on {Environment.MachineName}!", "", System.Net.Mail.MailPriority.High);
+                                Debugger.Break();
+                            }
+                            #endif
+
+                            if (Rnd.Random.NextDouble() < MLSetup.Current.CrossoverRate)
+                            {
+                                var crossoverPartnerIdx = Rnd.Random.Next(_crossoverPartnersCount);
+                                _newbornOrganisms[idx] = organism.ProduceCrossoverChild(_crossoverPartners[crossoverPartnerIdx]!);
+                                if (_newbornOrganisms[idx] == null ) // if crossover fails, do mutation instead
+                                {
+                                    _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                                }
+                            }
+                            else
+                            {
+                                _newbornOrganisms[idx] = organism.ProduceMutatedChild((byte)_inputLabels.Length, _allowedOperations, _allowedAdjunctOperationsCount);
+                            }
+                        }
+
+                        pctProb--;
+                    }
+                    while (pctProb > 0);
+                });
+                //for (int elites = 0; elites < _organismsCount; elites++)
+                //{
+                //    if (_organisms[elites]!.IsInParetoFrontZero)
+                //    {
+                //        var idx = Interlocked.Increment(ref _newbornOrganismsCount);
+                //        _newbornOrganisms[idx] = Organism.CreateByCopyingCommandsFromPartOfSpan(_organisms[elites]!.Commands, _organisms[elites]!.Commands.Length);
+                //    }
+                //}
+                //move current colony into dead pool and null the _organisms array
+                Parallel.For(0, _organismsCount, i =>
+                {
+                    //death (100% chance)
+                    var organism = _organisms[i]!;
+                    _organisms[i] = null;
+
+                    if (!ReferenceEquals(organism, _mostAccurateEverOrganism) &&
+                        !IsOrganismInMostAccurateOrganismsSinceLastColonyReset(organism))
+                    {
+                        Organism.SaveOrganismToDeadPool(organism);
+                    }
+                });
+
+                _newbornOrganismsCount++;
+            }
+
+            _totalBirths += _newbornOrganismsCount;
+
+            //swap arrays and their counters
+            (_organisms, _newbornOrganisms) = (_newbornOrganisms, _organisms);
+            (_organismsCount, _newbornOrganismsCount) = (_newbornOrganismsCount, _organismsCount);
+        }
+        #endregion
+
+        #region print generation results
+        _generationTime = _generationWatch.Elapsed;
+        Console.ForegroundColor = ConsoleColor.White;
+        Output.WriteLine($"{_totalTimeWatch.Elapsed:c}: Generation {_currentGeneration:N0} took {_acceleratorGenerationTime:c}/{_generationTime:c}");
+        Output.WriteLine($"Colony size: {_organismsCount:N0}: (target: {MLSetup.Current.TargetColonySize(_currentGeneration - _generationAtLastColonyReset):N0}). Total births: {_totalBirths:N0}");
+
+        ConsoleColor mostAccurateColor;
+        if (_mostAccurateEverOrganism!.Score == MLSetup.MaxGenerationScore) mostAccurateColor = ConsoleColor.Green;
+        else if (MLSetup.MaxGenerationScore - _mostAccurateEverOrganism!.Score == 1) mostAccurateColor = ConsoleColor.Yellow;
+        else mostAccurateColor = ConsoleColor.White;
+
+        Console.ForegroundColor = mostAccurateColor;
+        Output.Write("Most accurate ever genome (");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Output.Write($"{_mostAccurateEverOrganism!.Score:N0}");
+        Console.ForegroundColor = mostAccurateColor;
+        Output.Write("/");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Output.Write($"{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}");
+        Console.ForegroundColor = mostAccurateColor;
+
+        Output.Write(")x");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Output.Write($"{_mostAccurateEverOrganism.ScoreRecalcCount}");
+        Console.ForegroundColor = mostAccurateColor;
+        Output.Write(": length = ");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Output.Write($"{_mostAccurateEverOrganism.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
+        Console.ForegroundColor = mostAccurateColor;
+        
+        Output.Write(" from ");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Output.Write($"{_mostAccurateEverOrganismTotalTime:c}");
+        Console.ForegroundColor = mostAccurateColor;
+        
+        Output.Write(" at ");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Output.Write($"{_totalBirthAtLastMostAccurateEverOrganism:N0}");
+        Console.ForegroundColor = mostAccurateColor;
+        Output.WriteLine(" total births");
+        Console.ForegroundColor = mostAccurateColor;
+
+        if (_mostAccurateEverOrganism!.Score == MLSetup.MaxGenerationScore && !ReferenceEquals(oldMostAccurateEverOrganism, _mostAccurateEverOrganism)) _mostAccurateEverOrganism.PrintCommands(_inputLabels, _inputsArray, _correctOutputs);
+        else _mostAccurateEverOrganism.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
+        
+        if (_mostAccurateOrganismsSinceLastColonyReset[0] != null && !ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[0], _mostAccurateEverOrganism))
+        {
+            Output.Write("Last colony reset at ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Output.Write($"{_generationAtLastColonyReset:N0}th");
+            Console.ForegroundColor = ConsoleColor.White;
+            Output.WriteLine(" generation");
+
+            Console.ForegroundColor = ConsoleColor.White;
+            Output.Write("Most accurate genome since last colony reset (");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.Score:N0}");
+            Console.ForegroundColor = ConsoleColor.White;
+            Output.Write("/");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Output.Write($"{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}");
+            Console.ForegroundColor = ConsoleColor.White;
+            Output.Write("): length = ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Output.WriteLine($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
+            Console.ForegroundColor = ConsoleColor.White;
+            _mostAccurateOrganismsSinceLastColonyReset[0]!.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
+        }
+
+        Console.ForegroundColor = ConsoleColor.White;
+        Output.Write("Total births at last highest score (");
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Output.Write($"{_highestOrganismsScoreSinceLastColonyReset:N0}");
+        Console.ForegroundColor = ConsoleColor.White;
+
+        Output.Write(") since last colony reset: ");
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Output.WriteLine($"{_totalBirthAtLastHighestScoreSinceLastColonyReset:N0}");
+        Console.ForegroundColor = ConsoleColor.White;
+
+        //Output.WriteLine($"Total births since last colony reset / reset after: {_totalBirthSinceLastColonyReset:N0}/{MLSetup.Current.TotalBirthsToResetColonyIfNoProgress:N0}");
+        //Output.WriteLine(_mostAccurateOrganismSinceLastColonyReset!.CommandsToJson());
+        Console.ResetColor();
+        #endregion
+
+        #region send generation results to notification handler
+        _mlEngineNotificationsHandler?.HandleGenerationCounter(this._currentGeneration);
+        #endregion
+
+        #region print new line if needed
+        if (!_showProfilingInfo) Output.WriteLine();
+        #endregion
+
+        return false;
+    }
+    protected void ScoreNewbornOrganismsOnSingleAccelerator(AcceleratorInfo<TFitFunc> accelerator, Span<Organism?> organisms, Span<int> grossRewardsThisAccelerator, bool flashFileStream)
+    {
+        #region Declare scores logical length and figure out if we use LibDevice, create stream
+        //var useLibDevice = accelerator.Accelerator.AcceleratorType == AcceleratorType.Cuda ? (byte)1 : (byte)0;
+        var scoresLogicalLength = 0;
+        #endregion
+
+        #region Copy stuff that does not change between batches to GPU
+        accelerator.AllInputsMB.CopyFromCPU(accelerator.Stream, _allInputs);
+        accelerator.CorrectOutputsMB.CopyFromCPU(accelerator.Stream, _correctOutputs);
+        #endregion
+
+        #region Run kernel in batches if needed
+        var currentOrganismBatchStartIdx = 0;
+        var currentOrganismBatchEndIdx = 0;
+        //var first = true;
+
+        while (currentOrganismBatchStartIdx < organisms.Length)
+        {
+            #region Set up batchScriptStarts and batchAllCommands
+            var allCommandsIndex = 0;
+            for (var i = currentOrganismBatchStartIdx; i < organisms.Length; i++)
+            {
+                currentOrganismBatchEndIdx = i;
+                if (allCommandsIndex + organisms[i]!.Commands.Length > accelerator.MaxCommandBufferSize)
+                {
+                    currentOrganismBatchEndIdx--; //roll back
+                    break;
+                }
+                accelerator.ScriptStarts[i - currentOrganismBatchStartIdx] = allCommandsIndex;
+                for (var j = 0; j < organisms[i]!.Commands.Length; j++)
+                {
+                    accelerator.AllCommands[allCommandsIndex++] = organisms[i]!.Commands[j];
+                }
+            }
+
+            var batchOrganismCount = currentOrganismBatchEndIdx + 1 - currentOrganismBatchStartIdx;
+            Debug.Assert(batchOrganismCount > 0);
+            var batchScriptStarts = new Span<int>(accelerator.ScriptStarts, 0, batchOrganismCount); //scriptStarts[..batchOrganismCount];
+            var batchAllCommands = new Span<Command>(accelerator.AllCommands, 0, allCommandsIndex); //_allCommands[..allCommandsIndex];
+
+            currentOrganismBatchStartIdx = currentOrganismBatchEndIdx + 1;
+            #endregion
+
+            //if (first)
+            //{
+            //    first = false;
+            //    Output.WriteLineUnlessAtLineStart();
+            //    Output.WriteLine($"-executing batch: {batchOrganismCount:N0} x {accelerator.GroupSize:N0}");
+            //}
+            //else
+            //{
+            //    Output.WriteLineUnlessAtLineStart();
+            //    Output.WriteLine($"-executing additional batch: {batchOrganismCount:N0} x {accelerator.GroupSize:N0}");
+            //}
+
+            using (var acceleratorScriptStarts = accelerator.Accelerator.Allocate1D<int>(batchScriptStarts.Length))
+            {
+                using (var acceleratorAllCommands = accelerator.Accelerator.Allocate1D<Command>(batchAllCommands.Length))
+                {
+                    using (var acceleratorGrossRewards = accelerator.Accelerator.Allocate1D<int>(batchOrganismCount))
+                    {
+                        #region Copy stuff that changes to GPU
+                        acceleratorScriptStarts.View.CopyFromCPU(accelerator.Stream, batchScriptStarts);
+                        acceleratorAllCommands.View.CopyFromCPU(accelerator.Stream, batchAllCommands);
+                        if (!FitFunc.UseCorrelationFit) acceleratorGrossRewards.View.MemSetToZero(accelerator.Stream);
+                        #endregion
+
+                        #region Execute Kernel
+                        var groupStart = (uint)0;
+                        do
+                        {
+                            var currentGroupSize = Math.Min(accelerator.GroupSize, MLSetup.Current.ExperimentsPerGeneration - groupStart);
+                            var launchDimension = new KernelConfig(new Index1D(batchScriptStarts.Length), new Index1D((int)currentGroupSize));
+
+                            accelerator.Kernel(accelerator.Stream, launchDimension, currentGroupSize, acceleratorScriptStarts.View, acceleratorAllCommands.View, groupStart, accelerator.AllInputsMB.View, (uint)_inputLabels.Length, accelerator.CorrectOutputsMB.View, acceleratorGrossRewards.View, FitFunc);
+                            if (flashFileStream) Output.FlushFileStream();
+                            accelerator.Stream.Synchronize();
+
+                            groupStart += currentGroupSize;
+                        }
+                        while (groupStart < MLSetup.Current.ExperimentsPerGeneration);
+                        #endregion
+
+                        #region Get and return the results
+                        var grossRewardsThisAcceleratorThisBatch = grossRewardsThisAccelerator.Slice(scoresLogicalLength, batchOrganismCount);
+                        acceleratorGrossRewards.View.CopyToCPU(accelerator.Stream, grossRewardsThisAcceleratorThisBatch);
+                        scoresLogicalLength += batchOrganismCount;
+                        #endregion
+                    }
+                }
+            }
+        }
+        #endregion
+    }
+
+    public bool DoesDominateOtherQ(int mySize, int myScore, int otherSize, int otherScore)
+    {
+        return mySize <= otherSize && myScore >= otherScore && (mySize < otherSize || myScore > otherScore);
+    }
+    public void CalcEstimatedParetoLayerForOrganism(Organism organism)
+    {
+        if (organism.IsLayerInitialized) return;
+
+        bool dominated = false;
+        int currentLayer = 0;
+
+        //TODO: Does this early termination on 0 and subzero scores help
+        //if (organism.Score <= 0)
+        //{
+        //    //if the score is negative, we assign the last layer
+        //    organism.Layer = _microcosmOrganisms[ParetoMicrocosmSize - 1].Layer;
+        //    return;
+        //}
+
+        for (int i = 0; i < ParetoMicrocosmSize; i++)
+        {
+            if (_microcosmOrganisms[i].Layer > currentLayer)
+            {
+                if (dominated == false)
+                {
+                    organism.Layer = currentLayer;
+                    return;
+                }
+                currentLayer++;
+                dominated = false;
+            }
+
+            if (DoesDominateOtherQ(_microcosmOrganisms[i].Commands.Length, _microcosmOrganisms[i].Score, organism.Commands.Length, organism.Score)) dominated = true;
+        }
+
+        organism.Layer = currentLayer - 1;
+    }
+    public void SetParetoLayersInMicrocosm()
+    {
+        //initialize buckets
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            if (_microcosmLengthBucketOrganisms[i] == null) _microcosmLengthBucketOrganisms[i] = [];
+            else _microcosmLengthBucketOrganisms[i]!.Clear();
+        }
+
+        //fill buckets
+        for (var i = 0; i < ParetoMicrocosmSize; i++)
+        {
+            var organism = _microcosmOrganisms[i];
+            var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
+            _microcosmLengthBucketOrganisms[organismBucketIdx]!.Add(organism);
+        }
+
+        //sort organisms in buckets
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            _microcosmLengthBucketOrganisms[i]!.Sort(new OrganismScoreComparer());
+        }
+
+        //assign layers and fill _microcosmOrganisms array with organisms with assigned layers
+        int microcosmOrganismCount = 0;
+        int currentLayer = 0;
+        while (microcosmOrganismCount < ParetoMicrocosmSize)
+        {
+            var previousScore = int.MinValue;
+            for (var i = 0; i < BConfig.MaxScriptLength; i++)
+            {
+                var currentBucket = _microcosmLengthBucketOrganisms[i]!;
+                if (currentBucket.Count == 0) continue;
+                int mostAccurateInCurrentBucketIdx = currentBucket.Count - 1;
+
+                var mostAccurateInCurrentBucket = currentBucket[mostAccurateInCurrentBucketIdx];
+                Debug.Assert(mostAccurateInCurrentBucket == null || mostAccurateInCurrentBucket.Commands.Length == i + 1);
+
+                while (true)
+                {
+                    if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score >= previousScore)
+                    {
+                        mostAccurateInCurrentBucket.Layer = currentLayer;
+                        currentBucket.RemoveAt(mostAccurateInCurrentBucketIdx);
+                        _microcosmOrganisms[microcosmOrganismCount++] = mostAccurateInCurrentBucket;
+
+                        if (currentBucket.Count > 0)
+                        {
+                            var nextMostAccurateInCurrentBucketIdx = currentBucket.Count - 1;
+                            var nextMostAccurateInCurrentBucket = currentBucket[nextMostAccurateInCurrentBucketIdx];
+                            if (nextMostAccurateInCurrentBucket.Score == mostAccurateInCurrentBucket.Score)
+                            {
+                                mostAccurateInCurrentBucketIdx = nextMostAccurateInCurrentBucketIdx;
+                                mostAccurateInCurrentBucket = nextMostAccurateInCurrentBucket;
+                                continue;
+                            }
+                        }
+
+                        previousScore = mostAccurateInCurrentBucket.Score;
+                    }
+                    break;
+                }
+            }
+            currentLayer++;
+        }
+    }
+    protected void MarkTrueParetoFrontOrganismsInColony()
+    {
+        _paretoFrontZeroCount = 0;
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            _mostAccurateInLengthBucketOrganisms[i] = null;
+        }
+
+        //Testing showed that running this loop through Parallel.For with a locks array is actually not faster
+        for (var i = 0; i < _organismsCount; i++)
+        {
+            var organism = _organisms[i]!;
+            var organismBucketIdx = organism.Commands.Length - 1; //we don't have organisms with length 0
+
+            if (organism.Score > 1 &&
+                (_mostAccurateInLengthBucketOrganisms[organismBucketIdx] == null ||
+                 organism.Score > _mostAccurateInLengthBucketOrganisms[organismBucketIdx]!.Score))
+            {
+                _mostAccurateInLengthBucketOrganisms[organismBucketIdx] = organism;
+            }
+        }
+
+        var previousScore = 1;
+        for (var i = 0; i < BConfig.MaxScriptLength; i++)
+        {
+            Debug.Assert(_mostAccurateInLengthBucketOrganisms[i] == null || _mostAccurateInLengthBucketOrganisms[i]!.Commands.Length == i + 1);
+            var mostAccurateInCurrentBucket = _mostAccurateInLengthBucketOrganisms[i];
+            if (mostAccurateInCurrentBucket != null && mostAccurateInCurrentBucket.Score > previousScore)
+            {
+                mostAccurateInCurrentBucket.Layer = -1;
+                _paretoFrontZeroCount++;
+                previousScore = mostAccurateInCurrentBucket.Score;
+            }
+        }
+    }
+
+    protected void FindCrossoverPartnerArray()
+    {
+        // Fill array with random
+        _crossoverPartnersCount = -1; //we set this to -1 because we use the count AFTER the increment
+        var maxPoolSize = Math.Min(CrossoverPartnerPoolSize, _organismsCount);
+
+        Parallel.For(0, maxPoolSize, _ =>
+        {
+            int randIdx = Rnd.Random.Next(_organismsCount);
+            var organism = _organisms[randIdx]!;
+            if (organism.Layer <= CrossoverLayerThreshold)
+            {
+                _crossoverPartners[Interlocked.Increment(ref _crossoverPartnersCount)] = _organisms[randIdx]!;
+            }
+        });
+        _crossoverPartnersCount++;
+
+        //set remaining entries to null. We probably don't need to do it, but it is safer this way
+        for(var i = _crossoverPartnersCount; i <maxPoolSize; i++)
+        {
+            _crossoverPartners[i] = null;
+        }
+
+#if DEBUG
+        for (var i = 0; i < _crossoverPartnersCount; i++)
+        {
+            Debug.Assert(!_crossoverPartners[i]!.IsInDeadPool);
+        }
+#endif
+    }
+
+    protected void SaveColony()
+    {
+        var now = DateTime.Now;
+        var fileName = $"{Output.FileName.Replace(".txt", "")}-at-{now.Month:D2}-{now.Day:D2}-{now.Hour:D2}-{now.Minute:D2}-{now.Second:D2}.bin";
+        using var fileStream = File.Open(fileName, FileMode.Create);
+        using var binaryWriter = new BinaryWriter(fileStream);
+
+        binaryWriter.Write('B');
+        binaryWriter.Write('G');
+        binaryWriter.Write('L');
+
+        binaryWriter.Write(_organismsCount + GetMostAccurateOrganismsSinceLastColonyResetCount());
+
+        for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+        {
+            if (_mostAccurateOrganismsSinceLastColonyReset[i] == null) break;
+            binaryWriter.Write(_mostAccurateOrganismsSinceLastColonyReset[i]!.Commands);
+        }
+
+        Output.Write("Saving: ");
+        var step = _organismsCount / 80;
+        if (step == 0) step = 1;
+        
+        for (var i = 0; i < _organismsCount; i++)
+        {
+            binaryWriter.Write(_organisms[i]!.Commands);
+            if (i % step == 0) Output.Write("*");
+        }
+        Output.WriteLine();
+
+        Output.WriteLine($"Colony saved to {fileName}!");
+        Output.WriteLine();
+    }
+    protected void LoadColony(bool combine = false)
+    {
+        #region Get file name from the user
+        var binFiles = Directory.EnumerateFiles(Directory.GetCurrentDirectory(), "*.bin", SearchOption.TopDirectoryOnly).ToArray();
+        Array.Sort(binFiles);
+
+        if (binFiles.Length == 0)
+        {
+            Output.WriteLine("Error: No .bin files found in the directory!");
+            Output.WriteLine();
+            return;
+        }
+
+        for (var i = 0; i < binFiles.Length; i++)
+        {
+            Output.WriteLine($"[{i+1}] - {Path.GetFileName(binFiles[i])}");
+        }
+
+        int fileIdx;
+        Output.Write("Please select file to load: ");
+        while (true)
+        {
+            var inputStr = Output.ReadLine();
+            try
+            {
+                fileIdx = int.Parse(inputStr) - 1;
+                if (fileIdx >= 0 && fileIdx < binFiles.Length) break;
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+            Output.Write("Invalid input. Please re-enter: ");
+        }
+        #endregion
+
+        #region Load the file
+        try
+        {
+            var fileName = binFiles[fileIdx];
+            using var fileStream = File.OpenRead(fileName);
+            using var binaryReader = new BinaryReader(fileStream);
+
+            if (binaryReader.ReadChar() != 'B') throw new Exception("binaryReader.ReadChar() != 'B'");
+            if (binaryReader.ReadChar() != 'G') throw new Exception("binaryReader.ReadChar() != 'G'");
+            if (binaryReader.ReadChar() != 'L') throw new Exception("binaryReader.ReadChar() != 'L'");
+
+            var organismsInFileCount = binaryReader.ReadInt32();
+
+            int requiredArraySize;
+            if (combine)
+            {
+                requiredArraySize = _organismsCount + organismsInFileCount;
+                if (requiredArraySize > _organisms.Length)
+                {
+                    _newbornOrganisms = null!;
+                    _scores = null!;
+                    GC.Collect();
+
+                    for (var i = 0; i < _accelerators.Length; i++)
+                    {
+                        _accelerators[i].ScriptStarts = new int[(int)Math.Ceiling((double)requiredArraySize / _accelerators.Length)];
+                    }
+                    GC.Collect();
+
+                    //we put it in a separate scope to release old organisms when done
+                    var oldOrganisms = _organisms;
+                    _organisms = new Organism[requiredArraySize];
+                    // ReSharper disable once AccessToModifiedClosure
+                    Parallel.For(0, oldOrganisms.Length, i => { _organisms[i] = oldOrganisms[i]; });
+
+                    oldOrganisms = null;
+                    GC.Collect();
+
+                    _newbornOrganisms = new Organism[requiredArraySize];
+                    _scores = new int[requiredArraySize];
+                }
+            }
+            else //replace
+            {
+                requiredArraySize = organismsInFileCount;
+                if (requiredArraySize > _organisms.Length)
+                {
+                    _organisms = null!;
+                    _newbornOrganisms = null!;
+                    _scores = null!;
+                    GC.Collect();
+
+                    for (var i = 0; i < _accelerators.Length; i++)
+                    {
+                        _accelerators[i].ScriptStarts = new int[(int)Math.Ceiling((double)requiredArraySize / _accelerators.Length)];
+                    }
+                    GC.Collect();
+
+                    _organisms = new Organism[requiredArraySize];
+                    _newbornOrganisms = new Organism[requiredArraySize];
+                    _scores = new int[requiredArraySize];
+                }
+                _organismsCount = 0;
+            }
+
+            Parallel.For(0, _organisms.Length, i =>
+            {
+                _organisms[i] = null;
+            });
+
+            Span<Command> commandsBuffer = stackalloc Command[BConfig.MaxScriptLength];
+            Output.Write("Loading: ");
+            var step = organismsInFileCount / 80;
+            if (step == 0) step = 1;
+            var count = 0;
+            while (binaryReader.BaseStream.Position != binaryReader.BaseStream.Length)
+            {
+                var orgCommands = binaryReader.ReadCommands(commandsBuffer);
+                var organism = Organism.CreateByCopyingCommandsFromPartOfSpan(orgCommands, orgCommands.Length);
+                _organisms[_organismsCount++] = organism;
+                if (++count % step == 0) Output.Write("*");
+            }
+            Output.WriteLine();
+
+            if (_organismsCount != requiredArraySize) throw new Exception("_organismsCount != requiredArraySize");
+            if (count != organismsInFileCount) throw new Exception("count != organismsInFileCount");
+
+            if (combine) Output.WriteLine($"Colony loaded & combined from {fileName}!\nNew colony size: {_organismsCount:N0}");
+            else Output.WriteLine($"Colony loaded & replaced from {fileName}!\nNew colony size: {_organismsCount:N0}");
+
+            Output.WriteLine();
+        }
+        catch (Exception)
+        {
+            Output.WriteLine("Error loading file!");
+            Output.WriteLine();
+            throw;
+        }
+        #endregion
+    }
+    protected void InjectOrganisms()
+    {
+        while (true)
+        {
+            InjectOrganism();
+            Output.Write("Do you want to inject more organisms (y/n)? ");
+            var input = Output.ReadLine();
+            if (input != "y") break;
+        }
+        Output.WriteLine();
+    }
+    protected void InjectOrganism()
+    {
+        while (true)
+        {
+            Output.Write("Organism's string: ");
+            try
+            {
+                var str = Output.ReadLine();
+                var organism = Organism.CreateFromAnyString(str);
+                _organisms[_organismsCount++] = organism;
+                return;
+            }
+            catch (Exception)
+            {
+                Output.Write("Invalid format! Please retry: ");
+            }
+        }
+    }
+    protected void DisplayModelAsLatex()
+    {
+        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_inputsArray, _correctOutputs);
+        var expr = MathExpr.FromCommands(fullCommands, MLSetup.Current.GetInputLabels());
+        var url = $"https://arachnoid.com/latex/?equ={expr.AsLatexString()}";
+        WebServer.OpenInBrowser(url);
+    }
+    protected bool VerifyModel()
+    {
+        var fgColor = Console.ForegroundColor;
+        Console.ForegroundColor = ConsoleColor.DarkGray;
+        
+        var verificationExperimentsCount = MLSetup.Current.ExperimentsPerGeneration / 4;
+        var inputsArray = new float[verificationExperimentsCount][];
+        Parallel.For(0, inputsArray.Length, i =>
+        {
+            inputsArray[i] = new float[_inputLabels.Length];
+        });
+        //var allInputs = new float[_inputLabels.Length * verificationExperimentsCount];
+        var correctOutputs = new float[verificationExperimentsCount];
+
+
+        //set up experiments (inputs and output), set correct output mean to 0
+        Parallel.For(0, verificationExperimentsCount, i =>
+        {
+            (inputsArray[i], correctOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_inputsArray[i]);
+        });
+
+        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(inputsArray, correctOutputs).ToArray();
+        var isThereAnError = false;
+        var currentForegroundColor = Console.ForegroundColor;
+
+        Output.WriteLine();
+        Output.Write("Model Genome: ");
+        _mostAccurateEverOrganism!.PrintCommandsInLine(_inputLabels, inputsArray, correctOutputs);
+
+        for (var i = 0; i < verificationExperimentsCount; i++)
+        {
+            Output.Write("IN: ");
+            for (var j = 0; j < _inputLabels.Length; j++)
+            {
+                Output.Write($"{_inputLabels[j]}={inputsArray[i][j]}; ");
+            }
+            
+            var output = ThreadStaticCodeMachine.Instance.RunCommands(inputsArray[i], fullCommands);
+            Output.Write($"OUT: {output} (model) vs. {correctOutputs[i]} (target)");
+
+            if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
+            {
+                var error = GetErrorSafely(output, correctOutputs[i]);
+<<<<<<< HEAD
+                if (GetErrorSafely(output, correctOutputs[i]) > 0.001)
+=======
+                if (error > 0.001)
+>>>>>>> 1b572f0638ae16b43243c6d31694e61156dd9bb7
+                {
+                    isThereAnError = true;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Output.Write($" <- ERROR: Tolerance of 1/10 of 1% exceeded ({error})!");
+                    Console.ForegroundColor = currentForegroundColor;
+                }
+            }
+            else
+            {
+                if (output.IsValidNumber() ^ correctOutputs[i].IsValidNumber())
+                {
+                    //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
+                    isThereAnError = true;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Output.Write(" <- ERROR: Valid/Invalid mismatch!");
+                    Console.ForegroundColor = currentForegroundColor;
+                }
+            }
+            Output.WriteLine();
+        }
+        Output.WriteLine();
+
+        if (isThereAnError)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Output.WriteLine($"{MLSetup.Current.Name}-{typeof(TFitFunc).Name} Model NOT Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
+        }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Output.WriteLine($"{MLSetup.Current.Name}-{typeof(TFitFunc).Name} Model Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
+        }
+        Console.ForegroundColor = currentForegroundColor;
+        Output.WriteLine();
+
+        Console.ForegroundColor = fgColor;
+
+        return !isThereAnError;
+    }
+    private void VerifyAndComplete()
+    {
+        //print in LaTeX
+        var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(_inputsArray, _correctOutputs);
+        var expr = MathExpr.FromCommands(fullCommands, MLSetup.Current.GetInputLabels());
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Output.WriteLine($"\nFormula as LaTeX:\n{expr.AsLatexString()}");
+        Console.ForegroundColor = ConsoleColor.White;
+
+        if (VerifyModel())
+        {
+            Output.DisposeAndRename(Output.FileName.Replace(".txt", "-VERIFIED.txt"));
+            Environment.ExitCode = 0;
+        }
+        else
+        {
+            Output.DisposeAndRename(Output.FileName.Replace(".txt", "-NOT-VERIFIED.txt"));
+            Environment.ExitCode = 1;
+        }
+    }
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected static float GetErrorSafely(float output, float correctOutput)
+    {
+        if (Math.Abs(correctOutput - 0) < 0.00005 && Math.Abs(output - 0) < 0.00005) return 0;
+        return Math.Abs(output/correctOutput - 1);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected static double GetErrorSafely(double output, double correctOutput)
+    {
+        if (Math.Abs(correctOutput - 0) < 0.00005 && Math.Abs(output - 0) < 0.00005) return 0;
+        return Math.Abs(output / correctOutput - 1);
+    }
+
+    protected int IdentifyErrorsForAdaptiveLearningAndReturnAdaptiveLearningCount()
+    {
+        if (_mostAccurateOrganismsSinceLastColonyReset[0]!.Score <= MLSetup.MaxGenerationScore * 0.95f) return 0;
+         
+        //set up experiments (inputs and outputs)
+        Parallel.For(0, AdaptiveLearningSampleSize, i =>
+        {
+            (_adaptiveLearningInputs[i], _adaptiveLearningOutputs[i]) = MLSetup.Current.GetNextInputsAndCorrectOutput(_adaptiveLearningInputs[i]);
+        });
+
+        float maxErr = float.MinValue;
+        float avgErr = 0;
+        var fullCommands = _mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommands(_adaptiveLearningInputs, _adaptiveLearningOutputs).ToArray();
+        for (var i = 0; i < AdaptiveLearningSampleSize; i++)
+        {
+            var output = ThreadStaticCodeMachine.Instance.RunCommands(_adaptiveLearningInputs[i], fullCommands);
+            if (output.IsValidNumber() && _adaptiveLearningOutputs[i].IsValidNumber())
+            {
+                _adaptiveLearningErrors[i] = GetErrorSafely(output, _adaptiveLearningOutputs[i]);
+                if (_adaptiveLearningErrors[i] > maxErr) maxErr = _adaptiveLearningErrors[i];
+                avgErr = (avgErr * i + _adaptiveLearningErrors[i]) / (i + 1);
+            }
+            else
+            {
+                //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
+                if (output.IsValidNumber() ^ _adaptiveLearningOutputs[i].IsValidNumber()) _adaptiveLearningErrors[i] = float.NaN;
+            }
+        }
+
+        var adaptiveLearningCount = -1;
+        Parallel.For(0, AdaptiveLearningSampleSize, i =>
+        {
+            if (float.IsNaN(_adaptiveLearningErrors[i]) || Math.Abs(_adaptiveLearningErrors[i] - maxErr) < Math.Abs(_adaptiveLearningErrors[i] - avgErr))
+            {
+                _adaptiveLearningIndices[Interlocked.Increment(ref adaptiveLearningCount)] = i;
+            }
+        }); 
+
+        return adaptiveLearningCount + 1;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected int GetMostAccurateOrganismsSinceLastColonyResetCount()
+    {
+        for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+        {
+            if (_mostAccurateOrganismsSinceLastColonyReset[i] == null) return i;
+        }
+        return _mostAccurateOrganismsSinceLastColonyReset.Length;
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected bool IsOrganismInMostAccurateOrganismsSinceLastColonyReset(Organism organism)
+    {
+        for (var i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+        {
+            if (ReferenceEquals(organism, _mostAccurateOrganismsSinceLastColonyReset[i])) return true;
+        }
+        return false;
+    }
+    protected bool AnyDuplicatesInMostAccurateOrganismsSinceLastColonyReset()
+    {
+        for (int i = 0; i < _mostAccurateOrganismsSinceLastColonyReset.Length; i++)
+        {
+            if (_mostAccurateOrganismsSinceLastColonyReset[i] == null) continue;
+
+            for (int j = i + 1; j < _mostAccurateOrganismsSinceLastColonyReset.Length; j++)
+            {
+                if (ReferenceEquals(_mostAccurateOrganismsSinceLastColonyReset[i], _mostAccurateOrganismsSinceLastColonyReset[j])) return true;
+            }
+        }
+        return false;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected void UpdateMostAccurateOrganismsWith(Organism organism)
+    {
+        try
+        {
+            for (var i = _mostAccurateOrganismsSinceLastColonyReset.Length - 1; i >= 0; i--)
+            {
+                if (_mostAccurateOrganismsSinceLastColonyReset[i] == null) continue;
+
+                if (!_mostAccurateOrganismsSinceLastColonyReset[i].IsBetterThanMeByAccuracyRecalculatedMoreThanOnceAndLength(organism))
+                {
+                    if (i != _mostAccurateOrganismsSinceLastColonyReset.Length - 1) InsertIntoMostAccurateOrganismsSinceLastColonyResetAt(i + 1, organism);
+                    return;
+                }
+            }
+
+            //we only get here if organism is better than anything we have seen since last colony reset
+            InsertIntoMostAccurateOrganismsSinceLastColonyResetAt(0, organism);
+        }
+        finally
+        {
+            if (_mostAccurateEverOrganism.IsBetterThanMeByAccuracyRecalculatedMoreThanOnceAndLength(_mostAccurateOrganismsSinceLastColonyReset[0]!))
+            {
+                _mostAccurateEverOrganism = _mostAccurateOrganismsSinceLastColonyReset[0]!;
+                _mostAccurateEverOrganismTotalTime = _totalTimeWatch.Elapsed;
+                _totalBirthAtLastMostAccurateEverOrganism = _totalBirths;
+            }
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    protected void InsertIntoMostAccurateOrganismsSinceLastColonyResetAt(int idx, Organism organism)
+    {
+        for (var i = _mostAccurateOrganismsSinceLastColonyReset.Length - 1; i > idx; i--)
+        {
+            _mostAccurateOrganismsSinceLastColonyReset[i] = _mostAccurateOrganismsSinceLastColonyReset[i - 1];
+        }
+        _mostAccurateOrganismsSinceLastColonyReset[idx] = organism;
+    }
+    #endregion
+
+
+    #region Readonly Fields Set in Constructor
+    //percentile probabilities
+
+    protected bool _showProfilingInfo;
+    
+    protected readonly string[] _inputLabels;
+    protected readonly float[][] _inputsArray;
+    protected readonly float[] _correctOutputs;
+    protected readonly float[] _allInputs;
+
+    //NSGA selection parameters
+    protected Organism[] _microcosmOrganisms;
+    //protected readonly int[] _microcosmOrganismScores;
+    //protected readonly int[] _microcosmOrganismLengths;
+    //protected readonly int[] _microcosmOrganismLayerNumbers;
+
+    protected readonly int[] _perLayerSizes;
+    protected readonly float[] _perLayerOffspringTargets;
+    
+    protected readonly Organism?[] _crossoverPartners;
+    protected int _crossoverPartnersCount;
+
+    protected readonly Context _context;
+    protected readonly AcceleratorInfo<TFitFunc>[] _accelerators;
+
+    protected readonly OpEnum[] _allowedOperations;
+    protected readonly int _allowedAdjunctOperationsCount;
+
+    protected readonly Stopwatch _totalTimeWatch;
+    protected readonly Stopwatch _generationWatch;
+    protected readonly Stopwatch _generationAcceleratorWatch;
+
+    protected readonly IMLEngineNotificationsHandler? _mlEngineNotificationsHandler;
+    #endregion
+
+    #region Organism Arrays
+    protected Organism?[] _organisms;
+    protected int _organismsCount;
+
+    protected Organism?[] _newbornOrganisms;
+    protected int _newbornOrganismsCount;
+
+    protected int[] _scores;
+    #endregion
+
+    #region Total & Generation Counters
+    protected int _currentGeneration;
+    protected long _totalBirths;
+    #endregion
+
+    #region TimeSpan Fields
+    protected TimeSpan _generationTime;
+    protected TimeSpan _acceleratorGenerationTime;
+    #endregion
+
+    #region Colony Reset Management
+    protected int _generationAtLastColonyReset;
+    protected long _totalBirthAtLastHighestScoreSinceLastColonyReset;
+    protected Organism?[] _mostAccurateOrganismsSinceLastColonyReset = null!;
+    protected int _highestOrganismsScoreSinceLastColonyReset = int.MinValue;
+    #endregion
+
+    #region Fields to Keep Track of most accurate and shortest satisfactory organisms
+    protected Organism? _mostAccurateEverOrganism;
+    protected TimeSpan _mostAccurateEverOrganismTotalTime;
+    protected long _totalBirthAtLastMostAccurateEverOrganism;
+    #endregion
+
+    #region Pareto Selection
+    private int _paretoFrontZeroCount;
+
+    #pragma warning disable IDE0044
+    public bool _turboParetoSearch = false;             //toggle for extreme greedy Pareto front search
+    #pragma warning restore IDE0044
+
+    public const int ParetoMicrocosmSize = 100;                //toggle for different sample sizes
+    public const int CrossoverLayerThreshold = 3;       //change the number of layers used for monte-carlo elite pareto pool 
+    public const int CrossoverPartnerPoolSize = 10_000; //size of monte-carlo elite pareto pool
+
+    public const float PerLayerOffspringGenerationDecayFactor = 1.5f;
+    #endregion
+
+    #region Adaptive Learning
+    public const int AdaptiveLearningSampleSize = 512 * 16;
+    
+    public readonly float[] _adaptiveLearningErrors = new float[AdaptiveLearningSampleSize];
+    protected readonly float[][] _adaptiveLearningInputs = new float[AdaptiveLearningSampleSize][];
+    protected readonly int[] _adaptiveLearningIndices = new int[AdaptiveLearningSampleSize];
+    protected readonly float[] _adaptiveLearningOutputs = new float[AdaptiveLearningSampleSize];
+    #endregion  
+
+    #region SetParetoLayersInMicrocosm() and SelectNextParetoFrontInMicrocosm() -related arrays
+    //SetParetoLayersInMicrocosm
+    //protected readonly int[] _organismsIdentifiedToParetoFrontsIndices = new int[ParetoMicrocosmSize];
+    //protected readonly bool[] _selectedQ = new bool[ParetoMicrocosmSize];
+
+    //protected Organism[] _tmpMicrocosmOrganisms = new Organism[ParetoMicrocosmSize];
+    //protected readonly int[] _tmpSizeLayers = new int[ParetoMicrocosmSize];
+    //protected readonly int[] _tmpScoreLayers = new int[ParetoMicrocosmSize];
+    //protected readonly int[] _tmpLayerNumbers = new int[ParetoMicrocosmSize];
+
+    //SelectNextParetoFrontInMicrocosm
+    //protected readonly bool[] _isOnCurrentlyBeingSelectedFrontQ = new bool[ParetoMicrocosmSize];
+    #endregion
+
+    #region SetParetoLayersInMicrocosm()-related arrays
+    protected readonly List<Organism>?[] _microcosmLengthBucketOrganisms = new List<Organism>[BConfig.MaxScriptLength];
+    #endregion
+
+    #region MarkTrueParetoFrontOrganismsInColony()-related arrays
+    protected readonly Organism?[] _mostAccurateInLengthBucketOrganisms = new Organism[BConfig.MaxScriptLength];
+    #endregion
+
+    #region External Thread-Safe Interface
+    //public Organism? GetMostAccurateEverOrganismForExport()
+    //{
+    //    return _mostAccurateEverOrganismForExport;
+    //}
+    //protected Organism? _mostAccurateEverOrganismForExport;
+    #endregion
+
+    #region GC-related settings
+    protected readonly GCLatencyMode _gcLatencyMode;
+    #endregion
+
+    #region Cached Fit Function
+    public TFitFunc FitFunc
+    {
+        get
+        {
+            _fitFunc ??= new TFitFunc();
+            return _fitFunc.Value;
+        }
+    }
+    protected TFitFunc? _fitFunc;
+    #endregion
+}

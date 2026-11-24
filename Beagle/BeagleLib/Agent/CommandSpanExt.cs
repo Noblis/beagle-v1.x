@@ -53,7 +53,6 @@ namespace BeagleLib.Agent
             }
             me[addr] = command;
             length++;
-            Debug.Assert(length >= 0);
         }
         public static void RemoveAt(this Span<Command> me, ref int length, int addr)
         {
@@ -62,7 +61,7 @@ namespace BeagleLib.Agent
                 me[i - 1] = me[i];
             }
             length--;
-            Debug.Assert(length >= 0);
+            Debug.Assert(length > 0);
             me[length] = Command.EndOfScript;
         }
         #endregion
@@ -406,7 +405,7 @@ namespace BeagleLib.Agent
         public static int GetStackAt(this Span<Command> me, int addr)
         {
             Debug.Assert(addr < me.Length);
-            
+
             var totalStackEffect = 0;
             // ReSharper disable once ForCanBeConvertedToForeach
             // ReSharper disable once LoopCanBeConvertedToQuery
