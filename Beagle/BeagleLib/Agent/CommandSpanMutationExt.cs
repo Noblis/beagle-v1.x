@@ -175,6 +175,10 @@ public static class CommandSpanMutationExt
                             }
                         }
                     }
+                    
+                    #if DEBUG
+                    me.VerifyScriptValid(length, true);
+                    #endif
 
                     return offset;
                 }
@@ -230,8 +234,12 @@ public static class CommandSpanMutationExt
                     //    me.RemoveAt(ref length, swapIndex);
                     //}
 
+                    #if DEBUG
+                    me.VerifyScriptValid(length, true);
+                    #endif
                     return offset - 1;
                 }
+
                 #if DEBUG
                 me.VerifyScriptValid(length, true);
                 #endif
@@ -295,6 +303,10 @@ public static class CommandSpanMutationExt
                         }
                     }
 
+                    #if DEBUG
+                    me.VerifyScriptValid(length, true);
+                    #endif
+
                     return offset;
                 }
                 else if (opProps.StackEffect == 1)
@@ -332,6 +344,10 @@ public static class CommandSpanMutationExt
                     //{
                     //    me.RemoveAt(ref length, swapIndex);
                     //}
+
+                    #if DEBUG
+                    me.VerifyScriptValid(length, true);
+                    #endif
 
                     return -1 + offset;
                 }
