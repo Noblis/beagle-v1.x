@@ -42,6 +42,7 @@ public static class CommandSpanMutationExt
             {
                 var addrDelta = me.MutateAt(ref length, addr, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
                 addr += addrDelta;
+                //if (length<1) Console.WriteLine(length);
             }
         }
     }
@@ -87,8 +88,21 @@ public static class CommandSpanMutationExt
                 // simple delete
                 if (opProps.StackEffect == 0 && commandAtAddr.Operation != OpEnum.Copy)
                 {
+                    int offset = -1;
                     me.RemoveAt(ref length, addr);
-                    return -1;
+                    while (me[addr + 1].StackEffect == 0 && me[addr + 1].Operation != OpEnum.Copy &&
+                           Rnd.Random.Next(10) < 5 && addr+1<length)
+                    {
+                        me.RemoveAt(ref length, addr+1);
+                    }
+
+                    while (me[addr + offset].StackEffect == 0 && me[addr + offset].Operation != OpEnum.Copy &&
+                           Rnd.Random.Next(10) < 5)
+                    {
+                        me.RemoveAt(ref length, addr + offset);
+                        offset--;
+                    }
+                    return offset;
                 }
 
                 // binary element delete and del
@@ -166,7 +180,7 @@ public static class CommandSpanMutationExt
                             if (me[i].MinStackRequired > tmpStackEffect)
                             {
                                 me.RemoveAt(ref length, i);
-                                if (i < addr + offset) offset -= 1;
+                                offset -= 1;
                                 i--;
                             }
                             else
@@ -175,8 +189,23 @@ public static class CommandSpanMutationExt
                             }
                         }
                     }
-                    
-                    #if DEBUG
+                    //// Might need this to eliminate swaps that no longer work. 
+                    //int tmpStackEffect = 0;
+                    //for (int i = 0; i < length; i++)
+                    //{
+                    //    if (me[i].MinStackRequired > tmpStackEffect)
+                    //    {
+                    //        me.RemoveAt(ref length, i);
+                    //        if (i < addr + offset) offset -= 1;
+                    //        i--;
+                    //    }
+                    //    else
+                    //    {
+                    //        tmpStackEffect += me[i].StackEffect;
+                    //    }
+                    //}
+
+#if DEBUG
                     me.VerifyScriptValid(length, true);
                     #endif
 
@@ -233,8 +262,23 @@ public static class CommandSpanMutationExt
                     //{
                     //    me.RemoveAt(ref length, swapIndex);
                     //}
+                    // Might need this to eliminate swaps that no longer work. 
+                    int tmpStackEffect = 0;
+                    for (int i = 0; i < length; i++)
+                    {
+                        if (me[i].MinStackRequired > tmpStackEffect)
+                        {
+                            me.RemoveAt(ref length, i);
+                            if (i < addr + offset) offset -= 1;
+                            i--;
+                        }
+                        else
+                        {
+                            tmpStackEffect += me[i].StackEffect;
+                        }
+                    }
 
-                    #if DEBUG
+#if DEBUG
                     me.VerifyScriptValid(length, true);
                     #endif
                     return offset - 1;
@@ -344,8 +388,23 @@ public static class CommandSpanMutationExt
                     //{
                     //    me.RemoveAt(ref length, swapIndex);
                     //}
+                    // Might need this to eliminate swaps that no longer work. 
+                    int tmpStackEffect = 0;
+                    for (int i = 0; i < length; i++)
+                    {
+                        if (me[i].MinStackRequired > tmpStackEffect)
+                        {
+                            me.RemoveAt(ref length, i);
+                            if (i < addr + offset) offset -= 1;
+                            i--;
+                        }
+                        else
+                        {
+                            tmpStackEffect += me[i].StackEffect;
+                        }
+                    }
 
-                    #if DEBUG
+#if DEBUG
                     me.VerifyScriptValid(length, true);
                     #endif
 
