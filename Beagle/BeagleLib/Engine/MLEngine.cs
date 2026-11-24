@@ -748,7 +748,17 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
 
         Console.ForegroundColor = ConsoleColor.White;
-        Output.WriteLine($"Total births at last highest score since last colony reset: {_totalBirthAtLastHighestScoreSinceLastColonyReset:N0}");
+        Output.Write("Total births at last highest score (");
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Output.Write($"{_highestOrganismsScoreSinceLastColonyReset:N0}");
+        Console.ForegroundColor = ConsoleColor.White;
+
+        Output.Write(") since last colony reset: ");
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Output.WriteLine($"{_totalBirthAtLastHighestScoreSinceLastColonyReset:N0}");
+        Console.ForegroundColor = ConsoleColor.White;
 
         //Output.WriteLine($"Total births since last colony reset / reset after: {_totalBirthSinceLastColonyReset:N0}/{MLSetup.Current.TotalBirthsToResetColonyIfNoProgress:N0}");
         //Output.WriteLine(_mostAccurateOrganismSinceLastColonyReset!.CommandsToJson());
@@ -1258,7 +1268,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         });
 
         var fullCommands = _mostAccurateEverOrganism!.GetFullCommands(inputsArray, correctOutputs).ToArray();
-        var error = false;
+        var isThereAnError = false;
         var currentForegroundColor = Console.ForegroundColor;
 
         Output.WriteLine();
@@ -1278,11 +1288,12 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
             if (output.IsValidNumber() && correctOutputs[i].IsValidNumber())
             {
+                var error = GetErrorSafely(output, correctOutputs[i]);
                 if (GetErrorSafely(output, correctOutputs[i]) > 0.001)
                 {
-                    error = true;
+                    isThereAnError = true;
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Output.Write(" <- ERROR: Tolerance of 1/10 of 1% exceeded!");
+                    Output.Write($" <- ERROR: Tolerance of 1/10 of 1% exceeded ({error})!");
                     Console.ForegroundColor = currentForegroundColor;
                 }
             }
@@ -1291,7 +1302,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
                 if (output.IsValidNumber() ^ correctOutputs[i].IsValidNumber())
                 {
                     //if at least one of the outputs is invalid we end up here, XOR returns true if values are different
-                    error = true;
+                    isThereAnError = true;
                     Console.ForegroundColor = ConsoleColor.Red;
                     Output.Write(" <- ERROR: Valid/Invalid mismatch!");
                     Console.ForegroundColor = currentForegroundColor;
@@ -1301,7 +1312,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
         }
         Output.WriteLine();
 
-        if (error)
+        if (isThereAnError)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Output.WriteLine($"{MLSetup.Current.Name}-{typeof(TFitFunc).Name} Model NOT Validated to Tolerance of 1/10 of 1% using {verificationExperimentsCount} new data points (~25% of {MLSetup.Current.ExperimentsPerGeneration} experiments)");
@@ -1316,7 +1327,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
 
         Console.ForegroundColor = fgColor;
 
-        return !error;
+        return !isThereAnError;
     }
     private void VerifyAndComplete()
     {
