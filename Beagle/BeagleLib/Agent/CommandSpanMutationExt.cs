@@ -160,13 +160,14 @@ public static class CommandSpanMutationExt
                     if (firstOrSecondOperand == 0)
                     {
                         int tmpStackEffect = 0;
-                        //for (int i = 0; i < length; i++)
-                        for (int i = 0; i <= chunk2DeleteRightAddr + offset + 1; i++) //TODO: change to something like this: we only need to scan the first chunk
+                        Debug.Assert(length > 0);
+                        for (int i = 0; i <= chunk2DeleteRightAddr + offset + 1; i++)
                         {
+                            Debug.Assert(length > chunk2DeleteRightAddr + offset + 1);
                             if (me[i].MinStackRequired > tmpStackEffect)
                             {
                                 me.RemoveAt(ref length, i);
-                                if (i < addr + offset) offset -= 1;
+                                offset--;
                                 i--;
                             }
                             else
@@ -326,7 +327,11 @@ public static class CommandSpanMutationExt
                     int rightTrackingAddr = addr + offset;
                     while (rightTrackingAddr < length)
                     {
-                        if (me[rightTrackingAddr].StackEffect == -1)
+                        if (me[rightTrackingAddr].Operation == OpEnum.Swap && stackCount <= 2)
+                        {
+                            me.RemoveAt(ref length, rightTrackingAddr);
+                        }
+                        else if (me[rightTrackingAddr].StackEffect == -1)
                         {
                             me.RemoveAt(ref length, rightTrackingAddr);
                             //stackEffect -= 1;

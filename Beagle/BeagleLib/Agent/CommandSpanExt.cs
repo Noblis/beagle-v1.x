@@ -53,6 +53,7 @@ namespace BeagleLib.Agent
             }
             me[addr] = command;
             length++;
+            Debug.Assert(length >= 0);
         }
         public static void RemoveAt(this Span<Command> me, ref int length, int addr)
         {
@@ -61,6 +62,8 @@ namespace BeagleLib.Agent
                 me[i - 1] = me[i];
             }
             length--;
+            Debug.Assert(length >= 0);
+            me[length] = Command.EndOfScript;
         }
         #endregion
 
@@ -73,8 +76,7 @@ namespace BeagleLib.Agent
                 var command2 = me[addr + 1];
 
                 //Add or subtract 0 => remove both
-                if (command1 is { Operation: OpEnum.Const, ConstValue: 0 } &&
-                    (command2.Operation == OpEnum.Add || command2.Operation == OpEnum.Sub))
+                if (command1 is { Operation: OpEnum.Const, ConstValue: 0 } && (command2.Operation == OpEnum.Add || command2.Operation == OpEnum.Sub))
                 {
                     me.RemoveAt(ref length, addr);
                     me.RemoveAt(ref length, addr);
