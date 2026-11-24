@@ -51,6 +51,8 @@ public static class CommandSpanMutationExt
         me.VerifyScriptValid(length, true);
         #endif
 
+        if (addr == BConfig.MaxScriptLength) return 0;
+
         MutationTypeEnum mutationType; 
         if (addr == 0)
         {
