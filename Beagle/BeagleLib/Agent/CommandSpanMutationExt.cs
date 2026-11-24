@@ -349,7 +349,7 @@ public static class CommandSpanMutationExt
                     me.VerifyScriptValid(length, true);
                     #endif
 
-                    return -1 + offset;
+                    return offset - 1;
                 }
                 #if DEBUG
                 me.VerifyScriptValid(length, true);
