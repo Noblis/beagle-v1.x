@@ -185,11 +185,7 @@ public static class CommandSpanMutationExt
                             if (me[i].MinStackRequired > tmpStackEffect)
                             {
                                 me.RemoveAt(ref length, i);
-<<<<<<< HEAD
-                                offset -= 1;
-=======
                                 offset--;
->>>>>>> f22634f84b7903ad0d54c8c9b8e44d82ae78e37a
                                 i--;
                             }
                             else
@@ -214,7 +210,7 @@ public static class CommandSpanMutationExt
                     //    }
                     //}
 
-#if DEBUG
+                    #if DEBUG
                     me.VerifyScriptValid(length, true);
                     #endif
 
