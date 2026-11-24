@@ -70,7 +70,7 @@ public static class CommandSpanMutationExt
             mutationType = MutationTypeEnum.Insert;
         }
         
-        int stackEffect;
+        int stackCount;
         int compensatingAddr;
         int newStackSize;
         int addrDelta;
@@ -80,185 +80,198 @@ public static class CommandSpanMutationExt
             if (Rnd.Random.Next(100) < 50) // large delete
             {
                 var commandAtAddr = me[addr];
+                var opProps = commandAtAddr.Operation.GetOperationProperties();
                 //for (int i = 0; i < length; i++) Console.Write(me[i]);
                 //Console.WriteLine(addr);
 
-                if (commandAtAddr.Operation is OpEnum.Arccos or OpEnum.Arcsin or OpEnum.Arctan or OpEnum.Cbrt or OpEnum.Cos
-                    or OpEnum.Cube or OpEnum.Exp or OpEnum.Ln or OpEnum.Sign or OpEnum.Sin or OpEnum.Sqrt or OpEnum.Square
-                    or OpEnum.Swap or OpEnum.Tan or OpEnum.Tanh)
+                // simple delete
+                if (opProps.StackEffect == 0 && commandAtAddr.Operation != OpEnum.Copy)
                 {
-                    // simple delete
                     me.RemoveAt(ref length, addr);
                     return -1;
                 }
-                else if (commandAtAddr.Operation is OpEnum.Add or OpEnum.Div or OpEnum.Mul or OpEnum.Pow or OpEnum.Sub or OpEnum.Del)
+
+                // binary element delete and del
+                if (opProps.StackEffect == -1) 
                 {
-
-                    int swapIndex = addr + 1;
-                    while (swapIndex < length && me[swapIndex].Operation == OpEnum.Swap)
-                    {
-                        me.RemoveAt(ref length, swapIndex);
-                    }
-
-                    // binary element delete and del
                     int offset = 0;
-                    int deleteEnd = addr - 1;
+                    int deleteRightAddr = addr - 1;
                     int firstOrSecondOperand = Rnd.Random.Next(2);
-                    int deleteStart = me.FindStartOfValidMutationChunk(deleteEnd);
-                    if (firstOrSecondOperand == 0 && commandAtAddr.Operation != OpEnum.Del && me[deleteStart].Operation != OpEnum.Dup && me[deleteStart].Operation != OpEnum.Copy)
+                    int deleteLeftAddr = me.FindLeftAddrOfValidMutationChunk(deleteRightAddr);
+
+                    firstOrSecondOperand = firstOrSecondOperand == 0 &&
+                                           commandAtAddr.Operation != OpEnum.Del &&
+                                           me[deleteLeftAddr].Operation != OpEnum.Dup &&
+                                           me[deleteLeftAddr].Operation != OpEnum.Copy 
+                                            ? 0 : 1; //0 means first chunk to be removed, 1 means second
+
+                    var chunk2DeleteRightAddr = deleteRightAddr;
+                    var chunk2DeleteLeftAddr = deleteLeftAddr;
+
+                    if (firstOrSecondOperand == 0)
                     {
-                        var oldEnd = deleteEnd;
-                        var oldStart = deleteStart;
-                        deleteEnd = deleteStart - 1;
-                        deleteStart = me.FindStartOfValidMutationChunk(deleteEnd);
-                        for (int i = deleteStart; i <= deleteEnd; i++)
+                        deleteRightAddr = deleteLeftAddr - 1;
+                        deleteLeftAddr = me.FindLeftAddrOfValidMutationChunk(deleteRightAddr);
+
+                        //We will delete all commands but will preserve Copy commands.
+                        //We can't have a copy command as a very first command in the script.
+                        //This could never happen in the second chunk of the code but could theoretically happen with this first one.
+                        //That is why, if we find a copy in the first chunk, we will revert to the second one as a candidate for deleting.
+                        for (int i = deleteLeftAddr; i <= deleteRightAddr; i++)
                         {
                             if (me[i].Operation == OpEnum.Copy)
                             {
-                                deleteStart = oldStart;
-                                deleteEnd = oldEnd;
+                                deleteLeftAddr = chunk2DeleteLeftAddr;
+                                deleteRightAddr = chunk2DeleteRightAddr;
+                                firstOrSecondOperand = 1;
                                 break;
                             }
                         }
                     }
+                    
+                    //at this point we have figured out what we want to delete
                     me.RemoveAt(ref length, addr);
                     offset -= 1;
-                    for (int i = deleteEnd; i >= deleteStart; i--)
+                    for (int i = deleteRightAddr; i >= deleteLeftAddr; i--)
                     {
+                        //we don't delete Commands to not mess up the Paste
                         if (me[i].Operation == OpEnum.Copy) continue;
+
                         if (me[i].Operation == OpEnum.Paste)
                         {
+                            //If we find the Paste we remove it and the corresponding Copy
                             var idx = me[i].Idx;
-                            var copyIndex = me.GetCopyAddr(idx, i);
+                            var copyAddr = me.GetCopyAddr(idx, i);
                             me.RemoveAt(ref length, i);
-                            me.RemoveAt(ref length, copyIndex);
-                            if (copyIndex < deleteStart) deleteStart--;
+                            me.RemoveAt(ref length, copyAddr);
+                            if (copyAddr < deleteLeftAddr) deleteLeftAddr--;
                             i--;
                             offset -= 2;
                         }
                         else
                         {
+                            //otherwise we remove one command
                             me.RemoveAt(ref length, i);
                             offset -= 1;
                         }
                     }
 
                     // Might need this to eliminate swaps that no longer work. 
-                    int tmpStackEffect = 0;
-                    for (int i = 0; i < length; i++)
+                    if (firstOrSecondOperand == 0)
                     {
-                        if (me[i].MinStackRequired > tmpStackEffect)
+                        int tmpStackEffect = 0;
+                        //for (int i = 0; i < length; i++)
+                        for (int i = 0; i <= chunk2DeleteRightAddr + offset + 1; i++) //TODO: change to something like this: we only need to scan the first chunk
                         {
-                            me.RemoveAt(ref length, i);
-                            if (i < addr + offset) offset -= 1;
-                            i--;
-                            continue; // don't run tmpStackEffect for shift
+                            if (me[i].MinStackRequired > tmpStackEffect)
+                            {
+                                me.RemoveAt(ref length, i);
+                                if (i < addr + offset) offset -= 1;
+                                i--;
+                            }
+                            else
+                            {
+                                tmpStackEffect += me[i].StackEffect;
+                            }
                         }
-
-                        tmpStackEffect += me[i].StackEffect;
                     }
 
                     return offset;
                 }
-                else if (commandAtAddr.Operation is OpEnum.Const or OpEnum.Load or OpEnum.Dup or OpEnum.Copy or OpEnum.Paste)
+                else if (opProps.StackEffect == 1)
                 {
-                    int copyDeleteOffset = 0;
+                    int offset = 0;
                     if (commandAtAddr.Operation == OpEnum.Paste)
                     {
                         var idx = me[addr].Idx;
-                        var copyIndex = me.GetCopyAddr(idx, addr);
-                        me.RemoveAt(ref length, copyIndex);
-                        copyDeleteOffset = -1;
+                        var copyAddr = me.GetCopyAddr(idx, addr);
+                        me.RemoveAt(ref length, copyAddr);
+                        offset = -1;
                     }
 
-                    if (commandAtAddr.Operation == OpEnum.Copy)
+                    // to track end of unary ops immediately after the command at addr
+                    bool brokeUnaryPattern = false; 
+                    
+                    stackCount = 1;
+                    me.RemoveAt(ref length, addr + offset);
+                    
+                    int rightTrackingAddr = addr + offset;
+                    while (stackCount != 0 && rightTrackingAddr < length)
                     {
-                        return 0;
-                    }
-
-                    bool brokePattern = false; // to track end of unary ops
-                    stackEffect = 1;
-                    me.RemoveAt(ref length, addr + copyDeleteOffset);
-                    int rightTracking = 0;
-                    while (stackEffect != 0 && (addr + rightTracking + copyDeleteOffset) < length)
-                    {
-                        if (me[addr + rightTracking + copyDeleteOffset].Operation == OpEnum.Copy)
+                        if (me[rightTrackingAddr].Operation == OpEnum.Copy)
                         {
-                            rightTracking++;
+                            rightTrackingAddr++;
                         }
-                        else if (me[addr + copyDeleteOffset + rightTracking].StackEffect == 0 && brokePattern == false)
+                        else if (me[rightTrackingAddr].StackEffect == 0 && brokeUnaryPattern == false)
                         {
-                            me.RemoveAt(ref length, addr + copyDeleteOffset + rightTracking);
+                            me.RemoveAt(ref length, rightTrackingAddr);
                         }
-                        else if (me[addr + copyDeleteOffset + rightTracking].Operation == OpEnum.Swap && stackEffect <= 2)
+                        else if (me[rightTrackingAddr].Operation == OpEnum.Swap && stackCount <= 2)
                         {
-                            me.RemoveAt(ref length, addr + copyDeleteOffset + rightTracking);
+                            me.RemoveAt(ref length, rightTrackingAddr);
                         }
-                        else if (me[addr + rightTracking + copyDeleteOffset].MinStackRequired >= stackEffect && me[addr + rightTracking + copyDeleteOffset].StackEffect == -1)//me[addr+rightTracking+copyDeleteOffset].StackEffect == -1 && stackEffect == 1)
+                        else if (me[rightTrackingAddr].MinStackRequired >= stackCount && me[rightTrackingAddr].StackEffect == -1)
                         {
-                            me.RemoveAt(ref length, addr + rightTracking + copyDeleteOffset);
-                            stackEffect -= 1;
+                            me.RemoveAt(ref length, rightTrackingAddr);
+                            //stackCount -= 1;
                             break;
                         }
                         else
                         {
-                            stackEffect += me[addr + rightTracking + copyDeleteOffset].StackEffect;
-                            rightTracking += 1;
-                            brokePattern = true;
+                            stackCount += me[rightTrackingAddr].StackEffect;
+                            rightTrackingAddr++;
+                            brokeUnaryPattern = true;
                         }
                     }
-                    int swapIndex = addr + rightTracking + copyDeleteOffset;
-                    while (swapIndex < length && me[swapIndex].Operation == OpEnum.Swap )
-                    {
-                        me.RemoveAt(ref length, swapIndex);
-                    }
 
+                    //int swapIndex = rightTrackingAddr;
+                    //while (swapIndex < length && me[swapIndex].Operation == OpEnum.Swap )
+                    //{
+                    //    me.RemoveAt(ref length, swapIndex);
+                    //}
 
-                    return -1 + copyDeleteOffset;
+                    return offset - 1;
                 }
                 #if DEBUG
                 me.VerifyScriptValid(length, true);
                 #endif
                 return 0;
             }
-            else if (length > BConfig.MaxScriptLength - 10 || Rnd.Random.Next(100) < 50) //small delete ( we force it if within 10 commands from MaxScriptLength
+            else if (length > BConfig.MaxScriptLength - 10 || Rnd.Random.Next(100) < 50) //small delete (we force it if within 10 commands from MaxScriptLength
             {
                 var commandAtAddr = me[addr];
-                if (commandAtAddr.Operation is OpEnum.Arccos or OpEnum.Arcsin or OpEnum.Arctan or OpEnum.Cbrt or OpEnum.Cos
-                    or OpEnum.Cube or OpEnum.Exp or OpEnum.Ln or OpEnum.Sign or OpEnum.Sin or OpEnum.Sqrt or OpEnum.Square
-                    or OpEnum.Swap or OpEnum.Tan or OpEnum.Tanh)
+
+                var opProps = commandAtAddr.Operation.GetOperationProperties();
+                
+                // simple delete
+                if (opProps.StackEffect == 0 && commandAtAddr.Operation != OpEnum.Copy)
                 {
-                    // simple delete
                     me.RemoveAt(ref length, addr);
                     return -1;
                 }
-                else if (commandAtAddr.Operation is OpEnum.Add or OpEnum.Div or OpEnum.Mul or OpEnum.Pow or OpEnum.Sub or OpEnum.Del)
+
+                // binary element delete and del
+                if (opProps.StackEffect == -1)
                 {
-
-                    //int swapIndex = addr + 1;
-                    //while (me[swapIndex].Operation == OpEnum.Swap && swapIndex < length)
-                    //{
-                    //    me.RemoveAt(ref length, swapIndex);
-                    //}
-
-                    // binary element delete and del
                     int offset = 0;
 
                     me.RemoveAt(ref length, addr);
                     offset -= 1;
-                    for (int i = addr - 1; i >= 0; i--)
+
+                    for (int i = addr + offset; i >= 0; i--)
                     {
                         if (me[i].Operation == OpEnum.Paste)
                         {
                             var idx = me[i].Idx;
-                            var copyIndex = me.GetCopyAddr(idx, i);
+                            var copyAddr = me.GetCopyAddr(idx, i);
                             me.RemoveAt(ref length, i);
-                            me.RemoveAt(ref length, copyIndex);
-                            i--;
+                            me.RemoveAt(ref length, copyAddr);
+                            //i--;
                             offset -= 2;
                             break;
                         }
-                        else if (me[i].StackEffect == 1)
+                        
+                        if (me[i].StackEffect == 1)
                         {
                             me.RemoveAt(ref length, i);
                             offset -= 1;
@@ -275,59 +288,52 @@ public static class CommandSpanMutationExt
                             me.RemoveAt(ref length, i);
                             if (i < addr + offset) offset -= 1;
                             i--;
-                            continue; // don't run tmpStackEffect for shift
                         }
-
-                        tmpStackEffect += me[i].StackEffect;
+                        else
+                        {
+                            tmpStackEffect += me[i].StackEffect;
+                        }
                     }
 
                     return offset;
                 }
-                else if (commandAtAddr.Operation is OpEnum.Const or OpEnum.Load or OpEnum.Dup or OpEnum.Copy or OpEnum.Paste)
+                else if (opProps.StackEffect == 1)
                 {
-                    int copyDeleteOffset = 0;
+                    int offset = 0;
                     if (commandAtAddr.Operation == OpEnum.Paste)
                     {
                         var idx = me[addr].Idx;
-                        var copyIndex = me.GetCopyAddr(idx, addr);
-                        me.RemoveAt(ref length, copyIndex);
-                        copyDeleteOffset = -1;
+                        var copyAddr = me.GetCopyAddr(idx, addr);
+                        me.RemoveAt(ref length, copyAddr);
+                        offset = -1;
                     }
 
-                    if (commandAtAddr.Operation == OpEnum.Copy)
-                    {
-                        return 0;
-                    }
+                    stackCount = 1;
+                    me.RemoveAt(ref length, addr + offset);
 
-                    stackEffect = 1;
-                    me.RemoveAt(ref length, addr + copyDeleteOffset);
-                    int rightTracking = 0;
-                    while ((addr + rightTracking + copyDeleteOffset) < length)
+                    int rightTrackingAddr = addr + offset;
+                    while (rightTrackingAddr < length)
                     {
-                        if (me[addr + copyDeleteOffset + rightTracking].Operation == OpEnum.Swap && stackEffect <= 2)
+                        if (me[rightTrackingAddr].StackEffect == -1)
                         {
-                            me.RemoveAt(ref length, addr + copyDeleteOffset + rightTracking);
-                        }
-                        else if (me[addr + rightTracking + copyDeleteOffset].StackEffect == -1)//me[addr+rightTracking+copyDeleteOffset].StackEffect == -1 && stackEffect == 1)
-                        {
-                            me.RemoveAt(ref length, addr + rightTracking + copyDeleteOffset);
-                            stackEffect -= 1;
+                            me.RemoveAt(ref length, rightTrackingAddr);
+                            //stackEffect -= 1;
                             break;
                         }
                         else
                         {
-                            stackEffect += me[addr + rightTracking + copyDeleteOffset].StackEffect;
-                            rightTracking += 1;
+                            stackCount += me[rightTrackingAddr].StackEffect;
+                            rightTrackingAddr++;
                         }
                     }
-                    int swapIndex = addr + rightTracking + copyDeleteOffset;
-                    while (swapIndex < length && me[swapIndex].Operation == OpEnum.Swap)
-                    {
-                        me.RemoveAt(ref length, swapIndex);
-                    }
 
+                    //int swapIndex = rightTrackingAddr;
+                    //while (swapIndex < length && me[swapIndex].Operation == OpEnum.Swap)
+                    //{
+                    //    me.RemoveAt(ref length, swapIndex);
+                    //}
 
-                    return -1 + copyDeleteOffset;
+                    return -1 + offset;
                 }
                 #if DEBUG
                 me.VerifyScriptValid(length, true);
@@ -338,9 +344,9 @@ public static class CommandSpanMutationExt
             {
                 var commandAtAddr = me[addr];
 
-                stackEffect = -commandAtAddr.StackEffect;
+                stackCount = -commandAtAddr.StackEffect;
                 compensatingAddr = addr;
-                newStackSize = stackAtAddr + stackEffect; //used to be without stackEffect
+                newStackSize = stackAtAddr + stackCount; //used to be without stackEffect
 
                 //we don't modify copy adjunct operation directly
                 if (commandAtAddr.Operation == OpEnum.Copy) return 0;
@@ -356,8 +362,8 @@ public static class CommandSpanMutationExt
                     me.RemoveAt(ref length, copyAddr);
                     compensatingAddr--;
 
-                    Debug.Assert(stackEffect == -1);
-                    addrDelta = -2 + me.InsertRandomAt(ref length, compensatingAddr, -stackEffect, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
+                    Debug.Assert(stackCount == -1);
+                    addrDelta = -2 + me.InsertRandomAt(ref length, compensatingAddr, -stackCount, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
 
                     #if DEBUG
                     me.VerifyScriptValid(length, true);
@@ -368,7 +374,7 @@ public static class CommandSpanMutationExt
 
                 me.RemoveAt(ref length, addr);
 
-                if (stackEffect == 0)
+                if (stackCount == 0)
                 {
                     #if DEBUG
                     me.VerifyScriptValid(length, true);
@@ -377,7 +383,7 @@ public static class CommandSpanMutationExt
                     return -1;
                 }
 
-                addrDelta = -1 + me.InsertRandomAt(ref length, compensatingAddr, -stackEffect, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
+                addrDelta = -1 + me.InsertRandomAt(ref length, compensatingAddr, -stackCount, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
 
                 #if DEBUG
                 me.VerifyScriptValid(length, true);
@@ -472,9 +478,9 @@ public static class CommandSpanMutationExt
             
             var newCommand = Command.CreateRandom(inputsCount, maxCopyIdx, null, stackAtAddr, allowedOperations, allowedAdjunctOperationsCount);
 
-            stackEffect = newCommand.StackEffect - commandAtAddr.StackEffect;
+            stackCount = newCommand.StackEffect - commandAtAddr.StackEffect;
             compensatingAddr = addr + 1;
-            newStackSize = stackAtAddr + stackEffect;
+            newStackSize = stackAtAddr + stackCount;
 
             if (newStackSize < 1) return 0;
 
@@ -491,7 +497,7 @@ public static class CommandSpanMutationExt
                 me.RemoveAt(ref length, copyAddr);
                 adjunctCommandCount = me.InsertAdjunctCommandIfNeeded(ref length, newCommand, addr - 1);
 
-                if (stackEffect == 0)
+                if (stackCount == 0)
                 {
                     #if DEBUG
                     me.VerifyScriptValid(length, true);
@@ -500,7 +506,7 @@ public static class CommandSpanMutationExt
                     return -1;
                 }
                 
-                addrDelta = -1 + me.InsertRandomAt(ref length, compensatingAddr, -stackEffect, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount) + adjunctCommandCount;
+                addrDelta = -1 + me.InsertRandomAt(ref length, compensatingAddr, -stackCount, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount) + adjunctCommandCount;
 
                 #if DEBUG
                 me.VerifyScriptValid(length, true);
@@ -513,7 +519,7 @@ public static class CommandSpanMutationExt
             adjunctCommandCount = me.InsertAdjunctCommandIfNeeded(ref length, newCommand, addr);
             if (adjunctCommandCount > 0) compensatingAddr++;
 
-            if (stackEffect == 0)
+            if (stackCount == 0)
             {
                 #if DEBUG
                 me.VerifyScriptValid(length, true);
@@ -522,7 +528,7 @@ public static class CommandSpanMutationExt
                 return 0;
             }
             
-            addrDelta = me.InsertRandomAt(ref length, compensatingAddr, -stackEffect, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount) + adjunctCommandCount;
+            addrDelta = me.InsertRandomAt(ref length, compensatingAddr, -stackCount, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount) + adjunctCommandCount;
             
             #if DEBUG
             me.VerifyScriptValid(length, true);
@@ -540,9 +546,9 @@ public static class CommandSpanMutationExt
             //    Command.CreateRandom(inputsCount, maxCopyIdx, null, stackAtAddr, allowedOperations, allowedAdjunctOperationsCount);
             var newCommand = Command.CreateRandom(inputsCount, maxCopyIdx, null, stackAtAddr, allowedOperations, allowedAdjunctOperationsCount);
 
-            stackEffect = newCommand.StackEffect;
+            stackCount = newCommand.StackEffect;
             compensatingAddr = addr + 1;
-            newStackSize = stackAtAddr + stackEffect;
+            newStackSize = stackAtAddr + stackCount;
 
             if (newStackSize < 1) return 0;
 
@@ -550,7 +556,7 @@ public static class CommandSpanMutationExt
             var adjunctCommandCount = me.InsertAdjunctCommandIfNeeded(ref length, newCommand, addr);
             if (adjunctCommandCount > 0) compensatingAddr++;
 
-            if (stackEffect == 0)
+            if (stackCount == 0)
             {
                 #if DEBUG
                 me.VerifyScriptValid(length, true);
@@ -559,7 +565,7 @@ public static class CommandSpanMutationExt
                 return 1;
             }
             
-            addrDelta = 1 + me.InsertRandomAt(ref length, compensatingAddr, -stackEffect, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount) + adjunctCommandCount;
+            addrDelta = 1 + me.InsertRandomAt(ref length, compensatingAddr, -stackCount, newStackSize, inputsCount, allowedOperations, allowedAdjunctOperationsCount) + adjunctCommandCount;
             
             #if DEBUG 
             me.VerifyScriptValid(length, true);
@@ -572,29 +578,18 @@ public static class CommandSpanMutationExt
     }
     #endregion
 
-    private static int FindStartOfValidMutationChunk(this Span<Command> me, int end)
+    private static int FindLeftAddrOfValidMutationChunk(this Span<Command> me, int rightAddr)
     {
-
-        int mutationEnd = end;
-        int mutationStart = 0;
-
-        int stackEffect = 0;
-
-
         // find mutation candidate chunks
-        for (int i = mutationEnd; i >= 0; i--)
+        int stackEffect = 0;
+        for (int addr = rightAddr; addr >= 0; addr--)
         {
-            // abort if a copy or paste
-            //if (me[i].Operation == OpEnum.Copy || me[i].Operation == OpEnum.Paste) return (-1);
+            stackEffect += me[addr].StackEffect;
 
-            stackEffect += me[i].StackEffect;
-            if (stackEffect == 1) // check if valid chunk found
-            {
-                mutationStart = i;
-                break;
-            }
+            // check if valid chunk found
+            if (stackEffect == 1) return addr;
         }
 
-        return (mutationStart);
+        throw new Exception("This should never happen!");
     }
 }
