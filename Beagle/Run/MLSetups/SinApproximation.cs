@@ -9,7 +9,7 @@ public class SinApproximation : MLSetup
     #region Overrides
     public override (float[], float) GetNextInputsAndCorrectOutput(float[] inputs)
     {
-        var x = Rnd.Random.NextSingle() * 2 * (float)Math.PI - (float)Math.PI;
+        var x = Rnd.Random.NextSingle() * 2 * MathF.PI - MathF.PI;
         inputs[0] = x;
         var output = MathF.Sin(x);
         return (inputs, output);
@@ -20,21 +20,18 @@ public class SinApproximation : MLSetup
     }
     public override int TargetColonySize(int generation)
     {
-        if (generation % 1000 < 20) return 5_000_000;
-        return 1_000_000;
-
-        //if (generation < 10) return 1_000_000_000;
-        //if (generation < 20) return 250_000_000;
-        //if (generation < 50) return 100_000_000;
-        //if (generation < 100) return 10_000_000;
-
-        //if (generation % 1000 < 20) return 20_000_000;
-        //if (generation % 1000 < 100) return 3_000_000;
-        //return 1_000_000;
+        if (generation % 1000 < 50) return 25_000_000;
+        return 300_000;
     }
-    public override long TotalBirthsToResetColonyIfNoProgress => 20_000_000_000;
-    public override uint ExperimentsPerGeneration => 1024;
+    public override long TotalBirthsToResetColonyIfNoProgress => 5_000_000_000;
+    public override uint ExperimentsPerGeneration => 512;
 
-    public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Sin && x != OpEnum.Cos).ToArray();
+    public override OpEnum[] GetAllowedOperations() => base.GetAllowedOperations().Where(x => x != OpEnum.Sin && 
+                                                                                              x != OpEnum.Cos && 
+                                                                                              x != OpEnum.Arcsin &&
+                                                                                              x != OpEnum.Arccos &&
+                                                                                              x != OpEnum.Arctan &&
+                                                                                              x != OpEnum.Tan &&
+                                                                                              x != OpEnum.Tanh).ToArray();
     #endregion
 }
