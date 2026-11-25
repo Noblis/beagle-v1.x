@@ -25,6 +25,7 @@ public static class CommandSpanMutationExt
         else if (randomPct < 98) mutationsCount = 10; // 1%
         else if (randomPct < 99) mutationsCount = 11; // 1%
         else mutationsCount = 12; // 1%
+        //mutationsCount = Rnd.Random.Next(3);
 
         for (var i = 0; i < mutationsCount; i++)
         {
@@ -35,16 +36,19 @@ public static class CommandSpanMutationExt
     }
     public static void MutateOnce(this Span<Command> me, ref int length, byte inputsCount, OpEnum[] allowedOperations, int allowedAdjunctOperationsCount)
     {
-        var probabilityOfMutationPerCommand = 1.0 / length;
-        for (var addr = 0; addr <= length; addr++)
-        {
-            if (Rnd.RandomBoolWithChance(probabilityOfMutationPerCommand))
-            {
-                var addrDelta = me.MutateAt(ref length, addr, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
-                addr += addrDelta;
-                //if (length<1) Console.WriteLine(length);
-            }
-        }
+        //var probabilityOfMutationPerCommand = 1.0 / length;
+        //for (var addr = 0; addr <= length; addr++)
+        //{
+        //    if (Rnd.RandomBoolWithChance(probabilityOfMutationPerCommand))
+        //    {
+        //        var addrDelta = me.MutateAt(ref length, addr, inputsCount, allowedOperations, allowedAdjunctOperationsCount);
+        //        addr += addrDelta;
+        //        //if (length<1) Console.WriteLine(length);
+        //    }
+        //}
+        int randAddr = Rnd.Random.Next(length + 1);
+        var output = me.MutateAt(ref length, randAddr, inputsCount, allowedOperations,
+            allowedAdjunctOperationsCount);
     }
     private static int MutateAt(this Span<Command> me, ref int length, int addr, byte inputsCount, OpEnum[] allowedOperations, int allowedAdjunctOperationsCount)
     {
@@ -78,7 +82,7 @@ public static class CommandSpanMutationExt
 
         if (mutationType == MutationTypeEnum.Delete)
         {
-            if (Rnd.Random.Next(100) < 50) // large delete
+            if (Rnd.Random.Next(100) < 100) // large delete
             {
                 var commandAtAddr = me[addr];
                 var opProps = commandAtAddr.Operation.GetOperationProperties();
@@ -90,17 +94,21 @@ public static class CommandSpanMutationExt
                 {
                     int offset = -1;
                     me.RemoveAt(ref length, addr);
-                    while (me[addr + 1].StackEffect == 0 && me[addr + 1].Operation != OpEnum.Copy &&
-                           Rnd.Random.Next(10) < 5 && addr+1<length)
+                    if (Rnd.Random.Next(10) < 5)
                     {
-                        me.RemoveAt(ref length, addr+1);
+                        while (addr < length && me[addr].StackEffect == 0 && me[addr].Operation != OpEnum.Copy)
+                        {
+                            me.RemoveAt(ref length, addr);
+                        }
                     }
-
-                    while (me[addr + offset].StackEffect == 0 && me[addr + offset].Operation != OpEnum.Copy &&
-                           Rnd.Random.Next(10) < 5)
+                    if (Rnd.Random.Next(10) < 5)
                     {
-                        me.RemoveAt(ref length, addr + offset);
-                        offset--;
+                        while (addr + offset >= 0 && me[addr + offset].StackEffect == 0 &&
+                               me[addr + offset].Operation != OpEnum.Copy)
+                        {
+                            me.RemoveAt(ref length, addr + offset);
+                            offset--;
+                        }
                     }
                     return offset;
                 }
@@ -181,11 +189,7 @@ public static class CommandSpanMutationExt
                             if (me[i].MinStackRequired > tmpStackEffect)
                             {
                                 me.RemoveAt(ref length, i);
-<<<<<<< HEAD
-                                offset -= 1;
-=======
                                 offset--;
->>>>>>> f22634f84b7903ad0d54c8c9b8e44d82ae78e37a
                                 i--;
                             }
                             else
@@ -294,7 +298,7 @@ public static class CommandSpanMutationExt
                 #endif
                 return 0;
             }
-            else if (length > BConfig.MaxScriptLength - 10 || Rnd.Random.Next(100) < 50) //small delete (we force it if within 10 commands from MaxScriptLength
+            else if (length > BConfig.MaxScriptLength - 10 || Rnd.Random.Next(100) < 20) //small delete (we force it if within 10 commands from MaxScriptLength
             {
                 var commandAtAddr = me[addr];
 
