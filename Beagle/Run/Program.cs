@@ -151,7 +151,7 @@ public class Program
         {
             //new CsvGen<RydbergFormula>().CreateAndSaveCsvFile(5000); return;
 
-            using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(useLibDevice: useLibDevice);
+            //using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<QuadraticEq, StdFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<QuadraticEq, CorrelationFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<AreaOfCircle, CorrelationFitFunc>(useLibDevice: useLibDevice);
@@ -168,7 +168,7 @@ public class Program
             //using var mlEngine = new MLEngine<QuadraticEqNormalized, StdFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<QuadraticEq, StdFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<DepressedCubicEq, StdFitFunc>(useLibDevice: useLibDevice);
-            //using var mlEngine = new MLEngine<SinApproximation, StdCubeFitFunc>(useLibDevice: useLibDevice);
+            using var mlEngine = new MLEngine<SinApproximation, CorrelationFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<DemoForJdAndTheBoys, StdFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<RydbergFormula, CorrelationFitFunc>(useLibDevice: useLibDevice);
             //using var mlEngine = new MLEngine<ThrustData, StdFitFunc>(useLibDevice: useLibDevice);
