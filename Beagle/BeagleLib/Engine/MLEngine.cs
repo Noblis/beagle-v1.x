@@ -732,25 +732,33 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
             Console.ForegroundColor = ConsoleColor.Red;
             Output.Write($"{BConfig.MaxScore * MLSetup.Current.ExperimentsPerGeneration:N0}");
             Console.ForegroundColor = ConsoleColor.White;
-            Output.Write("): length = ");
+            Output.Write(")x");
             Console.ForegroundColor = ConsoleColor.Red;
-            Output.WriteLine($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
+            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.ScoreRecalcCount}");
+            Console.ForegroundColor = ConsoleColor.White;
+            Output.Write(" length = ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Output.Write($"{_mostAccurateOrganismsSinceLastColonyReset[0]!.GetFullCommandsLength(_inputsArray, _correctOutputs)}");
+            Console.ForegroundColor = ConsoleColor.White;
+            Output.Write(" at ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Output.WriteLine($"{_highestOrganismsScoreSinceLastColonyReset:N0}");
             Console.ForegroundColor = ConsoleColor.White;
             _mostAccurateOrganismsSinceLastColonyReset[0]!.PrintCommandsInLine(_inputLabels, _inputsArray, _correctOutputs);
         }
 
-        Console.ForegroundColor = ConsoleColor.White;
-        Output.Write("Total births at last highest score (");
+        //Console.ForegroundColor = ConsoleColor.White;
+        //Output.Write("Total births at last highest score (");
 
-        Console.ForegroundColor = ConsoleColor.Red;
-        Output.Write($"{_highestOrganismsScoreSinceLastColonyReset:N0}");
-        Console.ForegroundColor = ConsoleColor.White;
+        //Console.ForegroundColor = ConsoleColor.Red;
+        //Output.Write($"{_highestOrganismsScoreSinceLastColonyReset:N0}");
+        //Console.ForegroundColor = ConsoleColor.White;
 
-        Output.Write(") since last colony reset: ");
+        //Output.Write(") since last colony reset: ");
 
-        Console.ForegroundColor = ConsoleColor.Red;
-        Output.WriteLine($"{_totalBirthAtLastHighestScoreSinceLastColonyReset:N0}");
-        Console.ForegroundColor = ConsoleColor.White;
+        //Console.ForegroundColor = ConsoleColor.Red;
+        //Output.WriteLine($"{_totalBirthAtLastHighestScoreSinceLastColonyReset:N0}");
+        //Console.ForegroundColor = ConsoleColor.White;
 
         //Output.WriteLine($"Total births since last colony reset / reset after: {_totalBirthSinceLastColonyReset:N0}/{MLSetup.Current.TotalBirthsToResetColonyIfNoProgress:N0}");
         //Output.WriteLine(_mostAccurateOrganismSinceLastColonyReset!.CommandsToJson());
@@ -1533,7 +1541,7 @@ public class MLEngine<TMLSetup, TFitFunc> : MLEngineCore
     protected int _highestOrganismsScoreSinceLastColonyReset = int.MinValue;
     #endregion
 
-    #region Fields to Keep Track of most accurate and shortest satisfactory organisms
+    #region Fields to Keep Track of most accurate organisms
     protected Organism? _mostAccurateEverOrganism;
     protected TimeSpan _mostAccurateEverOrganismTotalTime;
     protected long _totalBirthAtLastMostAccurateEverOrganism;

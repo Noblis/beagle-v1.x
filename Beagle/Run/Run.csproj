@@ -10,8 +10,23 @@
 
 	<ItemGroup>
 	  <Compile Remove="FeynmanAppOutput_2026-07-18-14-32-48\**" />
+	  <Compile Remove="FeynmanAppOutput_2026-07-24-16-39-00\**" />
+	  <Compile Remove="FeynmanAppOutput_2026-10-16-16-40-16\**" />
+	  <Compile Remove="FeynmanAppOutput_2026-10-29-17-08-22\**" />
+	  <Compile Remove="FeynmanAppOutput_2026-11-16-17-38-39\**" />
+	  <Compile Remove="FeynmanAppOutput_2026-11-20-17-11-30\**" />
 	  <EmbeddedResource Remove="FeynmanAppOutput_2026-07-18-14-32-48\**" />
+	  <EmbeddedResource Remove="FeynmanAppOutput_2026-07-24-16-39-00\**" />
+	  <EmbeddedResource Remove="FeynmanAppOutput_2026-10-16-16-40-16\**" />
+	  <EmbeddedResource Remove="FeynmanAppOutput_2026-10-29-17-08-22\**" />
+	  <EmbeddedResource Remove="FeynmanAppOutput_2026-11-16-17-38-39\**" />
+	  <EmbeddedResource Remove="FeynmanAppOutput_2026-11-20-17-11-30\**" />
 	  <None Remove="FeynmanAppOutput_2026-07-18-14-32-48\**" />
+	  <None Remove="FeynmanAppOutput_2026-07-24-16-39-00\**" />
+	  <None Remove="FeynmanAppOutput_2026-10-16-16-40-16\**" />
+	  <None Remove="FeynmanAppOutput_2026-10-29-17-08-22\**" />
+	  <None Remove="FeynmanAppOutput_2026-11-16-17-38-39\**" />
+	  <None Remove="FeynmanAppOutput_2026-11-20-17-11-30\**" />
 	</ItemGroup>
 
 	<ItemGroup>
