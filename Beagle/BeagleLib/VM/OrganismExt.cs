@@ -95,7 +95,7 @@ public static class OrganismExt
 
                 //r can range from 0 to 1
                 //punishment is based on the percentage of mismatches, number of experiments cancels out
-                score = (int)Math.Round(BConfig.MaxScore * (MLSetup.Current.ExperimentsPerGeneration - count0 - count1) * rSquared) - BConfig.MaxScore * (count0 - count1);
+                score = (int)Math.Round(BConfig.MaxScore * (MLSetup.Current.ExperimentsPerGeneration - count0 - count1) * rSquared * rSquared) - BConfig.MaxScore * (count0 - count1);
             }
             else
             {
